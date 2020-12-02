@@ -1,0 +1,76 @@
+﻿<Window x:Class="SynonyMe.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SynonyMe"
+        xmlns:vm="clr-namespace:SynonyMe.ViewModel"
+        xmlns:dd="urn:gong-wpf-dragdrop"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+
+    <!--VMにバインディング-->
+    <Window.DataContext>
+        <vm:MainWindowVM/>
+    </Window.DataContext>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!--現状、ツールバーとメイン部分を縦に並べて配置しているため、横のGridは1つのみでOK-->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <!--ツールバー部分の高さ-->
+            <RowDefinition Height="20"/>
+            
+            <!--残りはメイン部分に渡す-->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--ツールバー表示-->
+        <ToolBarTray Grid.Row="0" Grid.Column="0">
+            <ToolBar>
+
+            </ToolBar>
+        </ToolBarTray>
+            
+        <!--メインスペース定義-->
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <!--予約領域(左列)-->
+                <ColumnDefinition Width="*"/>
+                <!--メイン領域(中央列)-->
+                <ColumnDefinition Width="2*"/>
+                <!--ワーク領域(右列)-->
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!--横方向-->
+            <Grid.RowDefinitions>
+                <!--メイン領域-->
+                <RowDefinition Height="*"/>
+                
+                <!--フッター-->
+                <RowDefinition Height="20"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Grid.Column="0" Visibility="Collapsed">
+                <!--現状、使用しない-->
+            </StackPanel>
+            
+            <!--メイン領域-->
+            <StackPanel Grid.Row="0" Grid.Column="1">
+                <!--Drag and Dropの実装-->
+
+
+            </StackPanel>
+            
+            <!--フッター部分-->
+            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+                
+                
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+</Window>
