@@ -20,7 +20,7 @@ namespace SynonyMe.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
 
         // INotifyPropertyChanged.PropertyChangedイベントを発生させる。
-        protected virtual void RaisePropertyChanged(string propertyName)
+        protected virtual void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
