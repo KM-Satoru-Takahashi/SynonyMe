@@ -9,12 +9,47 @@
         xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="{Binding MainWindowTitle}" Height="450" Width="600">
+        Title="{Binding MainWindowTitle}" Height="600" Width="800">
+
+    <Window.Resources>
+        <!--保存/Saveアイコン-->
+        <Image x:Key="SaveIcon" Source="../Resources/Save_16x.png"/>
+
+        <!--名前をつけて保存-->
+        <Image x:Key="SaveAsIcon" Source="../Resources/SaveAs_16x.png"/>
+
+        <!--類語ウィンドウアイコン-->
+        <Image x:Key="SynonymIcon" Source="../Resources/EditString_16x.png"/>
+
+        <!--新規作成アイコン-->
+        <Image x:Key="NewFile" Source="../Resources/NewFile_16x.png"/>
+
+        <!--開くアイコン-->
+        <Image x:Key="OpenFile" Source="../Resources/FolderOpened_16x.png"/>
+
+        <!--設定アイコン-->
+        <Image x:Key="SettingsIcon" Source="../Resources/Settings_16x.png"/>
+
+        <!--標準検索結果のListViewでHeaderを非表示にする-->
+        <Style x:Key="HeaderHiddenStyle" TargetType="{x:Type  GridViewColumnHeader}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+    </Window.Resources>
 
     <!--VMにバインディング-->
     <Window.DataContext>
         <vm:MainWindowVM/>
     </Window.DataContext>
+
+    <!--ショートカットキー設定-->
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding Command_Save}"/>
+        <KeyBinding Gesture="Shift+Ctrl+S" Command="{Binding Command_SaveAs}"/>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding Command_CreateNewFile}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding Command_OpenFile}"/>
+        <KeyBinding Gesture="Alt+S" Command="{Binding Command_OpenSynonymWindow}"/>
+        <KeyBinding Gesture="Alt+O" Command="{Binding Command_OpenSettingsWindow}"/>
+    </Window.InputBindings>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -32,21 +67,50 @@
         <!--ツールバー表示-->
         <ToolBarTray Grid.Row="0" Grid.Column="0">
             <ToolBar>
+                <!--新規作成-->
+                <Button Content="{StaticResource NewFile}" Command="{Binding Command_CreateNewFile}"
+                        ToolTip="{Binding ToolTip_CreateNewFile}"/>
 
+                <!--開く-->
+                <Button Content="{StaticResource OpenFile}" Command="{Binding Command_OpenFile}"
+                        ToolTip="{Binding ToolTip_OpenFile}"/>
+
+                <!--上書き保存/Saveアイコン-->
+                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}"
+                        ToolTip="{Binding ToolTip_Save}"/>
+
+                <!--名前をつけて保存-->
+                <Button Content="{StaticResource SaveAsIcon}" Command="{Binding Command_SaveAs}"
+                        ToolTip="{Binding ToolTip_SaveAs}"/>
+
+                <!--類語追加アイコン-->
+                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}"
+                        ToolTip="{Binding ToolTip_OpenSynonymWindow}"/>
+
+                <!--設定アイコン-->
+                <Button Content="{StaticResource SettingsIcon}" Command="{Binding Command_OpenSettingsWindow}"
+                        ToolTip="{Binding ToolTip_OpenSettingsWindow}"/>
+
+                <!--新規作成、開く、上書き保存、名前をつけて保存、類語Window、Option、-->
             </ToolBar>
         </ToolBarTray>
 
         <!--メインスペース定義-->
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
-                <!--予約領域(左列)-->
-                <!--現状、使用しないのでWidthは0にする-->
-                <ColumnDefinition Width="0"/>
+                <!--検索領域(左列)-->
+                <ColumnDefinition Width="Auto"/>
+                <!--GridSplitter-->
+                <ColumnDefinition Width="Auto"/>
                 <!--メイン領域(中央列)-->
                 <ColumnDefinition Width="2*"/>
-                <!--ワーク領域(右列)-->
+                <!--GridSplitter-->
+                <ColumnDefinition Width="Auto"/>
+                <!--類語領域(右列-1)-->
                 <!--初期値0でバインディングしても良いかもしれない-->
                 <ColumnDefinition Width="*"/>
+                <!--類語検索結果領域(右列-2)-->
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
             <!--横方向-->
@@ -62,24 +126,238 @@
                 <!--現状、使用しない-->
             </Grid>
 
+            <!--検索領域-->
+            <Border BorderBrush="LightGray" BorderThickness="0,0,3,0" Grid.Column="0" Grid.Row="0"/>
+            <Expander Grid.Row="0" Grid.Column="0" ExpandDirection="Left" Padding="0,5,5,0" Header="検索"
+                      vm:ExpanderGridSplitterProperty.GridSnap="Auto"
+                      vm:ExpanderGridSplitterProperty.TargetGridSplitter="{Binding ElementName=ExpanderGridSplitter}">
+                <Grid Grid.Row="0" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <!--左側余白-->
+                        <ColumnDefinition Width="5"/>
+                        <!--検索テキスト表示列-->
+                        <ColumnDefinition Width="*"/>
+                        <!--検索テキストと検索ボタン間の余白-->
+                        <ColumnDefinition Width="10"/>
+                        <!--検索ボタン表示列-->
+                        <ColumnDefinition Width="35"/>
+                        <!--右側余白-->
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <!--上部余白-->
+                        <RowDefinition Height="20"/>
+                        <!--検索テキスト、検索ボタン高さ-->
+                        <RowDefinition Height="40"/>
+                        <!--テキスト・ボタンと検索結果間余白-->
+                        <RowDefinition Height="20"/>
+                        <!--検索結果領域-->
+                        <RowDefinition Height="*"/>
+                        <!--下部余白-->
+                        <RowDefinition Height="20"/>
+                    </Grid.RowDefinitions>
+
+                    <!--検索テキストボックス-->
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SearchWord}" />
+
+                    <!--検索ボタン-->
+                    <Button Grid.Row="1" Grid.Column="3" Command="{Binding Command_Search}" Content="{Binding SearchButtonText}"/>
+
+                    <!--検索結果-->
+                    <ListView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding SearchResult}"
+                          Visibility="{Binding SearchResultVisibility}" SelectionMode="Single">
+                        <!--選択時にキャレットの更新をかける-->
+                        <bh:Interaction.Triggers>
+                            <bh:EventTrigger EventName="SelectionChanged">
+                                <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True"/>
+                                <!-- CommandParameterを渡そうとしてもうまくとれておらず、PassEventArgsToCommandプロパティをtrueにするだけで必要な引数を渡せているので、現状コメントアウトしておく
+                                <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+                                -->
+                            </bh:EventTrigger>
+                        </bh:Interaction.Triggers>
+                        <ListView.View>
+                            <!--ヘッダは不要なので非表示のスタイルを適用する-->
+                            <GridView ColumnHeaderContainerStyle="{StaticResource HeaderHiddenStyle}">
+                                <GridViewColumn>
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayWord}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                    <!--検索結果が無い場合に表示される語句-->
+                    <Label Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                       Visibility="{Binding NoSearchResultVisibility}" Content="{Binding NoSearchResultWord}"/>
+
+                </Grid>
+            </Expander>
+
+            <GridSplitter Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Width="3"  x:Name="ExpanderGridSplitter"/>
+
             <!--メイン領域-->
-            <Grid Grid.Row="0" Grid.Column="1">
+            <Grid Grid.Row="0" Grid.Column="2">
+
+                <!--実用上まったく問題ないが、VSがxamlデザイン表示する際にnull例外で表示できなくなってしまうのを防ぐために定義する-->
+                <!--AvalonEditのOptionsには何かしらの非nullインスタンスが割り当てられていなければNGという報告あり
+                https://github.com/icsharpcode/AvalonEdit/issues/187-->
+                <Grid.Resources>
+                    <ae:TextEditorOptions EnableImeSupport="True" x:Key="StaticTextEditorOptions"/>
+                </Grid.Resources>
+
+                <Grid.RowDefinitions>
+                    <!--文字数等表示行-->
+                    <RowDefinition Height="20"/>
+                    <!--AvalonEdit実装行-->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!--文字数等を表示させる-->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <!--文字数-->
+                        <TextBlock Text="{Binding WordCountText}" Visibility="{Binding WordCountVisible}"/>
+                        <TextBlock Text="{Binding WordCount}" Visibility="{Binding WordCountVisible}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <!--行数-->
+                        <TextBlock Text="{Binding LineCountText}" Visibility="{Binding LineCountVisible}"/>
+                        <TextBlock Text="{Binding LineCount}" Margin="0,0,40,0" Visibility="{Binding LineCountVisible}"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <!--編集済み-->
+                        <TextBlock Text="{Binding EditedText}" Visibility="{Binding EditedTextVisible}"/>
+                    </StackPanel>
+                </Grid>
+
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
-                <ae:TextEditor 
-                    dd:DragDrop.IsDropTarget="True"
-                    dd:DragDrop.DropHandler="{Binding}"
-                    >
-                    <!--ビヘイビアの登録-->
-                    <bh:Interaction.Behaviors>
-                        <vm:AvalonEditBehavior AvalonTextEditor="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </bh:Interaction.Behaviors>
+                <!--todo:SyntaxHighlightのBinding-->
+                <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
+                    dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
+                    dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"            
+                    Document="{Binding Path=TextDocument}" FontFamily="{Binding FontFamily}"
+                    Background="{Binding AvalonEditBackGround}"
+                    Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >
+
+                    <!--文書更新時に文字数等の更新処理をかける-->
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="TextChanged">
+                            <bh:InvokeCommandAction Command="{Binding Command_UpdateTextInfo}"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+
                 </ae:TextEditor>
             </Grid>
 
+            <!--類語領域-->
+            <Grid Grid.Row="0" Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <!--上部余白は中央の文字数・行数カウントと同じ高さにする-->
+                    <RowDefinition Height="20" />
+                    <!--類語検索ボタン-->
+                    <RowDefinition Height="30"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--類語グループリスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--類語リスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <!--左側余白　※GridSplitterの実装で要らなくなるかもしれないが、開発中は一旦実装-->
+                    <ColumnDefinition Width="5"/>
+                    <!--メイン-->
+                    <ColumnDefinition Width="*"/>
+                    <!--右側余白-->
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+
+                <!--類語検索ボタン-->
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding Command_SynonymSearch}" Content="{Binding SearchSynonymText}"/>
+
+                <!--類語グループリスト一覧-->
+                <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
+                    <bh:Interaction.Triggers>
+                        <!--類語グループ選択時に類語一覧を更新する-->
+                        <bh:EventTrigger EventName="SelectionChanged">
+                            <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymGroup}" PassEventArgsToCommand="True"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymGroupNameHeader}" DisplayMemberBinding="{Binding GroupName}"/>
+                                <GridViewColumn Header="{Binding SynonymGroupLastUpdateHeader}" DisplayMemberBinding="{Binding GroupUpdateDate}"/>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <!--類語一覧-->
+                <ListView Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DisplaySynonymWords}">
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <!-- 結果で表示できるため、べつにここで表示する必要ない気がしたので、一旦コメントアウト
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding WordCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                -->
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
+                <!--類語検索結果-->
+                <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="SelectionChanged">
+                            <bh:InvokeCommandAction Command="{Binding Path=Command_JumpToSynonymSearchResult}" PassEventArgsToCommand="True"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <GridViewColumn Header="{Binding SynonymWordSectionHeader}" DisplayMemberBinding="{Binding UsingSection}"/>
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding UsingCount}"/>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+
+
+
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
-
 
             </Grid>
         </Grid>

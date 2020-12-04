@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<configuration>
+  <log4net>
+    <appender name="SynonyeMeLog" type="log4net.Appender.RollingFileAppender">
+
+      <appendToFile value="true" />
+      <StaticLogFileName value="false" />
+
+      <rollingStyle value="Date" />
+      <file value=".\\Log\\SynonyMeLog" />
+      <DatePattern value='yyyyMMdd".log"' />
+      <lockingModel type="log4net.Appender.FileAppender+MinimalLock" />
+
+      <filter type="log4net.Filter.LevelRangeFilter">
+        <param name="LevelMin" value="INFO" />
+        <param name="LevelMax" value="Error" />
+      </filter>
+      <layout type="log4net.Layout.PatternLayout">
+        <ConversionPattern value="%date thread:[%thread], [%-5level] %message%n" />
+      </layout>
+    </appender>
+    <root>
+      <level value="ALL" />
+      <appender-ref ref="SynonyeMeLog" />
+    </root>
+  </log4net>
+</configuration>

@@ -10,26 +10,28 @@ using System.Windows;
 namespace SynonyMe.ViewModel
 {
     /// <summary>MainWindowのテキスト編集箇所で使用するビヘイビア(AvalonEdit用)</summary>
+    /// <remarks>2021.04.15~使用していない</remarks>
     internal sealed class AvalonEditBehavior : Behavior<TextEditor>
     {
         /// <summary>AvalonEditor用のプロパティ宣言</summary>
         public static readonly DependencyProperty TextEditorProperty =
             DependencyProperty.Register(
-                "AvalonTextEditor",
+                "AvalonEditorText",
                 typeof(string),
                 typeof(AvalonEditBehavior),
                 new FrameworkPropertyMetadata(default(string), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, PropertyChangedCallback)
                 );
 
-
         /// <summary>AvalonEdit用プロパティ</summary>
-        public string AvalonTextEditor
+        public string AvalonEditorText
         {
             get { return (string)GetValue(TextEditorProperty); }
             set { SetValue(TextEditorProperty, value); }
         }
 
-
+        /// <summary>表示テキスト変更時に(入力・削除)動作するビヘイビア</summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void AssociatedObjectOnTextChanged(object sender, EventArgs eventArgs)
         {
             TextEditor textEditor = sender as TextEditor;
@@ -37,7 +39,7 @@ namespace SynonyMe.ViewModel
             {
                 if (textEditor.Document != null)
                 {
-                    AvalonTextEditor = textEditor.Document.Text;
+                    AvalonEditorText = textEditor.Document.Text;
                 }
             }
         }
@@ -59,7 +61,11 @@ namespace SynonyMe.ViewModel
                 {
                     int tempCaretOffset = textEditor.CaretOffset;
                     textEditor.Document.Text = dependencyPropertyChangedEventArgs.NewValue.ToString();
-                    textEditor.CaretOffset = tempCaretOffset;
+
+                    if (textEditor.CaretOffset >= tempCaretOffset)
+                    {
+                        textEditor.CaretOffset = tempCaretOffset;
+                    }
                 }
             }
         }
@@ -71,7 +77,7 @@ namespace SynonyMe.ViewModel
             base.OnAttached();
             if (AssociatedObject != null)
             {
-
+                AssociatedObject.TextChanged += AssociatedObjectOnTextChanged;
             }
         }
 
@@ -80,7 +86,7 @@ namespace SynonyMe.ViewModel
             base.OnDetaching();
             if (AssociatedObject != null)
             {
-
+                AssociatedObject.TextChanged -= AssociatedObjectOnTextChanged;
             }
         }
 

@@ -1,0 +1,477 @@
+﻿<Window x:Class="SynonyMe.View.SettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:SynonyMe.View"
+        xmlns:vm="clr-namespace:SynonyMe.ViewModel"
+        xmlns:lib="clr-namespace:SynonyMe.CommonLibrary"
+        mc:Ignorable="d"
+        Title="SettingWindow" Height="450" Width="800">
+    <!--Todo:Window.Languageのバインディング-->
+
+    <Window.DataContext>
+        <vm:SettingWindowVM/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <vm:BoolToEnumConverter x:Key="EnumToBoolean"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!--上部余白-->
+            <RowDefinition Height="20"/>
+            <!--メイン領域-->
+            <RowDefinition Height="*"/>
+            <!--ボタンとメイン領域間の余白-->
+            <RowDefinition Height="10"/>
+            <!--ボタン高さ-->
+            <RowDefinition Height="40"/>
+            <!--下部余白-->
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <!--左側余白-->
+            <ColumnDefinition Width="20"/>
+            <!--メイン部分は可変幅-->
+            <ColumnDefinition Width="*"/>
+            <!--デフォルトに戻すボタン-->
+            <ColumnDefinition Width="70"/>
+            <!--広めの余白にする-->
+            <ColumnDefinition Width="40"/>
+            <!--OKボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--ボタン間余白-->
+            <ColumnDefinition Width="20"/>
+            <!--Cancelボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--ボタン間余白-->
+            <ColumnDefinition Width="20"/>
+            <!--適用ボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--右側余白-->
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+
+        <TabControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="8">
+            <TabItem Header="一般設定">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <!--左側余白-->
+                        <ColumnDefinition Width="10"/>
+                        <!--項目見出し列1-->
+                        <ColumnDefinition Width="2*"/>
+                        <!--項目内容列1-->
+                        <ColumnDefinition Width="*"/>
+                        <!--余白-->
+                        <ColumnDefinition Width="5"/>
+                        <!--項目見出し列2-->
+                        <ColumnDefinition Width="2*"/>
+                        <!--項目内容列2-->
+                        <ColumnDefinition Width="*"/>
+                        <!--右側余白-->
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <!--上部余白-->
+                        <RowDefinition Height="10"/>
+                        <!--文字列を折り返す-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--行数を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--行番号を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--文字数を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--編集記号を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォントサイズ-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォント名称(日)-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォント名称(英)-->
+                        <RowDefinition Height="25"/>
+                        <!--デフォルトに戻すボタンとの余白は多めにとる-->
+                        <RowDefinition Height="15"/>
+                        <!--デフォルトに戻すボタン-->
+                        <RowDefinition Height="25"/>
+                    </Grid.RowDefinitions>
+
+                    <!--文字列を折り返す-->
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="文字列を折り返す" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="1" Grid.Column="2" IsChecked="{Binding WrappingText}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--行数を表示する-->
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="行数を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="3" Grid.Column="2" IsChecked="{Binding ShowingLineCount}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--行番号を表示する-->
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="行番号を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="5" Grid.Column="2" IsChecked="{Binding ShowingLineNumber}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--文字数を表示する-->
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="文字数を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="7" Grid.Column="2" IsChecked="{Binding ShowingWordCount}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--改行記号を表示する-->
+                    <TextBlock Grid.Row="9" Grid.Column="1" Text="改行記号を表示する" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    <CheckBox Grid.Row="9" Grid.Column="2" IsChecked="{Binding ShowingNewLine}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="11" Grid.Column="1" Text="タブを表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="11" Grid.Column="2" IsChecked="{Binding ShowingTab}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="13" Grid.Column="1" Text="半角空白を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="13" Grid.Column="2" IsChecked="{Binding ShowingSpace}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <!--左側の残りは予約領域として残しておく-->
+
+                    <TextBlock Grid.Row="1" Grid.Column="4" Text="フォントサイズ" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding FontSize}" Width="40" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="4" Text="フォントカラー" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <xctk:ColorPicker Grid.Row="3" Grid.Column="5" SelectedColor="{Binding FontColor}"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="4" Text="フォント名称(主)" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <ComboBox Grid.Row="5" Grid.Column="5" ItemsSource="{Binding FontList}" SelectedItem="{Binding MainFont}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FontName}" FontFamily="{Binding FontFamily}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
+                    <TextBlock Grid.Row="7" Grid.Column="4" Text="フォント名称(副) ※[主]で表示できない場合" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <ComboBox Grid.Row="7" Grid.Column="5" ItemsSource="{Binding FontList}" SelectedItem="{Binding SubFont}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FontName}" FontFamily="{Binding FontFamily}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <!--todo:ボタンサイズを他タブと合わせて適切に-->
+                    <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
+                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.GeneralSetting}"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="検索・類語検索設定">
+                <!--設定で検索結果と類語検索結果の斜体表示-->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <!--左側余白-->
+                        <ColumnDefinition Width="10"/>
+                        <!--メインペイン-->
+                        <ColumnDefinition Width="*"/>
+                        <!--右側余白-->
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <!--上側余白-->
+                        <RowDefinition Height="10"/>
+                        <!--検索結果見出し-->
+                        <RowDefinition Height="25"/>
+                        <!--検索結果設定行2つ-->
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--類語検索結果見出し-->
+                        <RowDefinition Height="20"/>
+                        <!--類語検索結果設定行3つ-->
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--マージン文字数-->
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--検索結果表示数-->
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--左側に類語全削除ボタン、右側に項目リセットボタン-->
+                        <RowDefinition Height="25"/>
+                        <!--下側余白-->
+                        <RowDefinition Height="10"/>
+                    </Grid.RowDefinitions>
+
+                    <!--検索結果設定-->
+                    <TextBlock Text="検索結果" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <xctk:ColorPicker Margin="40,0,0,0" SelectedColor="{Binding SearchResultBackGround}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Auto},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Black},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.White},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.UserSetting},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SearchResultFontColor}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準" IsEnabled="{Binding CanSelectSearchResultFontColor}"/>
+                    </StackPanel>
+
+                    <!--類語検索結果結果設定-->
+                    <TextBlock Text="検索結果" Grid.Column="1" Grid.Row="5" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Grid.Row="6" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色1" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor1}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                        <TextBlock Text="背景色2" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor2}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色3" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor3}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色4" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor4}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <!--todo:背景色10と縦を合わせるためにわざと半角空白入れているが、ウィンドウサイズ変えたらどうかな？-->
+                        <TextBlock Text="背景色5  " VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor5}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="7" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色6" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor6}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                        <TextBlock Text="背景色7" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor7}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色8" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor8}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色9" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor9}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色10" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor10}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Grid.Row="8" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Auto},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Black},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.White},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.UserSetting},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SynonymSearchResultFontColor}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準" IsEnabled="{Binding CanSelectSynonymSearchResultFontColor}"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="10">
+                        <TextBlock Text="検索結果の前後文字数" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <TextBox Text="{Binding SearchResultMargin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
+                                 InputMethod.IsInputMethodEnabled="False">
+                            <!--ペースト不可-->
+                            <bh:Interaction.Behaviors>
+                                <vm:KeyInputOnlyTextboxBehavior/>
+                            </bh:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="12">
+                        <TextBlock Text="検索結果の最大表示数" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <!--todo:Binding-->
+                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
+                                 InputMethod.IsInputMethodEnabled="False">
+                            <!--ペースト不可-->
+                            <bh:Interaction.Behaviors>
+                                <vm:KeyInputOnlyTextboxBehavior/>
+                            </bh:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <!--各種ボタン-->
+                    <Grid Grid.Column="1" Grid.Row="14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="SynonymAllDelete"
+                                Command="{Binding Command_DeleteAllSynonyms}"/>
+                        <Button Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Content="Default"
+                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.SearchAndSynonymSetting}"/>
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+            <!--現状、制約事項とする(v1.0.0)-->
+            <TabItem Header="高度な設定" IsEnabled="False">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <!--上部余白-->
+                        <RowDefinition Height="10"/>
+                        <!--ログ出力レベル-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--高速化設定-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--ログ保持期間-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--検索結果表示数-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--対象拡張子-->
+                        <RowDefinition Height="50"/>
+                        <!--下部余白-->
+                        <RowDefinition Height="10"/>
+                    </Grid.RowDefinitions>
+
+                    <!--ログ出力レベル-->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <TextBlock Text="OutputLogLevel" Margin="10,0,5,0"/>
+                        <TextBlock Text="{Binding LogOutputLevel}" Margin="15,0,5,0"/>
+                        <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="5" SmallChange="1"
+                                TickPlacement="BottomRight" Margin="5,0,5,0" Value="{Binding LogOutputLevel}" AutoToolTipPlacement="TopLeft"/>
+                        <TextBlock Text="DEBUG" Visibility="{Binding DebugVisible}" Margin="15,0,5,0"/>
+                        <TextBlock Text="INFO" Visibility="{Binding InfoVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="WARN" Visibility="{Binding WarnVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="ERROR" Visibility="{Binding ErrorVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="FATAL" Visibility="{Binding FatalVisible}" Margin="5,0,5,0"/>
+                    </StackPanel>
+
+                    <!--検索高速化設定-->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="検索・類語検索高速化" Margin="10,0,5,0"/>
+                        <CheckBox IsChecked="{Binding UseFastSearch}" Margin="15,0,5,0"/>
+                    </StackPanel>
+
+                    <!--ログ保持期間-->
+                    <!--日数の表示でガタガタずれるのを抑止するため、Gridで場所を整える-->
+                    <Grid Grid.Row="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="140" />
+                            <ColumnDefinition Width="125"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="ログ保持期間(日)" Margin="10,0,5,0"/>
+                            <TextBlock Text="{Binding LogRetentionDaysString}" Margin="15,0,0,0" Visibility="Visible"/>
+                        </StackPanel>
+                        <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="30" SmallChange="1"
+                                TickPlacement="BottomRight" Margin="0,5,0,0" Value="{Binding LogRetentionDays}" AutoToolTipPlacement="TopLeft"
+                                Ticks="1,7,15,30" Grid.Column="1" VerticalAlignment="Center"/>
+                        <Button Content="AllDelete" HorizontalAlignment="Right" Margin="55,0,5,0" Grid.Column="2" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!--読込対象拡張子-->
+                    <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="読込対象拡張子" Margin="10,0,5,0"/>
+                        <TextBlock Text=".txt" Margin="15,0,5,0"/>
+                        <CheckBox Margin="5,0,5,0" IsChecked="{Binding IsTxtTarget}"/>
+                        <TextBlock Text=".doc" Margin="15,0,5,0"/>
+                        <CheckBox Margin="5,0,5,0" IsEnabled="False"/>
+                    </StackPanel>
+
+                    <!--デフォルトボタン-->
+                    <!--todo:ボタンサイズ-->
+                    <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30"  Margin="0,0,10,0"
+                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.AdvancedSetting}"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!--AllResetボタン-->
+        <Button Grid.Column="2" Grid.Row="3" Content="AllReset" Command="{Binding Command_ResetToDefault}"
+                CommandParameter="{x:Static lib:SettingKind.All}"/>
+
+        <!--OKボタン-->
+        <Button Grid.Column="4" Grid.Row="3" Content="OK" Command="{Binding Command_Ok}"/>
+
+        <!--キャンセルボタン-->
+        <Button Grid.Column="6" Grid.Row="3" Content="Cancel" Command="{Binding Command_Cancel}"/>
+
+        <!--適用ボタン-->
+        <Button Grid.Column="8" Grid.Row="3" Content="Apply" Command="{Binding Command_Apply}"/>
+
+    </Grid>
+</Window>
