@@ -12,7 +12,6 @@ namespace SynonyMe.Model
 {
     internal class MainWindowModel
     {
-
         #region field
 
         private SynonyMe.ViewModel.MainWindowVM _viewModel = null;

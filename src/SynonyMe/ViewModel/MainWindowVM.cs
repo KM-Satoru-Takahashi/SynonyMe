@@ -7,6 +7,7 @@ using System.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
 using GongSolutions.Wpf.DragDrop;
+using ICSharpCode.AvalonEdit;
 
 namespace SynonyMe.ViewModel
 {
@@ -23,6 +24,8 @@ namespace SynonyMe.ViewModel
 
         private SynonyMe.Model.MainWindowModel _model = null;
 
+        private string _displayText = null;
+
         #endregion
 
         #region property
@@ -33,7 +36,18 @@ namespace SynonyMe.ViewModel
 
         public int FooterHeight { get; } = 30;
 
-        public string DisplayText { get; set; }
+        public string DisplayText
+        {
+            get
+            {
+                return _displayText;
+            }
+            set
+            {
+                _displayText = value;
+                RaisePropertyChanged("DisplayText");
+            }
+        }
 
         #endregion
 
@@ -122,7 +136,12 @@ namespace SynonyMe.ViewModel
 
             foreach (string filePath in dragOverFilePathList)
             {
-
+                if (IsTargetFile(filePath))
+                {
+                    TextEditor editor = new TextEditor();
+                    editor.Load(filePath);
+                    DisplayText = editor.Text;
+                }
             }
         }
 

@@ -117,7 +117,7 @@ namespace SynonyMe.ViewModel
                 add { CommandManager.RequerySuggested += value; }
                 remove { CommandManager.RequerySuggested -= value; }
             }
-        }        
+        }
 
         // コマンドの生成
         protected ICommand CreateCommand(Action<object> command, Func<object, bool> canExecute = null)
