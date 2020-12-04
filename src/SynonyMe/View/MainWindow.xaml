@@ -6,8 +6,10 @@
         xmlns:local="clr-namespace:SynonyMe"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         xmlns:dd="urn:gong-wpf-dragdrop"
+        xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="{Binding MainWindowTitle}" Height="450" Width="600">
 
     <!--VMにバインディング-->
     <Window.DataContext>
@@ -21,8 +23,8 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <!--ツールバー部分の高さ-->
-            <RowDefinition Height="20"/>
-            
+            <RowDefinition Height="{Binding ToolbarHeight}"/>
+
             <!--残りはメイン部分に渡す-->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -33,15 +35,17 @@
 
             </ToolBar>
         </ToolBarTray>
-            
+
         <!--メインスペース定義-->
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <!--予約領域(左列)-->
-                <ColumnDefinition Width="*"/>
+                <!--現状、使用しないのでWidthは0にする-->
+                <ColumnDefinition Width="0"/>
                 <!--メイン領域(中央列)-->
                 <ColumnDefinition Width="2*"/>
                 <!--ワーク領域(右列)-->
+                <!--初期値0でバインディングしても良いかもしれない-->
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
@@ -49,27 +53,35 @@
             <Grid.RowDefinitions>
                 <!--メイン領域-->
                 <RowDefinition Height="*"/>
-                
+
                 <!--フッター-->
-                <RowDefinition Height="20"/>
+                <RowDefinition Height="{Binding FooterHeight}"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Grid.Column="0" Visibility="Collapsed">
+            <Grid Grid.Row="0" Grid.Column="0" Visibility="Collapsed">
                 <!--現状、使用しない-->
-            </StackPanel>
-            
+            </Grid>
+
             <!--メイン領域-->
-            <StackPanel Grid.Row="0" Grid.Column="1">
+            <Grid Grid.Row="0" Grid.Column="1">
+                <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
+                <ae:TextEditor 
+                    dd:DragDrop.IsDropTarget="True"
+                    dd:DragDrop.DropHandler="{Binding}"
+                    >
+                    <!--ビヘイビアの登録-->
+                    <bh:Interaction.Behaviors>
+                        <vm:AvalonEditBehavior AvalonTextEditor="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </bh:Interaction.Behaviors>
+                </ae:TextEditor>
+            </Grid>
 
-
-            </StackPanel>
-            
             <!--フッター部分-->
-            <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
-                
-                
-            </StackPanel>
+            <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
+
+
+            </Grid>
         </Grid>
     </Grid>
 
