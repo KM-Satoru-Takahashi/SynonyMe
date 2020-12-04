@@ -21,7 +21,6 @@ namespace SynonyMe.ViewModel
                 new FrameworkPropertyMetadata(default(string), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, PropertyChangedCallback)
                 );
 
-
         /// <summary>AvalonEdit用プロパティ</summary>
         public string AvalonTextEditor
         {
@@ -59,7 +58,11 @@ namespace SynonyMe.ViewModel
                 {
                     int tempCaretOffset = textEditor.CaretOffset;
                     textEditor.Document.Text = dependencyPropertyChangedEventArgs.NewValue.ToString();
-                    textEditor.CaretOffset = tempCaretOffset;
+
+                    if (textEditor.CaretOffset >= tempCaretOffset)
+                    {
+                        textEditor.CaretOffset = tempCaretOffset;
+                    }
                 }
             }
         }

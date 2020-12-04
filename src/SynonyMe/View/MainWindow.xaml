@@ -68,9 +68,8 @@
                 <!--Drag and Dropの実装-->
                 <ae:TextEditor 
                     dd:DragDrop.IsDropTarget="True"
-                    dd:DragDrop.DropHandler="{Binding}"
+                    dd:DragDrop.DropHandler="{Binding}"                    
                     >
-                    <!--ビヘイビアの登録-->
                     <bh:Interaction.Behaviors>
                         <vm:AvalonEditBehavior AvalonTextEditor="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </bh:Interaction.Behaviors>

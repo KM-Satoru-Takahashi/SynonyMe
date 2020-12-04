@@ -20,7 +20,7 @@ namespace SynonyMe.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
 
         // INotifyPropertyChanged.PropertyChangedイベントを発生させる。
-        protected virtual void RaisePropertyChanged(string propertyName)
+        protected virtual void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
             {
@@ -117,7 +117,7 @@ namespace SynonyMe.ViewModel
                 add { CommandManager.RequerySuggested += value; }
                 remove { CommandManager.RequerySuggested -= value; }
             }
-        }        
+        }
 
         // コマンドの生成
         protected ICommand CreateCommand(Action<object> command, Func<object, bool> canExecute = null)
