@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
+using System.Windows.Input;
 
 namespace SynonyMe.ViewModel
 {
@@ -30,7 +31,7 @@ namespace SynonyMe.ViewModel
         public string MainWindowTitle { get; } = "SynonyMe";
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
-        public int ToolbarHeight { get; } = 20;
+        public int ToolbarHeight { get; } = 40;
 
         /// <summary>フッター部分の高さ(固定値)</summary>
         public int FooterHeight { get; } = 30;
@@ -49,6 +50,12 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        #region command
+
+        public ICommand Command_Save { get; protected set; } = null;
+
+        #endregion
+
         #endregion
 
         #region method
@@ -63,6 +70,9 @@ namespace SynonyMe.ViewModel
         private void Initialize()
         {
             _model = new Model.MainWindowModel(this);
+
+            // コマンド初期化処理
+            Command_Save = new CommandBase(ExecuteSave, null);
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -99,6 +109,12 @@ namespace SynonyMe.ViewModel
             {
                 DisplayText = _model.GetDisplayText(dropInfo);
             }
+        }
+
+
+        private void ExecuteSave(object parameter)
+        {
+
         }
 
         #endregion
