@@ -7,6 +7,7 @@ using System.Windows.Input;
 
 namespace SynonyMe.ViewModel
 {
+    /// <summary>ボタン押下時のコマンド基底クラス</summary>
     internal class CommandBase : ICommand
     {
         private static readonly Action<string> EmptyExecute = (param) => { };

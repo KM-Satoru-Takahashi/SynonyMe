@@ -20,13 +20,12 @@ namespace SynonyMe.ViewModel
         private SynonyMe.Model.MainWindowModel _model = null;
 
         /// <summary>画面表示テキスト</summary>
-        /// <remarks>初期値nullはよからぬことが起きそうなので空文字にする</remarks>
         /// 将来的にタブVMへ移管予定
-        private string _displayText = string.Empty;
+        private string _displayText = null;
 
         /// <summary>画面表示中テキストの絶対パス</summary>
         /// 将来的にタブVMへ移管予定
-        private string _displayTextFilePath = string.Empty;
+        private string _displayTextFilePath = null;
 
         /// <summary>開いているファイル情報</summary>
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>

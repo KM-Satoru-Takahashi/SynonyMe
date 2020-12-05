@@ -119,9 +119,16 @@ namespace SynonyMe.Model
             }
 
             TextEditor editor = new TextEditor();
-            editor.Load(filePath);
-            editor.Text = displayText;
-            editor.Save(filePath);
+            try
+            {
+                editor.Load(filePath);
+                editor.Text = displayText;
+                editor.Save(filePath);
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
 
             return true;
         }
@@ -144,12 +151,40 @@ namespace SynonyMe.Model
                     continue;
                 }
 
-                TextEditor textEditor = new TextEditor();
-                textEditor.Load(filePath);
-                textList.Add(textEditor.Text);
+                string text = null;
+                if(Load(filePath, out text))
+                {
+                    textList.Add(text);
+                }                
             }
 
             return textList;
+        }
+
+        /// <summary>渡されたファイルパスからテキストファイルを読み込む</summary>
+        /// <param name="filePath">読み込み対象のファイルパス</param>
+        /// <param name="text">読み込んだファイルの全テキスト</param>
+        /// <returns>true:成功, false:失敗</returns>
+        private bool Load(string filePath, out string text)
+        {
+            text = null;
+            if(string.IsNullOrEmpty(filePath))
+            {
+                return false;
+            }
+
+            TextEditor textEditor = new TextEditor();
+            try
+            {
+                textEditor.Load(filePath);
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+
+            text = textEditor.Text;
+            return true;
         }
 
         /// <summary>DropInfoをファイルパスのリストに変換する</summary>
