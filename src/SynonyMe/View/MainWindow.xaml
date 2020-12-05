@@ -11,6 +11,11 @@
         mc:Ignorable="d"
         Title="{Binding MainWindowTitle}" Height="450" Width="600">
 
+    <Window.Resources>
+        <!--保存/Saveアイコン-->
+        <Image x:Key="SaveIcon" Source="../Resources/save.png"/>
+    </Window.Resources>
+    
     <!--VMにバインディング-->
     <Window.DataContext>
         <vm:MainWindowVM/>
@@ -32,7 +37,9 @@
         <!--ツールバー表示-->
         <ToolBarTray Grid.Row="0" Grid.Column="0">
             <ToolBar>
-
+                <!--保存/Saveアイコン-->
+                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}">
+                </Button>
             </ToolBar>
         </ToolBarTray>
 

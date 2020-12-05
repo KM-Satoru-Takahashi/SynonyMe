@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
+using System.Windows.Input;
 
 namespace SynonyMe.ViewModel
 {
@@ -19,8 +20,16 @@ namespace SynonyMe.ViewModel
         private SynonyMe.Model.MainWindowModel _model = null;
 
         /// <summary>画面表示テキスト</summary>
-        /// <remarks>初期値nullはよからぬことが起きそうなので空文字にする</remarks>
-        private string _displayText = string.Empty;
+        /// 将来的にタブVMへ移管予定
+        private string _displayText = null;
+
+        /// <summary>画面表示中テキストの絶対パス</summary>
+        /// 将来的にタブVMへ移管予定
+        private string _displayTextFilePath = null;
+
+        /// <summary>開いているファイル情報</summary>
+        /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
+        private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
 
         #endregion
 
@@ -30,7 +39,7 @@ namespace SynonyMe.ViewModel
         public string MainWindowTitle { get; } = "SynonyMe";
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
-        public int ToolbarHeight { get; } = 20;
+        public int ToolbarHeight { get; } = 40;
 
         /// <summary>フッター部分の高さ(固定値)</summary>
         public int FooterHeight { get; } = 30;
@@ -49,6 +58,12 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        #region command
+
+        public ICommand Command_Save { get; protected set; } = null;
+
+        #endregion
+
         #endregion
 
         #region method
@@ -63,6 +78,9 @@ namespace SynonyMe.ViewModel
         private void Initialize()
         {
             _model = new Model.MainWindowModel(this);
+
+            // コマンド初期化処理
+            Command_Save = new CommandBase(ExecuteSave, null);
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -95,10 +113,23 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException();
             }
 
-            if (_model.CanDrop(dropInfo))
+            if (_model.CanDrop(dropInfo) == false)
             {
-                DisplayText = _model.GetDisplayText(dropInfo);
+                return;
             }
+
+            // 将来的にはタブを分離させる必要があるので、そのための仮処置
+            List<string> displayTargetFilePaths = _model.GetDisplayTextFilePath(dropInfo);
+
+            // 現状、表示可能テキストは1つだけなので、0番目を使用する
+            _displayTextFilePath = displayTargetFilePaths[0];
+            DisplayText = _model.GetDisplayText(dropInfo)[0];
+        }
+
+
+        private void ExecuteSave(object parameter)
+        {
+            _model.Save(_displayTextFilePath, _displayText);
         }
 
         #endregion

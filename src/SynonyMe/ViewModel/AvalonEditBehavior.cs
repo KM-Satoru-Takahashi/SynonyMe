@@ -28,7 +28,9 @@ namespace SynonyMe.ViewModel
             set { SetValue(TextEditorProperty, value); }
         }
 
-
+        /// <summary>表示テキスト変更時に(入力・削除)動作するビヘイビア</summary>
+        /// <param name="sender"></param>
+        /// <param name="eventArgs"></param>
         private void AssociatedObjectOnTextChanged(object sender, EventArgs eventArgs)
         {
             TextEditor textEditor = sender as TextEditor;
@@ -74,7 +76,7 @@ namespace SynonyMe.ViewModel
             base.OnAttached();
             if (AssociatedObject != null)
             {
-
+                AssociatedObject.TextChanged += AssociatedObjectOnTextChanged;
             }
         }
 
@@ -83,7 +85,7 @@ namespace SynonyMe.ViewModel
             base.OnDetaching();
             if (AssociatedObject != null)
             {
-
+                AssociatedObject.TextChanged -= AssociatedObjectOnTextChanged;
             }
         }
 

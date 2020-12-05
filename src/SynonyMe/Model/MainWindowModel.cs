@@ -67,7 +67,7 @@ namespace SynonyMe.Model
         /// <summary>画面表示テキストを取得する</summary>
         /// <param name="dropInfo">ドロップされたファイル</param>
         /// <returns>画面表示テキスト情報</returns>
-        internal string GetDisplayText(IDropInfo dropInfo)
+        internal List<string> GetDisplayText(IDropInfo dropInfo)
         {
             if (dropInfo == null)
             {
@@ -82,22 +82,109 @@ namespace SynonyMe.Model
 
             // 現状、表示できるファイルは1つだけなので先頭のものを使用
             // filePathListのnull/AnyチェックはConbertDropInfoToPathList内で行っている
-            return GetTextFromFilePath(filePathList[0]);
+            return GetTextFromFilePath(filePathList);
+        }
+
+        /// <summary>表示対象ファイルのパス(絶対パス)を取得する</summary>
+        /// <param name="dropInfo">ドロップされたファイル情報</param>
+        /// <returns>対象ファイルの絶対パス</returns>
+        internal List<string> GetDisplayTextFilePath(IDropInfo dropInfo)
+        {
+            if (dropInfo == null)
+            {
+                return null;
+            }
+
+            List<string> filePathList = new List<string>();
+            if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
+            {
+                return null;
+            }
+
+            // 現状、表示できるファイルは1つだけなので先頭のものを使用
+            // filePathListのnull/AnyチェックはConbertDropInfoToPathList内で行っている
+            return filePathList;
+        }
+
+        /// <summary>渡されたファイル情報に基づいて保存処理を実行する</summary>
+        /// <param name="filePath">保存対象ファイルパス</param>
+        /// <param name="displayText">保存したいテキスト情報</param>
+        /// <returns>true:成功, false:失敗</returns>
+        internal bool Save(string filePath, string displayText)
+        {
+            if(string.IsNullOrEmpty(filePath) ||
+               string.IsNullOrEmpty(displayText))
+            {
+                return false;
+            }
+
+            TextEditor editor = new TextEditor();
+            try
+            {
+                editor.Load(filePath);
+                editor.Text = displayText;
+                editor.Save(filePath);
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>TextEditorを使用して与えられたファイルパスから読み込んだ文字列を返す</summary>
         /// <param name="filePath">読み込み対象のファイルパス</param>
         /// <returns>読み込んだファイルの全テキスト</returns>
-        private string GetTextFromFilePath(string filePath)
+        private List<string> GetTextFromFilePath(List<string> filePathList)
         {
-            if (string.IsNullOrEmpty(filePath))
+            if(filePathList == null || filePathList.Any()==false)
             {
                 return null;
             }
 
+            List<string> textList = new List<string>();
+            foreach(string filePath in filePathList)
+            {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    continue;
+                }
+
+                string text = null;
+                if(Load(filePath, out text))
+                {
+                    textList.Add(text);
+                }                
+            }
+
+            return textList;
+        }
+
+        /// <summary>渡されたファイルパスからテキストファイルを読み込む</summary>
+        /// <param name="filePath">読み込み対象のファイルパス</param>
+        /// <param name="text">読み込んだファイルの全テキスト</param>
+        /// <returns>true:成功, false:失敗</returns>
+        private bool Load(string filePath, out string text)
+        {
+            text = null;
+            if(string.IsNullOrEmpty(filePath))
+            {
+                return false;
+            }
+
             TextEditor textEditor = new TextEditor();
-            textEditor.Load(filePath);
-            return textEditor.Text;
+            try
+            {
+                textEditor.Load(filePath);
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+
+            text = textEditor.Text;
+            return true;
         }
 
         /// <summary>DropInfoをファイルパスのリストに変換する</summary>
