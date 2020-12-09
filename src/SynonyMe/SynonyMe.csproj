@@ -65,6 +65,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModel\SynonymWindowVM.cs" />
+    <Compile Include="View\SynonymWindow.xaml.cs">
+      <DependentUpon>SynonymWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -82,6 +86,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\SynonymWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -115,7 +123,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\back.png" />
-    <Resource Include="Resources\book.png" />
     <Resource Include="Resources\clock.png" />
     <Resource Include="Resources\color-palette.png" />
     <Resource Include="Resources\comment.png" />
@@ -146,6 +153,7 @@
     <Resource Include="Resources\tools.png" />
     <Resource Include="Resources\undo.png" />
     <Resource Include="Resources\user.png" />
+    <Resource Include="Resources\synonym.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

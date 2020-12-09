@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
+using SynonyMe.View;
+using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 
@@ -131,6 +133,13 @@ namespace SynonyMe.Model
             }
 
             return true;
+        }
+
+        /// <summary>類語ウィンドウを開く</summary>
+        internal void OpenSynonymWindow()
+        {
+            SynonymWindow synonymWindow = new SynonymWindow();
+            synonymWindow.ShowDialog(); 
         }
 
         /// <summary>TextEditorを使用して与えられたファイルパスから読み込んだ文字列を返す</summary>
