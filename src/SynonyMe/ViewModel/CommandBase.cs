@@ -10,19 +10,19 @@ namespace SynonyMe.ViewModel
     /// <summary>ボタン押下時のコマンド基底クラス</summary>
     internal class CommandBase : ICommand
     {
-        private static readonly Action<string> EmptyExecute = (param) => { };
+        private static readonly Action<object> EmptyExecute = (param) => { };
         private static readonly Func<bool> EmptyCanExecute = () => true;
 
-        private Action<string> execute;
+        private Action<object> execute;
         private Func<bool> canExecute;
 
-        public CommandBase(Action<string> execute, Func<bool> canExecute = null)
+        public CommandBase(Action<object> execute, Func<bool> canExecute = null)
         {
             this.execute = execute ?? EmptyExecute;
             this.canExecute = canExecute ?? EmptyCanExecute;
         }
 
-        public void Execute(string param = null)
+        public void Execute(object param = null)
         {
             this.execute(param);
         }
@@ -50,7 +50,7 @@ namespace SynonyMe.ViewModel
 
         void ICommand.Execute(object parameter)
         {
-            this.Execute(parameter as string);
+            this.Execute(parameter);
         }
     }
 

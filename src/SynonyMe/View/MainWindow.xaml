@@ -14,6 +14,8 @@
     <Window.Resources>
         <!--保存/Saveアイコン-->
         <Image x:Key="SaveIcon" Source="../Resources/save.png"/>
+        <!--類語ウィンドウアイコン-->
+        <Image x:Key="SynonymIcon" Source="../Resources/synonym.png"/>
     </Window.Resources>
     
     <!--VMにバインディング-->
@@ -39,6 +41,9 @@
             <ToolBar>
                 <!--保存/Saveアイコン-->
                 <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}">
+                </Button>
+                <!--類語追加アイコン-->
+                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}">                    
                 </Button>
             </ToolBar>
         </ToolBarTray>

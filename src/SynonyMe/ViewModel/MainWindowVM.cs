@@ -60,7 +60,11 @@ namespace SynonyMe.ViewModel
 
         #region command
 
+        /// <summary>保存ボタン</summary>
         public ICommand Command_Save { get; protected set; } = null;
+
+        /// <summary>類語コマンド</summary>
+        public ICommand Command_OpenSynonymWindow { get; protected set; } = null;
 
         #endregion
 
@@ -81,6 +85,7 @@ namespace SynonyMe.ViewModel
 
             // コマンド初期化処理
             Command_Save = new CommandBase(ExecuteSave, null);
+            Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -130,6 +135,12 @@ namespace SynonyMe.ViewModel
         private void ExecuteSave(object parameter)
         {
             _model.Save(_displayTextFilePath, _displayText);
+        }
+
+
+        private void ExecuteOpenSynonymWindow(object parameter)
+        {
+            _model.OpenSynonymWindow();
         }
 
         #endregion
