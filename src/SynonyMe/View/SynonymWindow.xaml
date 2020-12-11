@@ -7,13 +7,60 @@
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         mc:Ignorable="d"
         Title="{Binding SynonymWindowTitle}" Height="450" Width="800">
-    
+
     <!--VMとのバインディング-->
     <Window.DataContext>
         <vm:SynonymWindowVM/>
     </Window.DataContext>
-    
+
     <Grid>
-        
+        <!--Grid縦/列定義-->
+        <Grid.ColumnDefinitions>
+            <!--0:左側余白-->
+            <ColumnDefinition Width="40"/>
+            <!--1:類語グループリスト一覧表示部分開始-->
+            <ColumnDefinition Width="0.4*"/>
+            <!--2:追加ボタン-->
+            <ColumnDefinition Width="80"/>
+            <!--3:類語グループリストと類語一覧リストの余白部分-->
+            <ColumnDefinition Width="0.2*"/>
+            <!--編集ボタン～削除ボタンまでが類語一覧リスト-->
+            <!--4:編集ボタン-->
+            <ColumnDefinition Width="80"/>
+            <!--5:編集ボタンと削除ボタンの間の余白部分-->
+            <ColumnDefinition Width="0.2*"/>
+            <!--6:削除ボタン-->
+            <ColumnDefinition Width="80"/>
+            <!--7:右端余白-->
+            <ColumnDefinition Width="40"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Grid横/幅定義-->
+        <Grid.RowDefinitions>
+            <!--0:上側余白-->
+            <RowDefinition Height="30"/>
+            <!--ここから類語グループリスト開始-->
+            <!--1:追加日ラベル-->
+            <RowDefinition Height="30"/>
+            <!--2:更新日ラベル-->
+            <RowDefinition Height="30"/>
+            <!--3:更新日ラベルと類語一覧リスト間の余白-->
+            <RowDefinition Height="0.1*"/>
+            <!--4:類語一覧リスト-->
+            <RowDefinition Height="0.6*"/>
+            <!--類語グループリスト終わり-->
+            <!--5:下部ボタン間の余白-->
+            <RowDefinition Height=" 0.1*"/>
+            <!--6:追加、編集、削除ボタン高さ-->
+            <RowDefinition Height="40"/>
+            <!--7:閉じるボタンへの余白-->
+            <RowDefinition Height="0.1*"/>
+            <!--8:閉じるボタン高さ-->
+            <RowDefinition Height="40"/>
+            <!--9:下部余白-->
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
     </Grid>
+
+
 </Window>
