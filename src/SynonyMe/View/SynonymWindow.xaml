@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:SynonyMe.View"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         mc:Ignorable="d"
-        Title="{Binding SynonymWindowTitle}" Height="450" Width="800">
+        Title="{Binding SynonymWindowTitle}" Height="450" Width="950">
 
     <!--VMとのバインディング-->
     <Window.DataContext>
@@ -17,21 +17,33 @@
         <!--Grid縦/列定義-->
         <Grid.ColumnDefinitions>
             <!--0:左側余白-->
-            <ColumnDefinition Width="40"/>
-            <!--1:類語グループリスト一覧表示部分開始-->
-            <ColumnDefinition Width="0.4*"/>
-            <!--2:追加ボタン-->
+            <ColumnDefinition Width="30"/>
+            <!--1:類語グループリスト追加ボタン 更新日・追加日ラベル-->
             <ColumnDefinition Width="80"/>
-            <!--3:類語グループリストと類語一覧リストの余白部分-->
-            <ColumnDefinition Width="0.2*"/>
-            <!--編集ボタン～削除ボタンまでが類語一覧リスト-->
-            <!--4:編集ボタン-->
+            <!--2:更新日・登録日ラベル間の余白部分-->
+            <ColumnDefinition Width="30"/>
+            <!--3:更新日・登録日(実値) 編集ボタン-->
             <ColumnDefinition Width="80"/>
-            <!--5:編集ボタンと削除ボタンの間の余白部分-->
-            <ColumnDefinition Width="0.2*"/>
-            <!--6:削除ボタン-->
+            <!--4:類語グループリスト編集ボタンと類語グループリスト削除ボタン間余白-->
+            <ColumnDefinition Width="60"/>
+            <!--5:類語グループリスト削除ボタン-->
             <ColumnDefinition Width="80"/>
-            <!--7:右端余白-->
+            <!--6:類語グループリスト削除ボタンと、類語一覧リスト追加ボタン間の余白-->
+            <ColumnDefinition Width="120"/>
+            <!--追加ボタン～削除ボタンまでが類語一覧リスト-->
+            <!--7:類語一覧リスト追加ボタン 更新日・追加日ラベル-->
+            <ColumnDefinition Width="80"/>
+            <!--8:更新日・登録日ラベル間の余白部分-->
+            <ColumnDefinition Width="30"/>
+            <!--9:更新日・登録日(実値) 編集ボタン-->
+            <ColumnDefinition Width="80"/>
+            <!--10:編集ボタンと削除ボタン間余白-->
+            <ColumnDefinition Width="60"/>
+            <!--11:削除ボタン-->
+            <ColumnDefinition Width="80"/>
+            <!--12:閉じるボタン間余白-->
+            <ColumnDefinition Width="80"/>
+            <!--12:右端余白-->
             <ColumnDefinition Width="40"/>
         </Grid.ColumnDefinitions>
 
@@ -40,12 +52,12 @@
             <!--0:上側余白-->
             <RowDefinition Height="30"/>
             <!--ここから類語グループリスト開始-->
-            <!--1:追加日ラベル-->
-            <RowDefinition Height="30"/>
+            <!--1:登録日ラベル-->
+            <RowDefinition Height="40"/>
             <!--2:更新日ラベル-->
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="40"/>
             <!--3:更新日ラベルと類語一覧リスト間の余白-->
-            <RowDefinition Height="0.1*"/>
+            <RowDefinition Height="30"/>
             <!--4:類語一覧リスト-->
             <RowDefinition Height="0.6*"/>
             <!--類語グループリスト終わり-->
@@ -60,7 +72,82 @@
             <!--9:下部余白-->
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
+
+        <!--類語グループリスト登録日-->
+        <Label Grid.Column="1" Grid.Row="1" Content="{Binding RegistDate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label Grid.Column="3" Grid.Row="1" Content="ここに登録日を表示" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+
+        <!--類語グループリスト更新日-->
+        <Label Grid.Column="1" Grid.Row="2" Content="{Binding UpdateDate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label Grid.Column="3" Grid.Row="2" Content="ここに更新日を表示" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+
+        <!--類語グループリスト-->
+        <ListBox Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="4">
+            <ListBoxItem>
+                <Label Content="グループ1"/>
+            </ListBoxItem>
+            <ListBoxItem>
+                <Label Content="グループ2"/>
+            </ListBoxItem>
+            <ListBoxItem>
+                <Label Content="グループ3"/>
+            </ListBoxItem>
+        </ListBox>
+
+        <!--類語グループリスト追加ボタン-->
+        <Button Grid.Column="1" Grid.Row="6" Content="グループ登録" Command="{Binding Command_SynonymGroupRegist}">
+
+        </Button>
+
+        <Button Grid.Column="3" Grid.Row="6" Content="グループ編集" Command="{Binding Command_SynonymGroupEdit}">
+
+        </Button>
+
+        <Button Grid.Column="5" Grid.Row="6" Content="グループ削除" Command="{Binding Command_SynonymGroupDelete}">
+
+        </Button>
+
+        <!--類語一覧登録日-->
+        <Label Grid.Column="7" Grid.Row="1" Content="{Binding RegistDate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label Grid.Column="9" Grid.Row="1" Content="ここに登録日を表示" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+
+        <!--類語一覧更新日-->
+        <Label Grid.Column="7" Grid.Row="2" Content="{Binding UpdateDate}" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Label Grid.Column="9" Grid.Row="2" Content="ここに更新日を表示" VerticalContentAlignment="Center" HorizontalContentAlignment="Left"/>
+
+        <!--類語一覧リスト-->
+        <ListBox Grid.Column="7" Grid.ColumnSpan="5" Grid.Row="4">
+            <ListBoxItem>
+                <Label Content="類語1"/>
+            </ListBoxItem>
+            <ListBoxItem>
+                <Label Content="類語2"/>
+            </ListBoxItem>
+            <ListBoxItem>
+                <Label Content="類語3"/>
+            </ListBoxItem>
+        </ListBox>
+
+        <!--類語追加ボタン-->
+        <Button Grid.Column="7" Grid.Row="6" Content="類語登録">
+
+        </Button>
+
+        <!--編集ボタン-->
+        <Button Grid.Column="9" Grid.Row="6" Content="編集" Command="{Binding Command_SynonymItemEdit}">
+
+        </Button>
+
+        <!--削除ボタン-->
+        <Button Grid.Column="11" Grid.Row="6" Content="削除" Command="{Binding Command_SynonymItemDelete}">
+
+        </Button>
+
+        <!--閉じるボタン-->
+        <!--引数にWindowの情報を渡してあげる必要がある-->
+        <Button Grid.Column="12" Grid.Row="8" Content="閉じる" Command="{Binding Command_Close}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Window}}">
+
+        </Button>
+
     </Grid>
-
-
 </Window>

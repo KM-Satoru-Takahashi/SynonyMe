@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;   // DB
+using System.Windows.Input;
 
 namespace SynonyMe.ViewModel
 {
@@ -15,7 +16,35 @@ namespace SynonyMe.ViewModel
 
         #region property
 
+        /// <summary>タイトルテキスト</summary>
         public string SynonymWindowTitle { get; } = "Test";
+
+        /// <summary>類語グループリスト、類語一覧リストの「更新日：」テキスト</summary>
+        public string UpdateDate { get; } = "更新日：";
+
+        /// <summary>類語グループリスト、類語一覧リストの「追加日：」テキスト</summary>
+        public string RegistDate { get; } = "追加日：";
+
+        /// <summary>類語グループリスト登録コマンド</summary>
+        public ICommand Command_SynonymGroupRegist { get; protected set; } = null;
+
+        /// <summary>類語グループリスト編集コマンド</summary>
+        public ICommand Command_SynonymGroupEdit { get; protected set; } = null;
+
+        /// <summary>類語グループリスト削除コマンド</summary>
+        public ICommand Command_SynonymGroupDelete { get; protected set; } = null;
+
+        /// <summary>類語一覧リスト登録コマンド</summary>
+        public ICommand Command_SynonymItemRegist { get; protected set; } = null;
+
+        /// <summary>類語一覧リスト編集コマンド</summary>
+        public ICommand Command_SynonymItemEdit { get; protected set; } = null;
+
+        /// <summary>類語一覧リスト削除コマンド</summary>
+        public ICommand Command_SynonymItemDelete { get; protected set; } = null;
+
+        /// <summary>閉じるボタン押下時コマンド</summary>
+        public ICommand Command_Close { get; protected set; } = null;
 
         #endregion
 
@@ -52,9 +81,23 @@ namespace SynonyMe.ViewModel
             }
             */
 #endif
+
+            #region コマンド初期化
+
+            Command_Close = new CommandBase(ExecuteClose, null);
+
+            #endregion
+
+
         }
 
-#endregion
+
+        private void ExecuteClose(object parameter)
+        {
+            
+        }
+
+        #endregion
 
     }
 }

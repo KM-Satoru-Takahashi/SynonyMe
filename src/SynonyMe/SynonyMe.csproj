@@ -70,6 +70,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CommonLibrary\Define.cs" />
+    <Compile Include="Model\WindowManager.cs" />
     <Compile Include="ViewModel\SynonymWindowVM.cs" />
     <Compile Include="View\SynonymWindow.xaml.cs">
       <DependentUpon>SynonymWindow.xaml</DependentUpon>
@@ -123,9 +125,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Images\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Resource Include="Resources\back.png" />
     <Resource Include="Resources\clock.png" />
