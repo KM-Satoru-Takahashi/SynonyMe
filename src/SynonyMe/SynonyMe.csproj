@@ -71,6 +71,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CommonLibrary\Define.cs" />
+    <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\WindowManager.cs" />
     <Compile Include="ViewModel\SynonymWindowVM.cs" />
     <Compile Include="View\SynonymWindow.xaml.cs">

@@ -5,12 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;   // DB
 using System.Windows.Input;
+using SynonyMe.Model;
 
 namespace SynonyMe.ViewModel
 {
     public class SynonymWindowVM : ViewModelBase
     {
         #region field
+
+        /// <summary>model</summary>
+        SynonymWindowModel _model = null;
 
         #endregion
 
@@ -88,13 +92,18 @@ namespace SynonyMe.ViewModel
 
             #endregion
 
-
+            _model = new SynonymWindowModel(this);
         }
 
 
         private void ExecuteClose(object parameter)
         {
-            
+            if(_model == null)
+            {
+                throw new NullReferenceException("SynonymWindowModel is null");
+            }
+
+            _model.CloseSynonymWindow();   
         }
 
         #endregion
