@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.SQLite;   // DB
 using System.Windows.Input;
 using SynonyMe.Model;
+using System.Collections.ObjectModel;
 
 namespace SynonyMe.ViewModel
 {
@@ -23,11 +24,17 @@ namespace SynonyMe.ViewModel
         /// <summary>タイトルテキスト</summary>
         public string SynonymWindowTitle { get; } = "Test";
 
-        /// <summary>類語グループリスト、類語一覧リストの「更新日：」テキスト</summary>
-        public string UpdateDate { get; } = "更新日：";
+        /// <summary>類語グループリスト、類語一覧リストヘッダの「更新日」テキスト</summary>
+        public string HeaderUpdateDate { get; } = "更新日";
 
-        /// <summary>類語グループリスト、類語一覧リストの「追加日：」テキスト</summary>
-        public string RegistDate { get; } = "追加日：";
+        /// <summary>類語グループリスト、類語一覧リストヘッダの「追加日」テキスト</summary>
+        public string HeaderRegistDate { get; } = "追加日";
+
+        /// <summary>類語グループリストヘッダの「類語グループ名」テキスト</summary>
+        public string HeaderGroupName { get; } = "類語グループ名";
+
+        /// <summary>類語リストヘッダの「登録語」テキスト</summary>
+        public string HeaderSynonymWord { get; } = "登録語";
 
         /// <summary>類語グループリスト登録コマンド</summary>
         public ICommand Command_RegistSynonymGroup { get; protected set; } = null;
@@ -53,6 +60,14 @@ namespace SynonyMe.ViewModel
         /// <summary>類語グループ入力テキスト</summary>
         public string InputGroupWord { get; set; } = null;
 
+        /// <summary>類語入力テキスト</summary>
+        public string InputSynonymWord { get; set; } = null;
+
+        /// <summary>類語グループリスト一覧オブジェクト</summary>
+        public ObservableCollection<CommonLibrary.SynonymGroupEntity> SynonymGroups { get; set; } = null;
+
+        /// <summary>類語リスト一覧オブジェクト</summary>
+        public ObservableCollection<CommonLibrary.SynonymWordEntity> SynonymWords { get; set; } = null;
 
         #endregion
 
@@ -118,6 +133,14 @@ namespace SynonyMe.ViewModel
 
             #endregion
 
+            SynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>();
+            SynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>();
+
+            // debug
+            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 1, GroupName = "test1", GroupRegistDate = "20201215", GroupUpdateDate = "20201216" });
+            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 2, GroupName = "test2", GroupRegistDate = "20211215", GroupUpdateDate = "20211216" });
+            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 3, GroupName = "test3", GroupRegistDate = "20221215", GroupUpdateDate = "20221216" });
+
             _model = new SynonymWindowModel(this);
         }
 
@@ -161,7 +184,10 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteRegistSynonymItem(object parameter)
         {
-
+            if(string.IsNullOrEmpty(InputSynonymWord))
+            {
+                return;
+            }
         }
 
         /// <summary>類語編集コマンド</summary>
