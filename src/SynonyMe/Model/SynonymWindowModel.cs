@@ -29,7 +29,7 @@ namespace SynonyMe.Model
             _vm = vm;
         }
 
-
+        /// <summary>類語ウィンドウを閉じる処理</summary>
         internal void CloseSynonymWindow()
         {
             WindowManager.CloseSubWindow(CommonLibrary.Define.SubWindowName.SynonymWindow);

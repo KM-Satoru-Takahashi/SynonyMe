@@ -38,7 +38,7 @@ namespace SynonyMe.View
             base.OnSourceInitialized(e);
             IntPtr handle = new WindowInteropHelper(this).Handle;
             int style = GetWindowLong(handle, GWL_STYLE);
-            style = style & (~WS_SYSMENU);
+            style &= (~WS_SYSMENU);
             SetWindowLong(handle, GWL_STYLE, style);
         }
 
