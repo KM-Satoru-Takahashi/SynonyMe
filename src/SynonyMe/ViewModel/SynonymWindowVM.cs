@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data.SQLite;   // DB
 using System.Windows.Input;
 using SynonyMe.Model;
+using System.Data.SQLite;   // DB
 using System.Collections.ObjectModel;
 
 namespace SynonyMe.ViewModel
@@ -16,6 +16,15 @@ namespace SynonyMe.ViewModel
 
         /// <summary>model</summary>
         private SynonymWindowModel _model = null;
+
+        /// <summary>表示中の類語グループリスト</summary>
+        private ObservableCollection<CommonLibrary.SynonymGroupEntity> _displaySynonymGroup = null;
+
+        /// <summary>類語グループリストから選択した類語グループ</summary>
+        private ObservableCollection<CommonLibrary.SynonymWordEntity> _displaySynonymWords = null;
+
+        /// <summary>類語一覧リストから選択した類語</summary>
+        private CommonLibrary.SynonymWordEntity _selectSynonymWord = null;
 
         #endregion
 
@@ -46,16 +55,23 @@ namespace SynonyMe.ViewModel
         public ICommand Command_DeleteSynonymGroup { get; protected set; } = null;
 
         /// <summary>類語一覧リスト登録コマンド</summary>
-        public ICommand Command_RegistSynonymItem { get; protected set; } = null;
+        public ICommand Command_RegistSynonymWord { get; protected set; } = null;
 
         /// <summary>類語一覧リスト編集コマンド</summary>
-        public ICommand Command_EditSynonymItem { get; protected set; } = null;
+        public ICommand Command_EditSynonymWord { get; protected set; } = null;
 
         /// <summary>類語一覧リスト削除コマンド</summary>
-        public ICommand Command_DeleteSynonymItem { get; protected set; } = null;
+        public ICommand Command_DeleteSynonymWord { get; protected set; } = null;
 
         /// <summary>閉じるボタン押下時コマンド</summary>
         public ICommand Command_Close { get; protected set; } = null;
+
+        /// <summary>類語グループリストからグループ選択時の実行コマンド</summary>
+        /// <remarks>類語一覧リストに類語を表示させるために用いる</remarks>
+        public ICommand Command_SelectSynonymGroup { get; protected set; } = null;
+
+        /// <summary>類語一覧リストから類語選択時の実行コマンド</summary>
+        public ICommand Command_SelectSynonymWord { get; protected set; } = null;
 
         /// <summary>類語グループ入力テキスト</summary>
         public string InputGroupWord { get; set; } = null;
@@ -64,10 +80,32 @@ namespace SynonyMe.ViewModel
         public string InputSynonymWord { get; set; } = null;
 
         /// <summary>類語グループリスト一覧オブジェクト</summary>
-        public ObservableCollection<CommonLibrary.SynonymGroupEntity> SynonymGroups { get; set; } = null;
+        public ObservableCollection<CommonLibrary.SynonymGroupEntity> DisplaySynonymGroups
+        {
+            get
+            {
+                return _displaySynonymGroup;
+            }
+            set
+            {
+                _displaySynonymGroup = value;
+                OnPropertyChanged("DisplaySynonymGroups");
+            }
+        }
 
         /// <summary>類語リスト一覧オブジェクト</summary>
-        public ObservableCollection<CommonLibrary.SynonymWordEntity> SynonymWords { get; set; } = null;
+        public ObservableCollection<CommonLibrary.SynonymWordEntity> DisplaySynonymWords
+        {
+            get
+            {
+                return _displaySynonymWords;
+            }
+            set
+            {
+                _displaySynonymWords = value;
+                OnPropertyChanged("DisplaySynonymWords");
+            }
+        }
 
         #endregion
 
@@ -89,21 +127,20 @@ namespace SynonyMe.ViewModel
                 {
                     // SynonymGroup
                     cmd.CommandText = "CREATE TABLE IF NOT EXISTS SynonymGroup(" +
-                        "GroupID INTERGER PRIMARY KEY UNIQUE AUTOINCREMENT," +    // NOT NULLをつけるとIDをnullでの自動発番ができなくなる
+                        "GroupID INTERGER PRIMARY KEY ," +    // NOT NULLをつけるとIDをnullでの自動発番ができなくなる
                         "GroupName TEXT NOT NULL," +
                         "GroupRegistDate TEXT NOT NULL, " +
                         "GroupUpdateDate TEXT NOT NULL )";
                     cmd.ExecuteNonQuery();
 
-                    /* // 初回だけ
+                    // 初回だけ
                     string dataAddSql = "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('1','testGroup1', '20201214', '20201215') ; ";
                     dataAddSql += "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('2','testGroup2', '20201214', '20201215') ; ";
                     dataAddSql += "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('3','testGroup3', '20201214', '20201215') ; ";
 
                     cmd.CommandText = dataAddSql;
                     cmd.ExecuteNonQuery();
-                    */
-
+                    
                     // SynonymWord
                     cmd.CommandText = "CREATE TABLE IF NOT EXISTS SynonymWords( " +
                         "WordID INTERGER PRIMARY KEY UNIQUE NOT NULL," +
@@ -120,28 +157,28 @@ namespace SynonyMe.ViewModel
             }
 
 #endif
-
             #region コマンド初期化
 
+            Command_SelectSynonymGroup = new CommandBase(ExecuteSelectSynonymGroup, null);
             Command_RegistSynonymGroup = new CommandBase(ExecuteRegistSynonymGroup, null);
             Command_EditSynonymGroup = new CommandBase(ExecuteEditSynonymGroup, null);
             Command_DeleteSynonymGroup = new CommandBase(ExecuteDeleteSynonymGroup, null);
-            Command_RegistSynonymItem = new CommandBase(ExecuteRegistSynonymItem, null);
-            Command_EditSynonymItem = new CommandBase(ExecuteEditSynonymItem, null);
-            Command_DeleteSynonymItem = new CommandBase(ExecuteDeleteSynonymItem, null);
+            Command_SelectSynonymWord = new CommandBase(ExecuteSelectSynonymWord, null);
+            Command_RegistSynonymWord = new CommandBase(ExecuteRegistSynonymWord, null);
+            Command_EditSynonymWord = new CommandBase(ExecuteEditSynonymWord, null);
+            Command_DeleteSynonymWord = new CommandBase(ExecuteDeleteSynonymWord, null);
             Command_Close = new CommandBase(ExecuteClose, null);
 
             #endregion
 
-            SynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>();
-            SynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>();
-
             // debug
-            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 1, GroupName = "test1", GroupRegistDate = "20201215", GroupUpdateDate = "20201216" });
-            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 2, GroupName = "test2", GroupRegistDate = "20211215", GroupUpdateDate = "20211216" });
-            SynonymGroups.Add(new CommonLibrary.SynonymGroupEntity { GroupID = 3, GroupName = "test3", GroupRegistDate = "20221215", GroupUpdateDate = "20221216" });
+            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>();
 
             _model = new SynonymWindowModel(this);
+
+            // _modelをnewした直後なのでnullチェックはさすがに省略する
+            // DBから必要な情報を取得する
+            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
         }
 
         /// <summary>閉じるボタン押下時処理</summary>
@@ -165,7 +202,18 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteRegistSynonymGroup _model is null");
+            }
 
+            if (_model.RegistSynonymGroup(InputGroupWord) == false)
+            {
+                throw new Exception("ExecuteRegistSynonymGroup exception");
+            }
+
+            // 登録が正常に行われたなら、表示中の類語グループリストを更新する
+            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
         }
 
         /// <summary>類語グループリスト編集コマンド</summary>
@@ -182,9 +230,9 @@ namespace SynonyMe.ViewModel
 
         /// <summary>類語登録コマンド</summary>
         /// <param name="parameter"></param>
-        private void ExecuteRegistSynonymItem(object parameter)
+        private void ExecuteRegistSynonymWord(object parameter)
         {
-            if(string.IsNullOrEmpty(InputSynonymWord))
+            if (string.IsNullOrEmpty(InputSynonymWord))
             {
                 return;
             }
@@ -192,16 +240,121 @@ namespace SynonyMe.ViewModel
 
         /// <summary>類語編集コマンド</summary>
         /// <param name="parameter"></param>
-        private void ExecuteEditSynonymItem(object parameter)
+        private void ExecuteEditSynonymWord(object parameter)
         {
-
+            if (_selectSynonymWord == null)
+            {
+                return;
+            }
         }
 
         /// <summary>類語削除コマンド</summary>
         /// <param name="parameter"></param>
-        private void ExecuteDeleteSynonymItem(object parameter)
+        private void ExecuteDeleteSynonymWord(object parameter)
         {
 
+        }
+
+        /// <summary>類語グループ選択時実行コマンド</summary>
+        /// <param name="parameter">選択した類語グループ</param>
+        private void ExecuteSelectSynonymGroup(object parameter)
+        {
+            if (parameter == null)
+            {
+                return;
+            }
+
+            CommonLibrary.SynonymGroupEntity selectedGroup = ConvertParameterToSynonymGroupEntity(parameter);
+            if (selectedGroup == null)
+            {
+                return;
+            }
+
+            UpdateDisplaySynonymWords(selectedGroup.GroupID);
+        }
+
+        /// <summary>類語一覧リスト選択時実行コマンド</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSelectSynonymWord(object parameter)
+        {
+            if (parameter == null)
+            {
+                return;
+            }
+
+            CommonLibrary.SynonymWordEntity selectedWord = ConvertParameterToSynonymWordEntity(parameter);
+            if (selectedWord == null)
+            {
+                return;
+            }
+        }
+
+        /// <summary>表示中の類語一覧リストを更新する</summary>
+        /// <param name="groupID">表示対象となる類語一覧リストのグループID</param>
+        private void UpdateDisplaySynonymWords(int groupID)
+        {
+            CommonLibrary.SynonymWordEntity[] synonymWordsArray = _model.GetSynonymWordEntities(groupID);
+            if (synonymWordsArray == null || synonymWordsArray.Any() == false)
+            {
+                // nullまたは空の配列の場合、表示を空にする
+                DisplaySynonymWords = null;
+                return;
+            }
+
+            List<CommonLibrary.SynonymWordEntity> synonymWords = synonymWordsArray.ToList();
+            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>(synonymWords);
+        }
+
+        /// <summary>類語グループリストの選択(SelectedItemCollection)を、SynonymGroupEntity形式に変換する</summary>
+        /// <param name="parameter">選択状態の引数(型:SelectedItemCollection)</param>
+        /// <returns>変換後のSynonymGroupEntity</returns>
+        private CommonLibrary.SynonymGroupEntity ConvertParameterToSynonymGroupEntity(object parameter)
+        {
+            if (parameter == null)
+            {
+                return null;
+            }
+
+            System.Collections.IList selectedItem = (System.Collections.IList)parameter;
+            if (selectedItem == null || selectedItem.Count < 1)
+            {
+                return null;
+            }
+
+            var selectedSynonymGroup = selectedItem.Cast<CommonLibrary.SynonymGroupEntity>();
+            if (selectedSynonymGroup == null || selectedSynonymGroup.Any() == false)
+            {
+                return null;
+            }
+
+            // 常に0番目の要素を返す(1つのみ選択することが前提なので)
+            return selectedSynonymGroup.FirstOrDefault();
+        }
+
+        /// <summary>類語リストの選択(SelectedItemCollection)をSynonymWordEntity形式に変換する</summary>
+        /// <param name="parameter">選択状態の引数(型:SelectedItemCollection)</param>
+        /// <returns>変換後のSynonymWordEntity</returns>
+        private CommonLibrary.SynonymWordEntity ConvertParameterToSynonymWordEntity(object parameter)
+        {
+            if (parameter == null)
+            {
+                return null;
+            }
+
+            System.Collections.IList selectedItem = (System.Collections.IList)parameter;
+            if (selectedItem == null || selectedItem.Count < 1)
+            {
+                return null;
+            }
+
+            var selectedSynonymWord = selectedItem.Cast<CommonLibrary.SynonymWordEntity>();
+            if (selectedSynonymWord == null || selectedSynonymWord.Any() == false)
+            {
+                return null;
+            }
+
+            // 常に0番目の要素を返す(1つのみ選択することが前提なので)
+            return selectedSynonymWord.FirstOrDefault();
         }
         #endregion
 

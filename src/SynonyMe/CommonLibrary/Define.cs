@@ -9,6 +9,9 @@ namespace SynonyMe.CommonLibrary
     /// <summary>固定値やenum設定クラス</summary>
     internal static class Define
     {
+        /// <summary>SynonyMeで使用するDBファイル名(含:拡張子)</summary>
+        internal const string DB_NAME = "SynonymData.db";
+
         /// <summary>各種サブウィンドウ名</summary>
         internal enum SubWindowName
         {

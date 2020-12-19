@@ -11,7 +11,7 @@ namespace SynonyMe.CommonLibrary
     {
         public int WordID { get; set; }
 
-        public int SynonymID { get; set; }
+        public int GroupID { get; set; }
 
         public string Word { get; set; }
 

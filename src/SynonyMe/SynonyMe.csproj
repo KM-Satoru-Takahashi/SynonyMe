@@ -73,6 +73,7 @@
     <Compile Include="CommonLibrary\Define.cs" />
     <Compile Include="CommonLibrary\SynonymGroupEntity.cs" />
     <Compile Include="CommonLibrary\SynonymWordEntity.cs" />
+    <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />
     <Compile Include="ViewModel\SynonymWindowVM.cs" />

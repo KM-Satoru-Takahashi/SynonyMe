@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SynonyMe.View"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
+        xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
         Title="{Binding SynonymWindowTitle}" Height="450" Width="900">
 
@@ -70,7 +71,12 @@
         </Grid.RowDefinitions>
 
         <!--類語グループリスト-->
-        <ListView Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding SynonymGroups}">
+        <ListView Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding DisplaySynonymGroups}" x:Name="SynonymGroupList">
+            <bh:Interaction.Triggers>
+                <bh:EventTrigger EventName="SelectionChanged">
+                    <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymGroup}" CommandParameter="{Binding SelectedItems, ElementName=SynonymGroupList}"/>
+                </bh:EventTrigger>
+            </bh:Interaction.Triggers>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="{Binding HeaderGroupName}" DisplayMemberBinding="{Binding GroupName}"/>
@@ -96,7 +102,12 @@
         </Button>
 
         <!--類語一覧リスト-->
-        <ListView Grid.Column="7" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding SynonymWords}">
+        <ListView Grid.Column="7" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding DisplaySynonymWords}" x:Name="SynonymWordList">
+            <bh:Interaction.Triggers>
+                <bh:EventTrigger EventName="SelectionChanged">
+                    <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymWord}" CommandParameter="{Binding SelectedItems, ElementName=SynonymWordList}"/>
+                </bh:EventTrigger>
+            </bh:Interaction.Triggers>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="{Binding HeaderSynonymWord}" DisplayMemberBinding="{Binding Word}"/>
@@ -107,7 +118,7 @@
         </ListView>
 
         <!--類語登録ボタン-->
-        <Button Grid.Column="7" Grid.Row="3" Content="類語登録" Command="{Binding Command_RegistSynonymItem}">
+        <Button Grid.Column="7" Grid.Row="3" Content="類語登録" Command="{Binding Command_RegistSynonymWord}">
 
         </Button>
 
@@ -115,12 +126,12 @@
         <TextBox Grid.Column="9" Grid.ColumnSpan="3" Grid.Row="3" Text="{Binding InputSynonymWord}"/>
 
         <!--編集ボタン-->
-        <Button Grid.Column="9" Grid.Row="5" Content="編集" Command="{Binding Command_EditSynonymItem}">
+        <Button Grid.Column="9" Grid.Row="5" Content="編集" Command="{Binding Command_EditSynonymWord}">
 
         </Button>
 
         <!--削除ボタン-->
-        <Button Grid.Column="11" Grid.Row="5" Content="削除" Command="{Binding Command_DeleteSynonymItem}">
+        <Button Grid.Column="11" Grid.Row="5" Content="削除" Command="{Binding Command_DeleteSynonymWord}">
 
         </Button>
 
