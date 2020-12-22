@@ -42,55 +42,48 @@ namespace SynonyMe.Model
         /// <returns>IDと一致する全類語</returns>
         internal CommonLibrary.SynonymWordEntity[] GetSynonymWordEntities(int groupID)
         {
-            // todo : DB access
-
-            // mock
-            CommonLibrary.SynonymWordEntity test1 = new CommonLibrary.SynonymWordEntity
-            {
-                RegistDate = "20201218",
-                GroupID = 1,
-                UpdateDate = "20201219",
-                WordID = 1,
-                Word = "groupID:" + groupID + "Test1"
-            };
-
-            CommonLibrary.SynonymWordEntity test2 = new CommonLibrary.SynonymWordEntity
-            {
-                RegistDate = "20201218",
-                GroupID = 1,
-                UpdateDate = "20201219",
-                WordID = 1,
-                Word = "groupID:" + groupID + "Test2"
-            };
-
-            CommonLibrary.SynonymWordEntity[] testArray = new CommonLibrary.SynonymWordEntity[]
-            {
-                test1,test2
-            };
-
-            return testArray;
-        }
-
-        /// <summary>類語グループリストの一覧を取得する</summary>
-        /// <returns>DBに登録されている全類語グループリスト</returns>
-        internal List<CommonLibrary.SynonymGroupEntity> GetAllSynonymGroup()
-        {
             Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME);
-            if(dBManager == null)
+            if (dBManager == null)
             {
                 return null;
             }
 
-            CommonLibrary.SynonymGroupEntity[] synonymGroupArray = null;
-            dBManager.ExecuteQuery("SELECT * FROM SynonymGroup;", out synonymGroupArray);
-            if(synonymGroupArray==null)
+            string getTargetSynonymWord =
+                $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE GroupID == {groupID} ;";
+
+            CommonLibrary.SynonymWordEntity[] synonymWords = null;
+            dBManager.GetTargetSynonymWords(getTargetSynonymWord, out synonymWords);
+            if (synonymWords == null)
             {
-                // 無登録の場合は空リストを返せば良い？
-                // もしnullでないならnewしなくていいので、要調査
-                return new List<CommonLibrary.SynonymGroupEntity>();
+                // 無登録の場合はnullなので異常とは言えないため、素直にnullを返す
+                return null;
             }
 
-            return synonymGroupArray.ToList();
+            return synonymWords;
+        }
+
+        /// <summary>類語グループリストの一覧を取得する</summary>
+        /// <returns>DBに登録されている全類語グループリスト</returns>
+        internal CommonLibrary.SynonymGroupEntity[] GetAllSynonymGroup()
+        {
+            Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME);
+            if (dBManager == null)
+            {
+                return null;
+            }
+
+            CommonLibrary.SynonymGroupEntity[] synonymGroups = null;
+            string GET_ALL_SYNONYMGROUP =
+                $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} ;";
+
+            dBManager.GetTargetSynonymGroups(GET_ALL_SYNONYMGROUP, out synonymGroups);
+            if (synonymGroups == null)
+            {
+                // 無登録の場合はnullを返す
+                return null;
+            }
+
+            return synonymGroups;
         }
 
         /// <summary>類語グループリスト登録</summary>
@@ -98,13 +91,13 @@ namespace SynonyMe.Model
         /// <returns>正常時true, 異常時false</returns>
         internal bool RegistSynonymGroup(string groupName)
         {
-            if(string.IsNullOrEmpty(groupName))
+            if (string.IsNullOrEmpty(groupName))
             {
                 return false;
             }
 
             Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME);
-            if(dBManager==null)
+            if (dBManager == null)
             {
                 return false;
             }
@@ -113,14 +106,50 @@ namespace SynonyMe.Model
             string updateDate = GetTodayDate();
 
             // GroupIDはDBの方で割り振ってくれるので指定しない
-            string registGroupSql = string.Format("INSERT INTO SynonymGroup (GroupName, GroupRegistDate, GroupUpdateDate) values ('{0}', '{1}', '{2}' ) ; ", groupName, registDate, updateDate);
+            string registGroupSql = 
+                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} (GroupName, GroupRegistDate, GroupUpdateDate) values ('{groupName}', '{registDate}', '{updateDate}' ) ; ";
 
             dBManager.ExecuteNonQuery(registGroupSql);
 
             return true;
         }
 
+        /// <summary>類語登録を行う</summary>
+        /// <param name="synonymWord">登録対象語句</param>
+        /// <param name="groupID">登録対象のグループID</param>
+        /// <returns>成功:true, 失敗:false</returns>
+        internal bool RegistSynonymWord(string synonymWord, int groupID)
+        {
+            if(string.IsNullOrEmpty(synonymWord))
+            {
+                return false;
+            }
 
+            if(groupID < CommonLibrary.Define.MIN_GROUPID)
+            {
+                throw new SQLiteException($"GroupID is {groupID}");
+            }
+
+            string registDate = GetTodayDate();
+            string updateDate = GetTodayDate();
+
+            // WordIDはDBの方で割り振ってくれるので指定しない
+            string registWordSql =
+                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} (GroupID, Word, RegistDate, UpdateDate) values ('{groupID}', '{synonymWord}', '{registDate}', '{updateDate}' ) ; ";
+
+            Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME);
+            if (dBManager == null)
+            {
+                return false;
+            }
+
+            dBManager.ExecuteNonQuery(registWordSql);
+
+            return true;
+        }
+
+        /// <summary>現在日時をyyyy/MM/dd形式で取得する</summary>
+        /// <returns></returns>
         private string GetTodayDate()
         {
             return DateTime.Now.ToString("yyyy/MM/dd");

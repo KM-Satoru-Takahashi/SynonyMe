@@ -79,6 +79,12 @@ namespace SynonyMe.ViewModel
         /// <summary>類語入力テキスト</summary>
         public string InputSynonymWord { get; set; } = null;
 
+        /// <summary>選択中の類語グループリスト</summary>
+        public CommonLibrary.SynonymGroupEntity SelectedGroup { get; set; } = null;
+
+        /// <summary>選択中の類語</summary>
+        public CommonLibrary.SynonymWordEntity SelectedWord { get; set; } = null;
+
         /// <summary>類語グループリスト一覧オブジェクト</summary>
         public ObservableCollection<CommonLibrary.SynonymGroupEntity> DisplaySynonymGroups
         {
@@ -127,24 +133,24 @@ namespace SynonyMe.ViewModel
                 {
                     // SynonymGroup
                     cmd.CommandText = "CREATE TABLE IF NOT EXISTS SynonymGroup(" +
-                        "GroupID INTERGER PRIMARY KEY ," +    // NOT NULLをつけるとIDをnullでの自動発番ができなくなる
+                        "GroupID INTEGER PRIMARY KEY UNIQUE NOT NULL," +
                         "GroupName TEXT NOT NULL," +
                         "GroupRegistDate TEXT NOT NULL, " +
                         "GroupUpdateDate TEXT NOT NULL )";
                     cmd.ExecuteNonQuery();
 
                     // 初回だけ
-                    string dataAddSql = "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('1','testGroup1', '20201214', '20201215') ; ";
-                    dataAddSql += "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('2','testGroup2', '20201214', '20201215') ; ";
-                    dataAddSql += "INSERT INTO SynonymGroup (GroupID, GroupName, GroupRegistDate, GroupUpdateDate) values ('3','testGroup3', '20201214', '20201215') ; ";
+                    string dataAddSql = "INSERT INTO SynonymGroup (GroupName, GroupRegistDate, GroupUpdateDate) values ('testGroup1', '2020/12/14', '2020/12/15') ; ";
+                    dataAddSql += "INSERT INTO SynonymGroup (GroupName, GroupRegistDate, GroupUpdateDate) values ('testGroup2', '2020/12/14', '2020/12/16') ; ";
+                    dataAddSql += "INSERT INTO SynonymGroup (GroupName, GroupRegistDate, GroupUpdateDate) values ('testGroup3', '2020/12/25', '2020/12/15') ; ";
 
                     cmd.CommandText = dataAddSql;
                     cmd.ExecuteNonQuery();
-                    
+
                     // SynonymWord
                     cmd.CommandText = "CREATE TABLE IF NOT EXISTS SynonymWords( " +
-                        "WordID INTERGER PRIMARY KEY UNIQUE NOT NULL," +
-                        "GroupID INTERGER, " +
+                        "WordID INTEGER PRIMARY KEY UNIQUE NOT NULL," +
+                        "GroupID INTEGER, " +
                         "Word TEXT NOT NULL, " +
                         "RegistDate TEXT NOT NULL, " +
                         "UpdateDate TEXT NOT NULL, " +
@@ -153,6 +159,12 @@ namespace SynonyMe.ViewModel
 
                     cmd.ExecuteNonQuery();
 
+                    string dataAddSql2 = "INSERT INTO SynonymWords (GroupID, Word, RegistDate, UpdateDate) values ('1', 'test001-1', '2020/12/21', '2020/12/22');";
+                    dataAddSql2 += "INSERT INTO SynonymWords (GroupID, Word, RegistDate, UpdateDate) values ('1', 'test001-2', '2020/12/23', '2020/12/26');";
+                    dataAddSql2 += "INSERT INTO SynonymWords (GroupID, Word, RegistDate, UpdateDate) values ('2', 'test002-1', '2020/12/23', '2020/12/27');";
+
+                    cmd.CommandText = dataAddSql2;
+                    cmd.ExecuteNonQuery();
                 }
             }
 
@@ -171,14 +183,10 @@ namespace SynonyMe.ViewModel
 
             #endregion
 
-            // debug
-            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>();
-
             _model = new SynonymWindowModel(this);
 
-            // _modelをnewした直後なのでnullチェックはさすがに省略する
             // DBから必要な情報を取得する
-            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
+            UpdateDisplaySynonymGroups();
         }
 
         /// <summary>閉じるボタン押下時処理</summary>
@@ -213,7 +221,7 @@ namespace SynonyMe.ViewModel
             }
 
             // 登録が正常に行われたなら、表示中の類語グループリストを更新する
-            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
+            UpdateDisplaySynonymGroups();
         }
 
         /// <summary>類語グループリスト編集コマンド</summary>
@@ -232,10 +240,23 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteRegistSynonymWord(object parameter)
         {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteRegisySynonymWord _model is null");
+            }
+
             if (string.IsNullOrEmpty(InputSynonymWord))
             {
                 return;
             }
+
+            if (SelectedGroup == null)
+            {
+                return;
+            }
+
+            _model.RegistSynonymWord(InputSynonymWord, SelectedGroup.GroupID);
+            UpdateDisplaySynonymWords(SelectedGroup.GroupID);
         }
 
         /// <summary>類語編集コマンド</summary>
@@ -270,6 +291,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            SelectedGroup = selectedGroup;
             UpdateDisplaySynonymWords(selectedGroup.GroupID);
         }
 
@@ -293,16 +315,23 @@ namespace SynonyMe.ViewModel
         /// <param name="groupID">表示対象となる類語一覧リストのグループID</param>
         private void UpdateDisplaySynonymWords(int groupID)
         {
-            CommonLibrary.SynonymWordEntity[] synonymWordsArray = _model.GetSynonymWordEntities(groupID);
-            if (synonymWordsArray == null || synonymWordsArray.Any() == false)
+            if (_model == null)
             {
-                // nullまたは空の配列の場合、表示を空にする
-                DisplaySynonymWords = null;
-                return;
+                throw new NullReferenceException("UpdateDisplaySynonymWords _model is null");
             }
 
-            List<CommonLibrary.SynonymWordEntity> synonymWords = synonymWordsArray.ToList();
-            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>(synonymWords);
+            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>(_model.GetSynonymWordEntities(groupID));
+        }
+
+        /// <summary>表示中の類語グループリストを更新する</summary>
+        private void UpdateDisplaySynonymGroups()
+        {
+            if (_model == null)
+            {
+                throw new NullReferenceException("UpdateDisplaySynonymGroups _model is null");
+            }
+
+            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
         }
 
         /// <summary>類語グループリストの選択(SelectedItemCollection)を、SynonymGroupEntity形式に変換する</summary>
