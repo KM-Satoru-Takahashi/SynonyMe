@@ -138,7 +138,7 @@ namespace SynonyMe.Model
         /// <summary>類語ウィンドウを開く</summary>
         internal void OpenSynonymWindow()
         {
-            WindowManager.OpenSubWindow(CommonLibrary.Define.SubWindowName.SynonymWindow);
+            Manager.WindowManager.OpenSubWindow(CommonLibrary.Define.SubWindowName.SynonymWindow);
         }
 
         /// <summary>TextEditorを使用して与えられたファイルパスから読み込んだ文字列を返す</summary>

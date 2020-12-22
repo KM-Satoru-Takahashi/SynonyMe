@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SynonyMe.Model;
-using System.Data.SQLite;   // DB
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace SynonyMe.ViewModel
 {
@@ -225,12 +225,32 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>類語グループリスト編集コマンド</summary>
-        /// <param name="parameter"></param>
+        /// <param name="parameter">編集中の行[SynonymGroupEntity]</param>
         private void ExecuteEditSynonymGroup(object parameter)
         {
+            if (parameter == null)
+            {
+                return;
+            }
 
+            CommonLibrary.SynonymGroupEntity targetGroup = (CommonLibrary.SynonymGroupEntity)parameter;
+            if (targetGroup == null)
+            {
+                return;
+            }
+
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteEditSynonymGroup _model is null");
+            }
+
+            _model.UpdateSynonymGroup(targetGroup.GroupID, targetGroup.GroupName);
+
+            UpdateDisplayGroupsAndWords(targetGroup.GroupID);
         }
 
+        /// <summary>選択類語グループ削除コマンド</summary>
+        /// <param name="parameter"></param>
         private void ExecuteDeleteSynonymGroup(object parameter)
         {
 
@@ -256,18 +276,37 @@ namespace SynonyMe.ViewModel
             }
 
             _model.RegistSynonymWord(InputSynonymWord, SelectedGroup.GroupID);
-            UpdateDisplaySynonymWords(SelectedGroup.GroupID);
+
+            // 所属する類語グループの更新日を更新する
+            _model.UpdateSynonymGroup(SelectedGroup.GroupID);
+
+            UpdateDisplayGroupsAndWords(SelectedGroup.GroupID);
         }
 
         /// <summary>類語編集コマンド</summary>
-        /// <param name="parameter"></param>
+        /// <param name="parameter">RoutedEventArgs:類語リストでのテキストボックス入力値</param>
         private void ExecuteEditSynonymWord(object parameter)
         {
-            if (_selectSynonymWord == null)
+            CommonLibrary.SynonymWordEntity targetEntity = (CommonLibrary.SynonymWordEntity)parameter;
+            if (targetEntity == null)
             {
                 return;
             }
+
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteEditSynonymWord _model is null");
+            }
+
+            _model.UpdateSynonymWord(targetEntity.WordID, targetEntity.Word);
+
+            // 所属する類語グループの更新日を更新する
+            _model.UpdateSynonymGroup(targetEntity.GroupID);
+
+            // 画面表示の更新 ここで実行してしまうと、類語グループをクリックしたときに1クリックで遷移できなくなる(OnPropertyChangedで画面側の更新が走るため)
+            // UpdateDisplayGroupsAndWords(targetEntity.GroupID);
         }
+
 
         /// <summary>類語削除コマンド</summary>
         /// <param name="parameter"></param>
@@ -309,6 +348,16 @@ namespace SynonyMe.ViewModel
             {
                 return;
             }
+
+            _selectSynonymWord = selectedWord;
+        }
+
+        /// <summary>類語グループと類語リストをともに更新する</summary>
+        /// <param name="groupID"></param>
+        private void UpdateDisplayGroupsAndWords(int groupID)
+        {
+            UpdateDisplaySynonymGroups();
+            UpdateDisplaySynonymWords(groupID);
         }
 
         /// <summary>表示中の類語一覧リストを更新する</summary>
@@ -385,6 +434,8 @@ namespace SynonyMe.ViewModel
             // 常に0番目の要素を返す(1つのみ選択することが前提なので)
             return selectedSynonymWord.FirstOrDefault();
         }
+
+
         #endregion
 
     }
