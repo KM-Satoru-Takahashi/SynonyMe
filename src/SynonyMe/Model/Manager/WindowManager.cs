@@ -8,7 +8,7 @@ using SynonyMe.View;
 using System.Windows;
 
 
-namespace SynonyMe.Model
+namespace SynonyMe.Model.Manager
 {
     /// <summary>サブウィンドウの生成・削除関連の処理を行うクラス</summary>
     internal static class WindowManager
@@ -45,7 +45,7 @@ namespace SynonyMe.Model
         /// <summary>類語登録ウィンドウを開く</summary>
         private static void CreateSynonymWindow()
         {
-            if (_displaySubWindowList.Any(w=>w.SubWindowName == Define.SubWindowName.SynonymWindow))
+            if (_displaySubWindowList.Any(w => w.SubWindowName == Define.SubWindowName.SynonymWindow))
             {
                 // 既に開かれているなら何もせず戻る
                 return;
@@ -68,10 +68,24 @@ namespace SynonyMe.Model
             }
 
             SubWindowData targetWindowData = _displaySubWindowList.Find(w => w.SubWindowName == targetWindow);
-            if(targetWindowData.Window != null)
+            if (targetWindowData.Window != null)
             {
+                _displaySubWindowList.Remove(targetWindowData);
                 targetWindowData.Window.Close();
             }
+        }
+
+        /// <summary>表示中のWindowを取得する</summary>
+        /// <param name="windowName"></param>
+        /// <returns></returns>
+        internal static Window GetWindow(Define.SubWindowName windowName)
+        {
+            if(_displaySubWindowList == null || _displaySubWindowList.Any()==false)
+            {
+                return null;
+            }
+
+            return _displaySubWindowList.Find(w => w.SubWindowName == windowName).Window;
         }
 
         #endregion

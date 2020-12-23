@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SynonyMe.Model;
-using System.Data.SQLite;   // DB
 using System.Collections.ObjectModel;
+using System.Windows;
 
 namespace SynonyMe.ViewModel
 {
@@ -84,6 +84,8 @@ namespace SynonyMe.ViewModel
 
         /// <summary>選択中の類語</summary>
         public CommonLibrary.SynonymWordEntity SelectedWord { get; set; } = null;
+
+        public string TEST { get; set; } = "TEST";
 
         /// <summary>類語グループリスト一覧オブジェクト</summary>
         public ObservableCollection<CommonLibrary.SynonymGroupEntity> DisplaySynonymGroups
@@ -260,14 +262,23 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>類語編集コマンド</summary>
-        /// <param name="parameter"></param>
+        /// <param name="parameter">RoutedEventArgs:類語リストでのテキストボックス入力値</param>
         private void ExecuteEditSynonymWord(object parameter)
         {
-            if (_selectSynonymWord == null)
+            CommonLibrary.SynonymWordEntity targetEntity = (CommonLibrary.SynonymWordEntity)parameter;
+            if (targetEntity == null)
             {
                 return;
             }
+
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteEditSynonymWord _model is null");
+            }
+
+            _model.UpdateSynonymWord(targetEntity.WordID, targetEntity.Word);
         }
+
 
         /// <summary>類語削除コマンド</summary>
         /// <param name="parameter"></param>
@@ -309,6 +320,8 @@ namespace SynonyMe.ViewModel
             {
                 return;
             }
+
+            _selectSynonymWord = selectedWord;
         }
 
         /// <summary>表示中の類語一覧リストを更新する</summary>
@@ -385,6 +398,8 @@ namespace SynonyMe.ViewModel
             // 常に0番目の要素を返す(1つのみ選択することが前提なので)
             return selectedSynonymWord.FirstOrDefault();
         }
+
+
         #endregion
 
     }

@@ -21,6 +21,9 @@ namespace SynonyMe.CommonLibrary
         /// <summary>グループIDの最小値</summary>
         internal const int MIN_GROUPID = 1;
 
+        /// <summary>類語IDの最小値</summary>
+        internal const int MIN_WORDID = 1;
+
         /// <summary>データ登録・更新・削除実行時の成功閾値</summary>
         internal const int EXECUTE_NONQUERY_SUCCESSED = 1;
 
