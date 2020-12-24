@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="{Binding SynonymWindowTitle}" Height="450" Width="900">
+        Title="{Binding SynonymWindowTitle}" Height="350" Width="750">
 
     <!--VMとのバインディング-->
     <Window.DataContext>
@@ -23,21 +23,21 @@
             <ColumnDefinition Width="70"/>
             <!--2:類語グループ登録・編集ボタン間の余白部分-->
             <ColumnDefinition Width="20"/>
-            <!--3:編集ボタン-->
-            <ColumnDefinition Width="70"/>
+            <!--3:類語グループリストの可変幅-->
+            <ColumnDefinition Width="*"/>
             <!--4:類語グループリスト編集ボタンと類語グループリスト削除ボタン間余白-->
             <ColumnDefinition Width="40"/>
             <!--5:類語グループリスト削除ボタン-->
             <ColumnDefinition Width="70"/>
             <!--6:類語グループリスト削除ボタンと、類語一覧リスト登録ボタン間の余白-->
-            <ColumnDefinition Width="120"/>
+            <ColumnDefinition Width="70"/>
             <!--登録ボタン～削除ボタンまでが類語一覧リスト-->
             <!--7:類語一覧リスト登録ボタン-->
             <ColumnDefinition Width="70"/>
             <!--8:類語登録ボタンと編集ボタン間の余白部分-->
             <ColumnDefinition Width="20"/>
-            <!--9:編集ボタン-->
-            <ColumnDefinition Width="70"/>
+            <!--9:類語リストの可変幅-->
+            <ColumnDefinition Width="*"/>
             <!--10:編集ボタンと削除ボタン間余白-->
             <ColumnDefinition Width="40"/>
             <!--11:削除ボタン-->
@@ -45,7 +45,7 @@
             <!--12:削除ボタンと閉じるボタン間余白-->
             <ColumnDefinition Width="40"/>
             <!--13:閉じるボタン-->
-            <ColumnDefinition Width="80"/>
+            <ColumnDefinition Width="70"/>
             <!--14:右端余白-->
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
@@ -56,7 +56,7 @@
             <RowDefinition Height="20"/>
             <!--ここから類語グループリスト開始-->
             <!--1:類語一覧リスト-->
-            <RowDefinition Height="130"/>
+            <RowDefinition Height="*"/>
             <!--類語グループリスト終わり-->
             <!--2:下部ボタン間の余白-->
             <RowDefinition Height="30"/>
@@ -138,12 +138,7 @@
         <Button Grid.Column="1" Grid.Row="3" Content="グループ登録" Command="{Binding Command_RegistSynonymGroup}"/>
 
         <!--類語グループリスト入力窓-->
-        <TextBox Grid.Column="3" Grid.Row="3" Grid.ColumnSpan="3" Text="{Binding InputGroupWord}"/>
-
-        <!--類語グループリスト編集ボタン-->
-        <Button Grid.Column="3" Grid.Row="5" Content="グループ編集" Command="{Binding Command_EditSynonymGroup}">
-
-        </Button>
+        <TextBox Grid.Column="3" Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding InputGroupWord}"/>
 
         <Button Grid.Column="5" Grid.Row="5" Content="グループ削除" Command="{Binding Command_DeleteSynonymGroup}">
 
@@ -220,12 +215,7 @@
         </Button>
 
         <!--類語登録窓-->
-        <TextBox Grid.Column="9" Grid.ColumnSpan="3" Grid.Row="3" Text="{Binding InputSynonymWord}"/>
-
-        <!--編集ボタン-->
-        <Button Grid.Column="9" Grid.Row="5" Content="編集" Command="{Binding Command_EditSynonymWord}">
-
-        </Button>
+        <TextBox Grid.Column="9" Grid.ColumnSpan="2" Grid.Row="3" Text="{Binding InputSynonymWord}"/>
 
         <!--削除ボタン-->
         <Button Grid.Column="11" Grid.Row="5" Content="削除" Command="{Binding Command_DeleteSynonymWord}">

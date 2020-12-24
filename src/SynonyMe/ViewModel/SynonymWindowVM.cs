@@ -85,8 +85,6 @@ namespace SynonyMe.ViewModel
         /// <summary>選択中の類語</summary>
         public CommonLibrary.SynonymWordEntity SelectedWord { get; set; } = null;
 
-        public string TEST { get; set; } = "TEST";
-
         /// <summary>類語グループリスト一覧オブジェクト</summary>
         public ObservableCollection<CommonLibrary.SynonymGroupEntity> DisplaySynonymGroups
         {
