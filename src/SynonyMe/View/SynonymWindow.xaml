@@ -72,6 +72,41 @@
 
         <!--類語グループリスト-->
         <ListView Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding DisplaySynonymGroups}" x:Name="SynonymGroupList">
+            <!--クリック時にテキストボックスを表示するResource設定-->
+            <ListView.Resources>
+                <Style x:Key="{x:Type TextBox}" TargetType="TextBox">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                                <!--非選択時は枠線を透明、カーソルをArrowにして、テキストボックスでないかのように装う-->
+                                <Border Name="TextBoxBorder" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" BorderThickness="1" BorderBrush="Transparent" Cursor="Arrow">
+                                    <ScrollViewer Margin="0" x:Name="PART_ContentHost" />
+                                </Border>
+                                <!--選択時の挙動-->
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                        <Setter TargetName="TextBoxBorder" Property="BorderBrush" Value="LightGray" />
+                                        <Setter TargetName="TextBoxBorder" Property="Background" Value="White" />
+                                        <Setter TargetName="TextBoxBorder" Property="Cursor" Value="IBeam"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.Resources>
+            <ListView.ItemContainerStyle>
+                <!--テキストボックスを両端に伸ばす-->
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Style.Triggers>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="true">
+                            <Setter Property="IsSelected" Value="true" />
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <!--類語グループ選択時の挙動-->
             <bh:Interaction.Triggers>
                 <bh:EventTrigger EventName="SelectionChanged">
                     <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymGroup}" CommandParameter="{Binding SelectedItems, ElementName=SynonymGroupList}"/>
@@ -79,7 +114,20 @@
             </bh:Interaction.Triggers>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="{Binding HeaderGroupName}" DisplayMemberBinding="{Binding GroupName}"/>
+                    <GridViewColumn Header="{Binding HeaderGroupName}">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Path=GroupName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap">
+                                    <!--脱フォーカス時に更新処理をかける-->
+                                    <bh:Interaction.Triggers>
+                                        <bh:EventTrigger EventName="LostFocus">
+                                            <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_EditSynonymGroup}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+                                        </bh:EventTrigger>
+                                    </bh:Interaction.Triggers>
+                                </TextBox>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Header="{Binding HeaderRegistDate}" DisplayMemberBinding="{Binding GroupRegistDate}"/>
                     <GridViewColumn Header="{Binding HeaderUpdateDate}" DisplayMemberBinding="{Binding GroupUpdateDate}"/>
                 </GridView>
@@ -137,9 +185,9 @@
                     </Style.Triggers>
                 </Style>
             </ListView.ItemContainerStyle>
+            <!--類語選択時の挙動-->
             <bh:Interaction.Triggers>
                 <bh:EventTrigger EventName="SelectionChanged">
-                    <!--選択時実行コマンド-->
                     <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymWord}" CommandParameter="{Binding SelectedItems, ElementName=SynonymWordList}"/>
                 </bh:EventTrigger>
             </bh:Interaction.Triggers>
@@ -148,7 +196,8 @@
                     <GridViewColumn Header="{Binding HeaderSynonymWord}" >
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <TextBox Text="{Binding Path=Word}" TextWrapping="Wrap">
+                                <!--UpdateSourceTriggerを指定しないと、類語グループリストを選択してLostFocusした際に値を受け取れない-->
+                                <TextBox Text="{Binding Path=Word, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap">
                                     <!--脱フォーカス時に更新処理をかける-->
                                     <bh:Interaction.Triggers>
                                         <bh:EventTrigger EventName="LostFocus">

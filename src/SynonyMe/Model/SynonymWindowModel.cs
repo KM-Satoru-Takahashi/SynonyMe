@@ -101,12 +101,9 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            string registDate = GetTodayDate();
-            string updateDate = GetTodayDate();
-
             // GroupIDはDBの方で割り振ってくれるので指定しない
             string registGroupSql =
-                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} (GroupName, GroupRegistDate, GroupUpdateDate) values ('{groupName}', '{registDate}', '{updateDate}' ) ; ";
+                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} (GroupName, GroupRegistDate, GroupUpdateDate) values ('{groupName}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
@@ -137,12 +134,9 @@ namespace SynonyMe.Model
                 throw new SQLiteException($"GroupID is {groupID}");
             }
 
-            string registDate = GetTodayDate();
-            string updateDate = GetTodayDate();
-
             // WordIDはDBの方で割り振ってくれるので指定しない
             string registWordSql =
-                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} (GroupID, Word, RegistDate, UpdateDate) values ('{groupID}', '{synonymWord}', '{registDate}', '{updateDate}' ) ; ";
+                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} (GroupID, Word, RegistDate, UpdateDate) values ('{groupID}', '{synonymWord}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
@@ -173,11 +167,8 @@ namespace SynonyMe.Model
                 throw new SQLiteException($"wordID is {wordID}");
             }
 
-            string updateDate = GetTodayDate();
-
-            // WordIDはDBの方で割り振ってくれるので指定しない
             string updateWordSql =
-                $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} SET Word = '{word}', UpdateDate = '{updateDate}' WHERE WordID == {wordID} ; ";
+                $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} SET Word = '{word}', UpdateDate = '{GetTodayDate()}' WHERE WordID == {wordID} ; ";
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
@@ -187,6 +178,67 @@ namespace SynonyMe.Model
                 }
 
                 dBManager.ExecuteNonQuery(updateWordSql);
+            }
+
+            return true;
+        }
+
+        /// <summary>類語グループ名を更新する</summary>
+        /// <param name="groupID">対象グループID</param>
+        /// <param name="groupName">更新後のグループ名</param>
+        /// <returns>true:成功, false:失敗</returns>
+        internal bool UpdateSynonymGroup(int groupID, string groupName)
+        {
+            if (groupID < CommonLibrary.Define.MIN_GROUPID)
+            {
+                throw new SQLiteException($"groupID is {groupID}");
+            }
+
+            if (string.IsNullOrEmpty(groupName))
+            {
+                return false;
+            }
+
+            string updateGroupSql =
+                $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} SET GroupName = '{groupName}', GroupUpdateDate = '{GetTodayDate()}' WHERE GroupID == {groupID} ; ";
+
+            return UpdateSynonymGroup(updateGroupSql);
+        }
+
+        /// <summary>類語グループを更新する(更新日のみ)</summary>
+        /// <param name="groupID">更新対象のグループID</param>
+        /// <returns>true:成功, false:失敗</returns>
+        internal bool UpdateSynonymGroup(int groupID)
+        {
+            if (groupID < CommonLibrary.Define.MIN_GROUPID)
+            {
+                throw new SQLiteException($"groupID is {groupID}");
+            }
+
+            string updateGroupSql =
+                $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} SET GroupUpdateDate = '{GetTodayDate()}' WHERE GroupID == {groupID} ; ";
+
+            return UpdateSynonymGroup(updateGroupSql);
+        }
+
+        /// <summary>類語グループの更新を行う</summary>
+        /// <param name="updateSql"></param>
+        /// <returns></returns>
+        private bool UpdateSynonymGroup(string updateSql)
+        {
+            if (string.IsNullOrEmpty(updateSql))
+            {
+                return false;
+            }
+
+            using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
+            {
+                if (dBManager == null)
+                {
+                    return false;
+                }
+
+                dBManager.ExecuteNonQuery(updateSql);
             }
 
             return true;
