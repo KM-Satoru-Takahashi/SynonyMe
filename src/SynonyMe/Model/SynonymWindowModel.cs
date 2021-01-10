@@ -221,6 +221,43 @@ namespace SynonyMe.Model
             return UpdateSynonymGroup(updateGroupSql);
         }
 
+
+        internal bool DeleteSynonymGroup(int groupID)
+        {
+            if (groupID < CommonLibrary.Define.MIN_GROUPID)
+            {
+                throw new SQLiteException($"groupID is {groupID}");
+            }
+
+            return true;
+        }
+
+        /// <summary>対象語句を削除する</summary>
+        /// <param name="wordID"></param>
+        /// <returns></returns>
+        internal bool DeleteSynonymWord(int wordID)
+        {
+            if (wordID < CommonLibrary.Define.MIN_WORDID)
+            {
+                throw new SQLiteException($"wordID is {wordID}");
+            }
+
+            string deleteWordSql =
+                $@"DELETE FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE WordID == {wordID}";
+
+            using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
+            {
+                if (dBManager == null)
+                {
+                    return false;
+                }
+
+                dBManager.ExecuteNonQuery(deleteWordSql);
+            }
+
+            return true;
+        }
+
         /// <summary>類語グループの更新を行う</summary>
         /// <param name="updateSql"></param>
         /// <returns></returns>
