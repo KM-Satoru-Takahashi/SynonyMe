@@ -42,9 +42,6 @@ namespace SynonyMe.Model
         /// <returns>IDと一致する全類語</returns>
         internal CommonLibrary.SynonymWordEntity[] GetSynonymWordEntities(int groupID)
         {
-            string getTargetSynonymWord =
-                $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE GroupID == {groupID} ;";
-
             CommonLibrary.SynonymWordEntity[] synonymWords = null;
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
@@ -53,6 +50,9 @@ namespace SynonyMe.Model
                 {
                     return null;
                 }
+
+                string getTargetSynonymWord =
+                    $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE GroupID == {groupID} ;";
                 dBManager.GetTargetSynonymWords(getTargetSynonymWord, out synonymWords);
             }
 
@@ -70,8 +70,6 @@ namespace SynonyMe.Model
         internal CommonLibrary.SynonymGroupEntity[] GetAllSynonymGroup()
         {
             CommonLibrary.SynonymGroupEntity[] synonymGroups = null;
-            string GET_ALL_SYNONYMGROUP =
-                $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} ;";
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
@@ -79,6 +77,9 @@ namespace SynonyMe.Model
                 {
                     return null;
                 }
+
+                string GET_ALL_SYNONYMGROUP =
+                    $@"SELECT * FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} ;";
                 dBManager.GetTargetSynonymGroups(GET_ALL_SYNONYMGROUP, out synonymGroups);
             }
 
@@ -101,10 +102,6 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            // GroupIDはDBの方で割り振ってくれるので指定しない
-            string registGroupSql =
-                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} (GroupName, GroupRegistDate, GroupUpdateDate) values ('{groupName}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
-
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
@@ -112,6 +109,9 @@ namespace SynonyMe.Model
                     return false;
                 }
 
+                // GroupIDはDBの方で割り振ってくれるので指定しない
+                string registGroupSql =
+                    $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} (GroupName, GroupRegistDate, GroupUpdateDate) values ('{groupName}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
                 dBManager.ExecuteNonQuery(registGroupSql);
             }
 
@@ -134,10 +134,6 @@ namespace SynonyMe.Model
                 throw new SQLiteException($"GroupID is {groupID}");
             }
 
-            // WordIDはDBの方で割り振ってくれるので指定しない
-            string registWordSql =
-                $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} (GroupID, Word, RegistDate, UpdateDate) values ('{groupID}', '{synonymWord}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
-
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
@@ -145,6 +141,9 @@ namespace SynonyMe.Model
                     return false;
                 }
 
+                // WordIDはDBの方で割り振ってくれるので指定しない
+                string registWordSql =
+                    $@"INSERT INTO {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} (GroupID, Word, RegistDate, UpdateDate) values ('{groupID}', '{synonymWord}', '{GetTodayDate()}', '{GetTodayDate()}' ) ; ";
                 dBManager.ExecuteNonQuery(registWordSql);
             }
 
@@ -167,9 +166,6 @@ namespace SynonyMe.Model
                 throw new SQLiteException($"wordID is {wordID}");
             }
 
-            string updateWordSql =
-                $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} SET Word = '{word}', UpdateDate = '{GetTodayDate()}' WHERE WordID == {wordID} ; ";
-
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
@@ -177,6 +173,8 @@ namespace SynonyMe.Model
                     return false;
                 }
 
+                string updateWordSql =
+                    $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} SET Word = '{word}', UpdateDate = '{GetTodayDate()}' WHERE WordID == {wordID} ; ";
                 dBManager.ExecuteNonQuery(updateWordSql);
             }
 
@@ -221,12 +219,33 @@ namespace SynonyMe.Model
             return UpdateSynonymGroup(updateGroupSql);
         }
 
-
+        /// <summary>
+        /// 類語グループを削除する
+        /// </summary>
+        /// <param name="groupID">対象のグループID</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool DeleteSynonymGroup(int groupID)
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
                 throw new SQLiteException($"groupID is {groupID}");
+            }
+
+            using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
+            {
+                if (dBManager == null)
+                {
+                    return false;
+                }
+
+                // Groupに紐付く類語を全て削除する必要がある
+                string deleteWordSql =
+                    $@"DELETE FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE GroupID == {groupID}";
+                dBManager.ExecuteNonQuery(deleteWordSql);
+
+                string deleteGroupSql =
+                    $@"DELETE FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} WHERE GroupID == {groupID}";
+                dBManager.ExecuteNonQuery(deleteGroupSql);
             }
 
             return true;
@@ -242,9 +261,6 @@ namespace SynonyMe.Model
                 throw new SQLiteException($"wordID is {wordID}");
             }
 
-            string deleteWordSql =
-                $@"DELETE FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE WordID == {wordID}";
-
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
@@ -252,6 +268,8 @@ namespace SynonyMe.Model
                     return false;
                 }
 
+                string deleteWordSql =
+                    $@"DELETE FROM {CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS} WHERE WordID == {wordID}";
                 dBManager.ExecuteNonQuery(deleteWordSql);
             }
 

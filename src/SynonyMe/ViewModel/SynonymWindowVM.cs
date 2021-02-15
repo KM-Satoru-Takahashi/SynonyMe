@@ -230,7 +230,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            CommonLibrary.SynonymGroupEntity targetGroup = (CommonLibrary.SynonymGroupEntity)parameter;
+            CommonLibrary.SynonymGroupEntity targetGroup = parameter as CommonLibrary.SynonymGroupEntity;
             if (targetGroup == null)
             {
                 return;
@@ -260,7 +260,7 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException("ExecuteDeleteSynonymGroup _model is null");
             }
 
-
+            _model.DeleteSynonymGroup(SelectedGroup.GroupID);
 
             // 画面表示の更新
             // 類語リストは一旦空にする

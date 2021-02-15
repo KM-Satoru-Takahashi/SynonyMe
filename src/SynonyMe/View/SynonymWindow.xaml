@@ -143,8 +143,6 @@
         <!--類語グループ削除ボタン-->
         <Button Grid.Column="5" Grid.Row="5" Content="グループ削除" Command="{Binding Command_DeleteSynonymGroup}"/>
 
-
-
         <!--類語一覧リスト-->
         <ListView Grid.Column="7" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding DisplaySynonymWords}" x:Name="SynonymWordList">
             <!--クリック時にテキストボックスを表示するResource設定-->
