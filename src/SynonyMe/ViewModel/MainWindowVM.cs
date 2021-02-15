@@ -131,12 +131,10 @@ namespace SynonyMe.ViewModel
             DisplayText = _model.GetDisplayText(dropInfo)[0];
         }
 
-
         private void ExecuteSave(object parameter)
         {
             _model.Save(_displayTextFilePath, _displayText);
         }
-
 
         private void ExecuteOpenSynonymWindow(object parameter)
         {

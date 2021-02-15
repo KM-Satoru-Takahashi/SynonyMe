@@ -15,14 +15,14 @@ namespace SynonyMe.ViewModel
         /// <summary>AvalonEditor用のプロパティ宣言</summary>
         public static readonly DependencyProperty TextEditorProperty =
             DependencyProperty.Register(
-                "AvalonTextEditor",
+                "AvalonEditorText",
                 typeof(string),
                 typeof(AvalonEditBehavior),
                 new FrameworkPropertyMetadata(default(string), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, PropertyChangedCallback)
                 );
 
         /// <summary>AvalonEdit用プロパティ</summary>
-        public string AvalonTextEditor
+        public string AvalonEditorText
         {
             get { return (string)GetValue(TextEditorProperty); }
             set { SetValue(TextEditorProperty, value); }
@@ -38,7 +38,7 @@ namespace SynonyMe.ViewModel
             {
                 if (textEditor.Document != null)
                 {
-                    AvalonTextEditor = textEditor.Document.Text;
+                    AvalonEditorText = textEditor.Document.Text;
                 }
             }
         }

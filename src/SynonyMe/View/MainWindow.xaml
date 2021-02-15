@@ -83,7 +83,7 @@
                     dd:DragDrop.DropHandler="{Binding}"                    
                     >
                     <bh:Interaction.Behaviors>
-                        <vm:AvalonEditBehavior AvalonTextEditor="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <vm:AvalonEditBehavior AvalonEditorText="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </bh:Interaction.Behaviors>
                 </ae:TextEditor>
             </Grid>

@@ -53,32 +53,4 @@ namespace SynonyMe.ViewModel
             this.Execute(parameter);
         }
     }
-
-    static class CommandExetensions
-    {
-        public static void RaiseCanExecuteChanged(this ICommand self)
-        {
-            var CommandBase = self as CommandBase;
-            if (CommandBase == null)
-            {
-                return;
-            }
-
-            CommandBase.RaiseCanExecuteChanged();
-        }
-
-        public static void RaiseCanExecuteChanged(this IEnumerable<ICommand> self)
-        {
-            foreach (var command in self)
-            {
-                command.RaiseCanExecuteChanged();
-            }
-        }
-
-        public static void RaiseCanExecuteChanged(params ICommand[] commands)
-        {
-            commands.RaiseCanExecuteChanged();
-        }
-
-    }
 }

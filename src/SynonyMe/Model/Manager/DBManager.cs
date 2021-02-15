@@ -34,7 +34,7 @@ namespace SynonyMe.Model.Manager
 
         protected virtual void Dispose(bool disposing)
         {
-            if(_isDisposed)
+            if (_isDisposed)
             {
                 return;
             }

@@ -23,9 +23,6 @@ namespace SynonyMe.ViewModel
         /// <summary>類語グループリストから選択した類語グループ</summary>
         private ObservableCollection<CommonLibrary.SynonymWordEntity> _displaySynonymWords = null;
 
-        /// <summary>類語一覧リストから選択した類語</summary>
-        private CommonLibrary.SynonymWordEntity _selectSynonymWord = null;
-
         #endregion
 
         #region property
@@ -233,7 +230,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            CommonLibrary.SynonymGroupEntity targetGroup = (CommonLibrary.SynonymGroupEntity)parameter;
+            CommonLibrary.SynonymGroupEntity targetGroup = parameter as CommonLibrary.SynonymGroupEntity;
             if (targetGroup == null)
             {
                 return;
@@ -253,7 +250,22 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteDeleteSynonymGroup(object parameter)
         {
+            if (SelectedGroup == null)
+            {
+                return;
+            }
 
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteDeleteSynonymGroup _model is null");
+            }
+
+            _model.DeleteSynonymGroup(SelectedGroup.GroupID);
+
+            // 画面表示の更新
+            // 類語リストは一旦空にする
+            UpdateDisplaySynonymGroups();
+            DisplaySynonymWords = null;
         }
 
         /// <summary>類語登録コマンド</summary>
@@ -312,7 +324,23 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteDeleteSynonymWord(object parameter)
         {
+            if (SelectedWord == null)
+            {
+                return;
+            }
 
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteDeleteSynonymWord _model is null");
+            }
+
+            _model.DeleteSynonymWord(SelectedWord.WordID);
+
+            // 所属する類語グループの更新
+            _model.UpdateSynonymGroup(SelectedWord.GroupID);
+
+            // 画面表示の更新
+            UpdateDisplayGroupsAndWords(SelectedWord.GroupID);
         }
 
         /// <summary>類語グループ選択時実行コマンド</summary>
@@ -349,7 +377,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            _selectSynonymWord = selectedWord;
+            SelectedWord = selectedWord;
         }
 
         /// <summary>類語グループと類語リストをともに更新する</summary>
