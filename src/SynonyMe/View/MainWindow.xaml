@@ -17,7 +17,7 @@
         <!--類語ウィンドウアイコン-->
         <Image x:Key="SynonymIcon" Source="../Resources/synonym.png"/>
     </Window.Resources>
-    
+
     <!--VMにバインディング-->
     <Window.DataContext>
         <vm:MainWindowVM/>
@@ -43,7 +43,7 @@
                 <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}">
                 </Button>
                 <!--類語追加アイコン-->
-                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}">                    
+                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}">
                 </Button>
             </ToolBar>
         </ToolBarTray>
@@ -51,12 +51,11 @@
         <!--メインスペース定義-->
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
-                <!--予約領域(左列)-->
-                <!--現状、使用しないのでWidthは0にする-->
-                <ColumnDefinition Width="0"/>
+                <!--検索領域(左列)-->
+                <ColumnDefinition Width="*"/>
                 <!--メイン領域(中央列)-->
                 <ColumnDefinition Width="2*"/>
-                <!--ワーク領域(右列)-->
+                <!--類語領域(右列)-->
                 <!--初期値0でバインディングしても良いかもしれない-->
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -88,9 +87,49 @@
                 </ae:TextEditor>
             </Grid>
 
+            <!--検索領域-->
+            <Grid Grid.Row="0" Grid.Column="0">
+                <Grid.ColumnDefinitions>
+                    <!--左側余白-->
+                    <ColumnDefinition Width="10"/>
+                    <!--検索テキスト表示列-->
+                    <ColumnDefinition Width="*"/>
+                    <!--検索テキストと検索ボタン間の余白-->
+                    <ColumnDefinition Width="20"/>
+                    <!--検索ボタン表示列-->
+                    <ColumnDefinition Width="40"/>
+                    <!--右側余白-->
+                    <ColumnDefinition Width="10"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <!--上部余白-->
+                    <RowDefinition Height="20"/>
+                    <!--検索テキスト、検索ボタン高さ-->
+                    <RowDefinition Height="40"/>
+                    <!--テキスト・ボタンと検索結果間余白-->
+                    <RowDefinition Height="20"/>
+                    <!--検索結果領域-->
+                    <RowDefinition Height="*"/>
+                    <!--下部余白-->
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+
+                <!--検索テキストボックス-->
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SearchWord}"/>
+
+                <!--検索ボタン-->
+                <Button Grid.Row="1" Grid.Column="3" Command="{Binding Command_Search}" Content="{Binding SearchButtonText}"/>
+
+                <!--検索結果-->
+                <ListView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding SearchResult}" Visibility="{Binding SearchResultVisibility}">
+
+                </ListView>
+
+            </Grid>
+
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
-
 
             </Grid>
         </Grid>

@@ -43,32 +43,32 @@ namespace SynonyMe.ViewModel
         public string HeaderSynonymWord { get; } = "登録語";
 
         /// <summary>類語グループリスト登録コマンド</summary>
-        public ICommand Command_RegistSynonymGroup { get; protected set; } = null;
+        public ICommand Command_RegistSynonymGroup { get; private set; } = null;
 
         /// <summary>類語グループリスト編集コマンド</summary>
-        public ICommand Command_EditSynonymGroup { get; protected set; } = null;
+        public ICommand Command_EditSynonymGroup { get; private set; } = null;
 
         /// <summary>類語グループリスト削除コマンド</summary>
-        public ICommand Command_DeleteSynonymGroup { get; protected set; } = null;
+        public ICommand Command_DeleteSynonymGroup { get; private set; } = null;
 
         /// <summary>類語一覧リスト登録コマンド</summary>
-        public ICommand Command_RegistSynonymWord { get; protected set; } = null;
+        public ICommand Command_RegistSynonymWord { get; private set; } = null;
 
         /// <summary>類語一覧リスト編集コマンド</summary>
-        public ICommand Command_EditSynonymWord { get; protected set; } = null;
+        public ICommand Command_EditSynonymWord { get; private set; } = null;
 
         /// <summary>類語一覧リスト削除コマンド</summary>
-        public ICommand Command_DeleteSynonymWord { get; protected set; } = null;
+        public ICommand Command_DeleteSynonymWord { get; private set; } = null;
 
         /// <summary>閉じるボタン押下時コマンド</summary>
-        public ICommand Command_Close { get; protected set; } = null;
+        public ICommand Command_Close { get; private set; } = null;
 
         /// <summary>類語グループリストからグループ選択時の実行コマンド</summary>
         /// <remarks>類語一覧リストに類語を表示させるために用いる</remarks>
-        public ICommand Command_SelectSynonymGroup { get; protected set; } = null;
+        public ICommand Command_SelectSynonymGroup { get; private set; } = null;
 
         /// <summary>類語一覧リストから類語選択時の実行コマンド</summary>
-        public ICommand Command_SelectSynonymWord { get; protected set; } = null;
+        public ICommand Command_SelectSynonymWord { get; private set; } = null;
 
         /// <summary>類語グループ入力テキスト</summary>
         public string InputGroupWord { get; set; } = null;

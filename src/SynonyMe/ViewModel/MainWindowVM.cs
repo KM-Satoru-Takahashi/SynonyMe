@@ -31,6 +31,16 @@ namespace SynonyMe.ViewModel
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
 
+        /// <summary>検索結果リスト</summary>
+        private ObservableCollection<string> _searchResult = new ObservableCollection<string>();
+
+        /// <summary>検索結果リストの表示状態</summary>
+        private Visibility _searchResultVisibility = Visibility.Hidden;
+
+        /// <summary>単語検索時、前後何文字を検索結果として表示するか</summary>
+        /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
+        private int SEARCHRESULT_MARGIN = 10;
+
         #endregion
 
         #region property
@@ -44,6 +54,9 @@ namespace SynonyMe.ViewModel
         /// <summary>フッター部分の高さ(固定値)</summary>
         public int FooterHeight { get; } = 30;
 
+        /// <summary>検索ボタン表示文字列</summary>
+        public string SearchButtonText { get; } = "検索";
+
         /// <summary>文章表示領域の表示テキスト</summary>
         public string DisplayText
         {
@@ -53,18 +66,67 @@ namespace SynonyMe.ViewModel
             }
             set
             {
+                if (_displayText == value)
+                {
+                    return;
+                }
+
                 _displayText = value;
                 OnPropertyChanged("DisplayText");
+            }
+        }
+
+        /// <summary>検索文字列</summary>
+        public string SearchWord { get; set; } = null;
+
+        /// <summary>検索結果</summary>
+        public ObservableCollection<string> SearchResult
+        {
+            get
+            {
+                return _searchResult;
+            }
+            set
+            {
+                if (_searchResult == value)
+                {
+                    return;
+                }
+
+                _searchResult = value;
+                OnPropertyChanged("SearchResult");
+            }
+        }
+
+        /// <summary>検索結果表示状態</summary>
+        public Visibility SearchResultVisibility
+        {
+            get
+            {
+                return _searchResultVisibility;
+            }
+            set
+            {
+                if (_searchResultVisibility == value)
+                {
+                    return;
+                }
+
+                _searchResultVisibility = value;
+                OnPropertyChanged("SearchResultVisibility");
             }
         }
 
         #region command
 
         /// <summary>保存ボタン</summary>
-        public ICommand Command_Save { get; protected set; } = null;
+        public ICommand Command_Save { get; private set; } = null;
 
         /// <summary>類語コマンド</summary>
-        public ICommand Command_OpenSynonymWindow { get; protected set; } = null;
+        public ICommand Command_OpenSynonymWindow { get; private set; } = null;
+
+        /// <summary>検索コマンド</summary>
+        public ICommand Command_Search { get; private set; } = null;
 
         #endregion
 
@@ -86,6 +148,7 @@ namespace SynonyMe.ViewModel
             // コマンド初期化処理
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+            Command_Search = new CommandBase(ExecuteSearch, null);
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -131,14 +194,75 @@ namespace SynonyMe.ViewModel
             DisplayText = _model.GetDisplayText(dropInfo)[0];
         }
 
+        /// <summary>編集中のテキスト保存処理</summary>
+        /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteSave _model is null");
+            }
+
             _model.Save(_displayTextFilePath, _displayText);
         }
 
+        /// <summary>類語ウィンドウを開く</summary>
+        /// <param name="parameter"></param>
         private void ExecuteOpenSynonymWindow(object parameter)
         {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteOpenSynonymWindow _model is null");
+            }
+
             _model.OpenSynonymWindow();
+        }
+
+        /// <summary>検索処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSearch(object parameter)
+        {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteSearch _model is null");
+            }
+
+            if (string.IsNullOrEmpty(SearchWord))
+            {
+                return;
+            }
+
+            // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
+            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayText, SEARCHRESULT_MARGIN);
+            if (indexWordPairs == null)
+            {
+                // nullなら表示を隠す
+                SearchResultVisibility = Visibility.Hidden;
+            }
+            else if (indexWordPairs.Count < 1)
+            {
+                // 検索結果がなければ、その旨を表示する
+            }
+            else
+            {
+                // 検索結果ありの場合、結果を表示できるようにする
+                SearchResultVisibility = Visibility.Visible;
+            }
+
+
+            // 念のため昇順にソートしておく
+            indexWordPairs.OrderBy(pair => pair.Key);
+
+            // 現状、indexは使用していないので、stringを順に取り出して利用する
+            string[] searchResult = new string[indexWordPairs.Count];
+            int index = 0;
+            foreach (KeyValuePair<int, string> kvp in indexWordPairs)
+            {
+                searchResult[index] = kvp.Value;
+                ++index;
+            }
+
+            SearchResult = new ObservableCollection<string>(searchResult);
         }
 
         #endregion

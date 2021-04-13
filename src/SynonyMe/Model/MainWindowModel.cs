@@ -27,6 +27,10 @@ namespace SynonyMe.Model
             ".txt"
         };
 
+        /// <summary>検索結果を何個まで表示するか(何個まで検索対象とするか)</summary>
+        /// <remarks>将来的に設定ファイルで外出しする予定</remarks>
+        private const int SEARCH_RESULT_DISPLAY_NUMBER = 100;
+
         #endregion
 
         #region method
@@ -114,7 +118,7 @@ namespace SynonyMe.Model
         /// <returns>true:成功, false:失敗</returns>
         internal bool Save(string filePath, string displayText)
         {
-            if(string.IsNullOrEmpty(filePath) ||
+            if (string.IsNullOrEmpty(filePath) ||
                string.IsNullOrEmpty(displayText))
             {
                 return false;
@@ -127,7 +131,7 @@ namespace SynonyMe.Model
                 editor.Text = displayText;
                 editor.Save(filePath);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return false;
             }
@@ -146,13 +150,13 @@ namespace SynonyMe.Model
         /// <returns>読み込んだファイルの全テキスト</returns>
         private List<string> GetTextFromFilePath(List<string> filePathList)
         {
-            if(filePathList == null || filePathList.Any()==false)
+            if (filePathList == null || filePathList.Any() == false)
             {
                 return null;
             }
 
             List<string> textList = new List<string>();
-            foreach(string filePath in filePathList)
+            foreach (string filePath in filePathList)
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
@@ -160,10 +164,10 @@ namespace SynonyMe.Model
                 }
 
                 string text = null;
-                if(Load(filePath, out text))
+                if (Load(filePath, out text))
                 {
                     textList.Add(text);
-                }                
+                }
             }
 
             return textList;
@@ -176,7 +180,7 @@ namespace SynonyMe.Model
         private bool Load(string filePath, out string text)
         {
             text = null;
-            if(string.IsNullOrEmpty(filePath))
+            if (string.IsNullOrEmpty(filePath))
             {
                 return false;
             }
@@ -186,7 +190,7 @@ namespace SynonyMe.Model
             {
                 textEditor.Load(filePath);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return false;
             }
@@ -251,6 +255,110 @@ namespace SynonyMe.Model
                 return false;
             }
         }
+
+        /// <summary>検索処理を実施する</summary>
+        /// <param name="searchWord">検索語句</param>
+        /// <param name="targetText">検索対象の文章</param>
+        /// <param name="margin">検索結果として、対象語句の前後何文字を含めるか</param>
+        /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
+        internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText, int margin)
+        {
+            // check args
+            if (string.IsNullOrEmpty(searchWord))
+            {
+                return null;
+            }
+            else if (string.IsNullOrEmpty(targetText))
+            {
+                return null;
+            }
+            else if (margin < 0 /*最大値は現状未定、最小値も設定ファイルや定数で外出しする予定だが、現状ハードコーティングとする*/)
+            {
+                return null;
+            }
+
+            // 文書中で該当するインデックスを一旦入れておくリストを用意
+            List<int> searchResultIndex = new List<int>();
+
+            // 1箇所目をまず探す
+            int foundIndex = targetText.IndexOf(searchWord);
+            if (foundIndex < 0)
+            {
+                // 検索したが何もない場合はエラーではないので空のdicを戻すようにする
+                return new Dictionary<int, string>();
+            }
+
+            // 他の箇所を繰り返し探していく
+            while (0 <= foundIndex) // 該当がなくなると検索結果インデックスは-1が戻ってくる
+            {
+                // 最初に[前回の検索結果インデックス]をリストに追加しておく
+                // 1箇所目も登録される
+                searchResultIndex.Add(foundIndex);
+
+                // 次の検索位置は「前の検索位置」に「検索対象の語句の長さ」を足した地点
+                int nextIndex = foundIndex + searchWord.Length;
+                if (nextIndex < targetText.Length)
+                {
+                    foundIndex = targetText.IndexOf(searchWord, nextIndex);
+                    continue;
+                }
+                else
+                {
+                    // 文章の長さを超えるなら、検索しない
+                    break;
+                }
+            }
+
+            // 実際にテキストから、Viewに表示対象となる語句領域を切り取っていく
+            // インデックス分だけ必ずあるはず
+            string[] searchResultWordList = new string[searchResultIndex.Count];
+            for (int targetIndex = 0; targetIndex < searchResultIndex.Count; ++targetIndex)
+            {
+                // 手前側マージン
+                int frontMargin = searchResultIndex[targetIndex] - margin;
+                // 後ろ側マージン→インデックス＋検索対象語句＋マージン
+                int behindMargin = searchResultIndex[targetIndex] + searchWord.Length + margin;
+
+
+                // 後ろのマージンがなくても、最後の検索とは限らないので、foreachは続けること
+                // 例：「あああああああ」で「あ」だけを検索した場合
+                if (frontMargin < 0 && targetText.Length < behindMargin + 1) // LengthとIndexを比較するのでIndexに+1しておく
+                {
+                    // 手前に規定値分のマージンがなく、後ろにも規定値分のマージンがない場合
+                    // 「文字列の最初～文字列の最後」までを切り取る→検索対象の文字列をそのまま入れ込む
+                    searchResultWordList[targetIndex] = targetText;
+                }
+                else if (frontMargin < 0)
+                {
+                    // 手前に規定値分のマージンがなく、後ろには規定値分のマージンがある場合
+                    // 「文字列の最初～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
+                    searchResultWordList[targetIndex] = targetText.Substring(0, searchWord.Length + margin); // substringの第2引数は切り取る文字数
+                }
+                else if (targetText.Length < behindMargin + 1)
+                {
+                    // 手前に規定値分のマージンがあり、後ろには規定値分のマージンがない場合
+                    // 「手前のマージン～文字列の最後」までを切り取る
+                    searchResultWordList[targetIndex] = targetText.Substring(frontMargin);
+
+                }
+                else
+                {
+                    // 手前に規定値分のマージンがあり、後ろにも規定値分のマージンがある場合
+                    // 「手前のマージン～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
+                    searchResultWordList[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + margin);
+                }
+            }
+
+            // 最終的にDictionaryで返せばよくない？
+            Dictionary<int/*index*/, string/*result*/> searchResultIndexWordPairs = new Dictionary<int, string>();
+            for (int i = 0; i < searchResultIndex.Count; ++i)
+            {
+                searchResultIndexWordPairs.Add(searchResultIndex[i], searchResultWordList[i]);
+            }
+
+            return searchResultIndexWordPairs;
+        }
+
 
         #endregion
     }
