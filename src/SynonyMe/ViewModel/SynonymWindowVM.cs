@@ -7,6 +7,7 @@ using System.Windows.Input;
 using SynonyMe.Model;
 using System.Collections.ObjectModel;
 using System.Windows;
+using SynonyMe.CommonLibrary.Entity;
 
 namespace SynonyMe.ViewModel
 {
@@ -18,10 +19,10 @@ namespace SynonyMe.ViewModel
         private SynonymWindowModel _model = null;
 
         /// <summary>表示中の類語グループリスト</summary>
-        private ObservableCollection<CommonLibrary.SynonymGroupEntity> _displaySynonymGroup = null;
+        private ObservableCollection<SynonymGroupEntity> _displaySynonymGroup = null;
 
         /// <summary>類語グループリストから選択した類語グループ</summary>
-        private ObservableCollection<CommonLibrary.SynonymWordEntity> _displaySynonymWords = null;
+        private ObservableCollection<SynonymWordEntity> _displaySynonymWords = null;
 
         #endregion
 
@@ -77,13 +78,13 @@ namespace SynonyMe.ViewModel
         public string InputSynonymWord { get; set; } = null;
 
         /// <summary>選択中の類語グループリスト</summary>
-        public CommonLibrary.SynonymGroupEntity SelectedGroup { get; set; } = null;
+        public SynonymGroupEntity SelectedGroup { get; set; } = null;
 
         /// <summary>選択中の類語</summary>
-        public CommonLibrary.SynonymWordEntity SelectedWord { get; set; } = null;
+        public SynonymWordEntity SelectedWord { get; set; } = null;
 
         /// <summary>類語グループリスト一覧オブジェクト</summary>
-        public ObservableCollection<CommonLibrary.SynonymGroupEntity> DisplaySynonymGroups
+        public ObservableCollection<SynonymGroupEntity> DisplaySynonymGroups
         {
             get
             {
@@ -97,7 +98,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>類語リスト一覧オブジェクト</summary>
-        public ObservableCollection<CommonLibrary.SynonymWordEntity> DisplaySynonymWords
+        public ObservableCollection<SynonymWordEntity> DisplaySynonymWords
         {
             get
             {
@@ -230,7 +231,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            CommonLibrary.SynonymGroupEntity targetGroup = parameter as CommonLibrary.SynonymGroupEntity;
+            SynonymGroupEntity targetGroup = parameter as SynonymGroupEntity;
             if (targetGroup == null)
             {
                 return;
@@ -299,7 +300,7 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter">RoutedEventArgs:類語リストでのテキストボックス入力値</param>
         private void ExecuteEditSynonymWord(object parameter)
         {
-            CommonLibrary.SynonymWordEntity targetEntity = (CommonLibrary.SynonymWordEntity)parameter;
+            SynonymWordEntity targetEntity = (SynonymWordEntity)parameter;
             if (targetEntity == null)
             {
                 return;
@@ -352,7 +353,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            CommonLibrary.SynonymGroupEntity selectedGroup = ConvertParameterToSynonymGroupEntity(parameter);
+            SynonymGroupEntity selectedGroup = ConvertParameterToSynonymGroupEntity(parameter);
             if (selectedGroup == null)
             {
                 return;
@@ -371,7 +372,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            CommonLibrary.SynonymWordEntity selectedWord = ConvertParameterToSynonymWordEntity(parameter);
+            SynonymWordEntity selectedWord = ConvertParameterToSynonymWordEntity(parameter);
             if (selectedWord == null)
             {
                 return;
@@ -397,7 +398,7 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException("UpdateDisplaySynonymWords _model is null");
             }
 
-            DisplaySynonymWords = new ObservableCollection<CommonLibrary.SynonymWordEntity>(_model.GetSynonymWordEntities(groupID));
+            DisplaySynonymWords = new ObservableCollection<SynonymWordEntity>(_model.GetSynonymWordEntities(groupID));
         }
 
         /// <summary>表示中の類語グループリストを更新する</summary>
@@ -408,13 +409,13 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException("UpdateDisplaySynonymGroups _model is null");
             }
 
-            DisplaySynonymGroups = new ObservableCollection<CommonLibrary.SynonymGroupEntity>(_model.GetAllSynonymGroup());
+            DisplaySynonymGroups = new ObservableCollection<SynonymGroupEntity>(_model.GetAllSynonymGroup());
         }
 
         /// <summary>類語グループリストの選択(SelectedItemCollection)を、SynonymGroupEntity形式に変換する</summary>
         /// <param name="parameter">選択状態の引数(型:SelectedItemCollection)</param>
         /// <returns>変換後のSynonymGroupEntity</returns>
-        private CommonLibrary.SynonymGroupEntity ConvertParameterToSynonymGroupEntity(object parameter)
+        private SynonymGroupEntity ConvertParameterToSynonymGroupEntity(object parameter)
         {
             if (parameter == null)
             {
@@ -427,7 +428,7 @@ namespace SynonyMe.ViewModel
                 return null;
             }
 
-            var selectedSynonymGroup = selectedItem.Cast<CommonLibrary.SynonymGroupEntity>();
+            var selectedSynonymGroup = selectedItem.Cast<SynonymGroupEntity>();
             if (selectedSynonymGroup == null || selectedSynonymGroup.Any() == false)
             {
                 return null;
@@ -440,7 +441,7 @@ namespace SynonyMe.ViewModel
         /// <summary>類語リストの選択(SelectedItemCollection)をSynonymWordEntity形式に変換する</summary>
         /// <param name="parameter">選択状態の引数(型:SelectedItemCollection)</param>
         /// <returns>変換後のSynonymWordEntity</returns>
-        private CommonLibrary.SynonymWordEntity ConvertParameterToSynonymWordEntity(object parameter)
+        private SynonymWordEntity ConvertParameterToSynonymWordEntity(object parameter)
         {
             if (parameter == null)
             {
@@ -453,7 +454,7 @@ namespace SynonyMe.ViewModel
                 return null;
             }
 
-            var selectedSynonymWord = selectedItem.Cast<CommonLibrary.SynonymWordEntity>();
+            var selectedSynonymWord = selectedItem.Cast<SynonymWordEntity>();
             if (selectedSynonymWord == null || selectedSynonymWord.Any() == false)
             {
                 return null;

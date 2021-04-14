@@ -70,8 +70,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CommonLibrary\Define.cs" />
-    <Compile Include="CommonLibrary\SynonymGroupEntity.cs" />
-    <Compile Include="CommonLibrary\SynonymWordEntity.cs" />
+    <Compile Include="CommonLibrary\Entity\SearchResultEntity.cs" />
+    <Compile Include="CommonLibrary\Entity\SynonymGroupEntity.cs" />
+    <Compile Include="CommonLibrary\Entity\SynonymWordEntity.cs" />
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />

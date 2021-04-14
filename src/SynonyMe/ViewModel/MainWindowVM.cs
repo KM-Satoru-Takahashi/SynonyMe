@@ -9,6 +9,9 @@ using System.IO;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using System.Windows.Input;
+using SynonyMe.CommonLibrary.Entity;
+using ICSharpCode.AvalonEdit.Document;
+using System.ComponentModel;
 
 namespace SynonyMe.ViewModel
 {
@@ -19,10 +22,6 @@ namespace SynonyMe.ViewModel
         /// <summary>Model</summary>
         private SynonyMe.Model.MainWindowModel _model = null;
 
-        /// <summary>画面表示テキスト</summary>
-        /// 将来的にタブVMへ移管予定
-        private string _displayText = null;
-
         /// <summary>画面表示中テキストの絶対パス</summary>
         /// 将来的にタブVMへ移管予定
         private string _displayTextFilePath = null;
@@ -32,7 +31,7 @@ namespace SynonyMe.ViewModel
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
 
         /// <summary>検索結果リスト</summary>
-        private ObservableCollection<string> _searchResult = new ObservableCollection<string>();
+        private ObservableCollection<SearchResultEntity> _searchResult = new ObservableCollection<SearchResultEntity>();
 
         /// <summary>検索結果リストの表示状態</summary>
         private Visibility _searchResultVisibility = Visibility.Hidden;
@@ -41,9 +40,28 @@ namespace SynonyMe.ViewModel
         /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
         private int SEARCHRESULT_MARGIN = 10;
 
+        private string _wordCount = null;
+
+        private string _numberOfLines = null;
+
+        private Visibility _editedTextVisible = Visibility.Hidden;
+
+        private TextEditor _textEditor = new TextEditor();
+
+        /// <summary>AvalonEditの文章管理インスタンス</summary>
+        private TextDocument _displayTextDoc = null;
+
         #endregion
 
         #region property
+
+        internal TextEditor TextEditor
+        {
+            get
+            {
+                return _textEditor;
+            }
+        }
 
         /// <summary>ウィンドウタイトル</summary>
         public string MainWindowTitle { get; } = "SynonyMe";
@@ -57,30 +75,18 @@ namespace SynonyMe.ViewModel
         /// <summary>検索ボタン表示文字列</summary>
         public string SearchButtonText { get; } = "検索";
 
-        /// <summary>文章表示領域の表示テキスト</summary>
-        public string DisplayText
+        /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
+        public TextDocument DisplayTextDoc
         {
-            get
-            {
-                return _displayText;
-            }
-            set
-            {
-                if (_displayText == value)
-                {
-                    return;
-                }
-
-                _displayText = value;
-                OnPropertyChanged("DisplayText");
-            }
+            get { return _displayTextDoc; }
+            set { _displayTextDoc = value; OnPropertyChanged("DisplayTextDoc"); }
         }
 
         /// <summary>検索文字列</summary>
         public string SearchWord { get; set; } = null;
 
         /// <summary>検索結果</summary>
-        public ObservableCollection<string> SearchResult
+        public ObservableCollection<SearchResultEntity> SearchResult
         {
             get
             {
@@ -117,6 +123,65 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        public string WordCountText { get; } = "文字数：";
+        public string WordCount
+        {
+            get
+            {
+                return _wordCount;
+            }
+            set
+            {
+                if (_wordCount == value)
+                {
+                    return;
+                }
+
+                _wordCount = value;
+                OnPropertyChanged("WordCount");
+            }
+        }
+
+        public string NumberOfLinesText { get; } = "行数：";
+        public string NumberOfLines
+        {
+            get
+            {
+                return _numberOfLines;
+            }
+            set
+            {
+                if (_numberOfLines == value)
+                {
+                    return;
+                }
+
+                _numberOfLines = value;
+                OnPropertyChanged("NumberOfLines");
+            }
+        }
+
+
+        public string EditedText { get; } = "編集済み";
+
+        public Visibility EditedTextVisible
+        {
+            get
+            {
+                return _editedTextVisible;
+            }
+            private set
+            {
+                if (_editedTextVisible == value)
+                {
+                    return;
+                }
+
+                _editedTextVisible = value;
+                OnPropertyChanged("EditedTextVisible");
+            }
+        }
+
         #region command
 
         /// <summary>保存ボタン</summary>
@@ -127,6 +192,12 @@ namespace SynonyMe.ViewModel
 
         /// <summary>検索コマンド</summary>
         public ICommand Command_Search { get; private set; } = null;
+
+        /// <summary>検索結果クリック時のジャンプコマンド</summary>
+        public ICommand Command_JumpToSearchResult { get; private set; } = null;
+
+        /// <summary>文字数等の更新処理</summary>
+        public ICommand Command_UpdateTextInfo { get; private set; } = null;
 
         #endregion
 
@@ -145,10 +216,24 @@ namespace SynonyMe.ViewModel
         {
             _model = new Model.MainWindowModel(this);
 
+            _displayTextDoc = _textEditor.Document;
+
             // コマンド初期化処理
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
             Command_Search = new CommandBase(ExecuteSearch, null);
+            Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
+            Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
+
+            // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
+            // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
+            // TODO:DependencyPropertyDescriptorは強参照のためメモリリークの恐れがあり、要調査
+            var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
+            if (descripter != null)
+            {
+                descripter.RemoveValueChanged(TextEditor, OnIsModifiedChanged);
+                descripter.AddValueChanged(TextEditor, OnIsModifiedChanged);
+            }
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -191,7 +276,7 @@ namespace SynonyMe.ViewModel
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
             _displayTextFilePath = displayTargetFilePaths[0];
-            DisplayText = _model.GetDisplayText(dropInfo)[0];
+            DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
         }
 
         /// <summary>編集中のテキスト保存処理</summary>
@@ -203,7 +288,7 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException("ExecuteSave _model is null");
             }
 
-            _model.Save(_displayTextFilePath, _displayText);
+            _model.Save(_displayTextFilePath, DisplayTextDoc.Text);
         }
 
         /// <summary>類語ウィンドウを開く</summary>
@@ -233,7 +318,7 @@ namespace SynonyMe.ViewModel
             }
 
             // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
-            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayText, SEARCHRESULT_MARGIN);
+            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
             if (indexWordPairs == null)
             {
                 // nullなら表示を隠す
@@ -253,17 +338,69 @@ namespace SynonyMe.ViewModel
             // 念のため昇順にソートしておく
             indexWordPairs.OrderBy(pair => pair.Key);
 
-            // 現状、indexは使用していないので、stringを順に取り出して利用する
-            string[] searchResult = new string[indexWordPairs.Count];
+            SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
             int index = 0;
             foreach (KeyValuePair<int, string> kvp in indexWordPairs)
             {
-                searchResult[index] = kvp.Value;
+                searchResults[index] = new SearchResultEntity()
+                {
+                    Index = kvp.Key,
+                    DisplayWord = kvp.Value
+                };
                 ++index;
             }
 
-            SearchResult = new ObservableCollection<string>(searchResult);
+            SearchResult = new ObservableCollection<SearchResultEntity>(searchResults);
         }
+
+        /// <summary>検索結果へのジャンプ処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteJumpToSearchResult(object parameter)
+        {
+            SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
+            if (searchResultEntity == null)
+            {
+                return;
+            }
+        }
+
+        /// <summary>画面上部のテキスト情報更新処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteUpdateTextInfo(object parameter)
+        {
+            if (_displayTextDoc == null)
+            {
+                WordCount = null;
+                NumberOfLines = null;
+            }
+            else
+            {
+                WordCount = _displayTextDoc.TextLength.ToString();
+                NumberOfLines = _displayTextDoc.LineCount.ToString();
+            }
+        }
+
+        /// <summary>編集済み判定処理</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnIsModifiedChanged(object sender, EventArgs e)
+        {
+            TextEditor textEditor = sender as TextEditor;
+            if (textEditor == null)
+            {
+                return;
+            }
+
+            if (textEditor.IsModified)
+            {
+                EditedTextVisible = Visibility.Visible;
+            }
+            else
+            {
+                EditedTextVisible = Visibility.Hidden;
+            }
+        }
+
 
         #endregion
     }

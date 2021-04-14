@@ -16,6 +16,11 @@
         <Image x:Key="SaveIcon" Source="../Resources/save.png"/>
         <!--類語ウィンドウアイコン-->
         <Image x:Key="SynonymIcon" Source="../Resources/synonym.png"/>
+
+        <!--標準検索結果のListViewでHeaderを非表示にする-->
+        <Style x:Key="HeaderHiddenStyle" TargetType="{x:Type  GridViewColumnHeader}">
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
     </Window.Resources>
 
     <!--VMにバインディング-->
@@ -75,15 +80,54 @@
 
             <!--メイン領域-->
             <Grid Grid.Row="0" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <!--文字数等表示行-->
+                    <RowDefinition Height="20"/>
+                    <!--AvalonEdit実装行-->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!--文字数等を表示させる-->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <!--文字数-->
+                        <TextBlock Text="{Binding WordCountText}"/>
+                        <TextBlock Text="{Binding WordCount}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <!--行数-->
+                        <TextBlock Text="{Binding NumberOfLinesText}"/>
+                        <TextBlock Text="{Binding NumberOfLines}" Margin="0,0,40,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <!--編集済み-->
+                        <TextBlock Text="{Binding EditedText}" Visibility="{Binding EditedTextVisible}"/>
+                    </StackPanel>
+                </Grid>
+
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
-                <ae:TextEditor 
+                <ae:TextEditor Grid.Row="1"
                     dd:DragDrop.IsDropTarget="True"
                     dd:DragDrop.DropHandler="{Binding}"                    
-                    >
+                    Document="{Binding Path=DisplayTextDoc}">
+                    <!-- 添付ビヘイビアの使用は一旦停止
                     <bh:Interaction.Behaviors>
                         <vm:AvalonEditBehavior AvalonEditorText="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </bh:Interaction.Behaviors>
+                    -->
+                    <!--文書更新時に文字数等の更新処理をかける-->
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="TextChanged">
+                            <bh:InvokeCommandAction Command="{Binding Command_UpdateTextInfo}"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+
                 </ae:TextEditor>
             </Grid>
 
@@ -122,8 +166,27 @@
                 <Button Grid.Row="1" Grid.Column="3" Command="{Binding Command_Search}" Content="{Binding SearchButtonText}"/>
 
                 <!--検索結果-->
-                <ListView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding SearchResult}" Visibility="{Binding SearchResultVisibility}">
-
+                <ListView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding SearchResult}"
+                          Visibility="{Binding SearchResultVisibility}" SelectionMode="Single">
+                    <ListView.View>
+                        <!--ヘッダは不要なので非表示のスタイルを適用する-->
+                        <GridView ColumnHeaderContainerStyle="{StaticResource HeaderHiddenStyle}">
+                            <GridViewColumn>
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayWord}">                                            
+                                            <!--選択時に移動処理をかける-->
+                                            <bh:Interaction.Triggers>
+                                               <bh:EventTrigger EventName="PreviewMouseDown">
+                                                  <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+                                               </bh:EventTrigger>
+                                            </bh:Interaction.Triggers>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
                 </ListView>
 
             </Grid>

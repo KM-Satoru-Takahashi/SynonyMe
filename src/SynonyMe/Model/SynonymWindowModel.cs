@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SynonyMe.ViewModel;
 using System.Data.SQLite;   // DB
 using System.Data;
+using SynonyMe.CommonLibrary.Entity;
 
 namespace SynonyMe.Model
 {
@@ -40,9 +41,9 @@ namespace SynonyMe.Model
         /// <summary>選択した類語グループリストに紐付く類語一覧を取得する</summary>
         /// <param name="groupID">類語グループリストID</param>
         /// <returns>IDと一致する全類語</returns>
-        internal CommonLibrary.SynonymWordEntity[] GetSynonymWordEntities(int groupID)
+        internal SynonymWordEntity[] GetSynonymWordEntities(int groupID)
         {
-            CommonLibrary.SynonymWordEntity[] synonymWords = null;
+            SynonymWordEntity[] synonymWords = null;
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
@@ -67,9 +68,9 @@ namespace SynonyMe.Model
 
         /// <summary>類語グループリストの一覧を取得する</summary>
         /// <returns>DBに登録されている全類語グループリスト</returns>
-        internal CommonLibrary.SynonymGroupEntity[] GetAllSynonymGroup()
+        internal SynonymGroupEntity[] GetAllSynonymGroup()
         {
-            CommonLibrary.SynonymGroupEntity[] synonymGroups = null;
+            SynonymGroupEntity[] synonymGroups = null;
 
             using (Manager.DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {

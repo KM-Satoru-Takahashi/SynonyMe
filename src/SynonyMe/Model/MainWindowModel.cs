@@ -124,7 +124,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            TextEditor editor = new TextEditor();
+            TextEditor editor = _viewModel.TextEditor;
             try
             {
                 editor.Load(filePath);
