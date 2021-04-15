@@ -10,6 +10,7 @@ using System.Windows;
 namespace SynonyMe.ViewModel
 {
     /// <summary>MainWindowのテキスト編集箇所で使用するビヘイビア(AvalonEdit用)</summary>
+    /// <remarks>2021.04.15~使用していない</remarks>
     internal sealed class AvalonEditBehavior : Behavior<TextEditor>
     {
         /// <summary>AvalonEditor用のプロパティ宣言</summary>

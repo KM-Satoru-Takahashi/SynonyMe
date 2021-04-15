@@ -12,6 +12,7 @@ using System.Windows.Input;
 using SynonyMe.CommonLibrary.Entity;
 using ICSharpCode.AvalonEdit.Document;
 using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace SynonyMe.ViewModel
 {
@@ -40,13 +41,14 @@ namespace SynonyMe.ViewModel
         /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
         private int SEARCHRESULT_MARGIN = 10;
 
+        /// <summary>文字数表示</summary>
         private string _wordCount = null;
 
+        /// <summary>行数表示</summary>
         private string _numberOfLines = null;
 
+        /// <summary>「編集済み」文字のVisibility</summary>
         private Visibility _editedTextVisible = Visibility.Hidden;
-
-        private TextEditor _textEditor = new TextEditor();
 
         /// <summary>AvalonEditの文章管理インスタンス</summary>
         private TextDocument _displayTextDoc = null;
@@ -55,13 +57,9 @@ namespace SynonyMe.ViewModel
 
         #region property
 
-        internal TextEditor TextEditor
-        {
-            get
-            {
-                return _textEditor;
-            }
-        }
+        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス</summary>
+        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
+        internal TextEditor TextEditor { get; } = new TextEditor();
 
         /// <summary>ウィンドウタイトル</summary>
         public string MainWindowTitle { get; } = "SynonyMe";
@@ -78,8 +76,15 @@ namespace SynonyMe.ViewModel
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument DisplayTextDoc
         {
-            get { return _displayTextDoc; }
-            set { _displayTextDoc = value; OnPropertyChanged("DisplayTextDoc"); }
+            get
+            {
+                return _displayTextDoc;
+            }
+            set
+            {
+                _displayTextDoc = value;
+                OnPropertyChanged("DisplayTextDoc");
+            }
         }
 
         /// <summary>検索文字列</summary>
@@ -123,7 +128,10 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>文字数表示の固定値「文字数」</summary>
         public string WordCountText { get; } = "文字数：";
+
+        /// <summary>文字数表示箇所</summary>
         public string WordCount
         {
             get
@@ -142,7 +150,10 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>行数表示の固定値「行数」</summary>
         public string NumberOfLinesText { get; } = "行数：";
+
+        /// <summary>行数表示箇所</summary>
         public string NumberOfLines
         {
             get
@@ -161,9 +172,10 @@ namespace SynonyMe.ViewModel
             }
         }
 
-
+        /// <summary>編集済みテキスト（固定値）</summary>
         public string EditedText { get; } = "編集済み";
 
+        /// <summary>編集済みテキスト表示状態</summary>
         public Visibility EditedTextVisible
         {
             get
@@ -216,7 +228,7 @@ namespace SynonyMe.ViewModel
         {
             _model = new Model.MainWindowModel(this);
 
-            _displayTextDoc = _textEditor.Document;
+            _displayTextDoc = TextEditor.Document;
 
             // コマンド初期化処理
             Command_Save = new CommandBase(ExecuteSave, null);
@@ -327,13 +339,13 @@ namespace SynonyMe.ViewModel
             else if (indexWordPairs.Count < 1)
             {
                 // 検索結果がなければ、その旨を表示する
+                // TODO
             }
             else
             {
                 // 検索結果ありの場合、結果を表示できるようにする
                 SearchResultVisibility = Visibility.Visible;
             }
-
 
             // 念のため昇順にソートしておく
             indexWordPairs.OrderBy(pair => pair.Key);
@@ -362,6 +374,24 @@ namespace SynonyMe.ViewModel
             {
                 return;
             }
+
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う
+            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is MainWindow);
+            MainWindow mw = view as MainWindow;
+            if (mw == null)
+            {
+                throw new NullReferenceException("MainWindow is null");
+            }
+
+            TextEditor target = mw.TextEditor;
+            if (target == null)
+            {
+                throw new NullReferenceException("TextEditor is null");
+            }
+
+            target.CaretOffset = searchResultEntity.Index;
+            // BeginInvokeしないとFocusしてくれない
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
         }
 
         /// <summary>画面上部のテキスト情報更新処理</summary>
