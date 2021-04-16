@@ -185,7 +185,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            TextEditor textEditor = new TextEditor();
+            TextEditor textEditor = _viewModel.TextEditor;
             try
             {
                 textEditor.Load(filePath);
@@ -289,8 +289,15 @@ namespace SynonyMe.Model
             }
 
             // 他の箇所を繰り返し探していく
+            int resultCount = 1;
             while (0 <= foundIndex) // 該当がなくなると検索結果インデックスは-1が戻ってくる
             {
+                // 検索結果は規定値まで
+                if (SEARCH_RESULT_DISPLAY_NUMBER < resultCount)
+                {
+                    break;
+                }
+
                 // 最初に[前回の検索結果インデックス]をリストに追加しておく
                 // 1箇所目も登録される
                 searchResultIndex.Add(foundIndex);
@@ -300,13 +307,14 @@ namespace SynonyMe.Model
                 if (nextIndex < targetText.Length)
                 {
                     foundIndex = targetText.IndexOf(searchWord, nextIndex);
-                    continue;
                 }
                 else
                 {
                     // 文章の長さを超えるなら、検索しない
                     break;
                 }
+
+                ++resultCount;
             }
 
             // 実際にテキストから、Viewに表示対象となる語句領域を切り取っていく
@@ -318,7 +326,6 @@ namespace SynonyMe.Model
                 int frontMargin = searchResultIndex[targetIndex] - margin;
                 // 後ろ側マージン→インデックス＋検索対象語句＋マージン
                 int behindMargin = searchResultIndex[targetIndex] + searchWord.Length + margin;
-
 
                 // 後ろのマージンがなくても、最後の検索とは限らないので、foreachは続けること
                 // 例：「あああああああ」で「あ」だけを検索した場合

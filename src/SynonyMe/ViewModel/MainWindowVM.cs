@@ -389,7 +389,10 @@ namespace SynonyMe.ViewModel
                 throw new NullReferenceException("TextEditor is null");
             }
 
+            // キャレット更新
             target.CaretOffset = searchResultEntity.Index;
+            target.TextArea.Caret.BringCaretToView();
+
             // BeginInvokeしないとFocusしてくれない
             Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
         }

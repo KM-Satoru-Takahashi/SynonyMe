@@ -57,7 +57,7 @@
         <Grid Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <!--検索領域(左列)-->
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
                 <!--メイン領域(中央列)-->
                 <ColumnDefinition Width="2*"/>
                 <!--類語領域(右列)-->
@@ -132,12 +132,14 @@
             </Grid>
 
             <!--検索領域-->
+            <Border BorderBrush="LightGray" BorderThickness="0,0,3,0" Grid.Column="0" Grid.Row="0"/>
+            <Expander Grid.Row="0" Grid.Column="0" ExpandDirection="Left" Padding="0,5,5,0" Header="検索">
             <Grid Grid.Row="0" Grid.Column="0">
                 <Grid.ColumnDefinitions>
                     <!--左側余白-->
                     <ColumnDefinition Width="10"/>
                     <!--検索テキスト表示列-->
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
                     <!--検索テキストと検索ボタン間の余白-->
                     <ColumnDefinition Width="20"/>
                     <!--検索ボタン表示列-->
@@ -190,7 +192,7 @@
                 </ListView>
 
             </Grid>
-
+            </Expander>
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
 
