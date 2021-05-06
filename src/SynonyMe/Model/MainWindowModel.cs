@@ -277,15 +277,63 @@ namespace SynonyMe.Model
                 return null;
             }
 
+            // 検索対象語句のインデックスを取得する
+            int[] searchResultIndexArray = GetAllSearchResultIndex(searchWord, targetText);
+            if (searchResultIndexArray == null)
+            {
+                // nullは異常な場合
+                return null;
+            }
+            else if (searchResultIndexArray.Any() == false)
+            {
+                // 検索したが結果が無い場合はEmptyを返す
+                return new Dictionary<int, string>();
+            }
+            int searchResultCount = searchResultIndexArray.Count();
+
+            string[] searchResultWordArray = GetAllSearchResultWords(searchResultIndexArray, searchWord, targetText, margin);
+            if (searchResultWordArray == null)
+            {
+                return null;
+            }
+            else if (searchResultWordArray.Any() == false)
+            {
+                // 検索したが結果が無い場合はEmptyを返す
+                return new Dictionary<int, string>();
+            }
+
+            // 最終的にDictionaryで返せばよくない？
+            Dictionary<int/*index*/, string/*result*/> searchResultIndexWordPairs = new Dictionary<int, string>();
+            for (int i = 0; i < searchResultCount; ++i)
+            {
+                searchResultIndexWordPairs.Add(searchResultIndexArray[i], searchResultWordArray[i]);
+            }
+
+            return searchResultIndexWordPairs;
+        }
+
+        /// <summary>
+        /// 対象文章内における検索対象語句の全インデックスを取得する
+        /// </summary>
+        /// <param name="searchWord"></param>
+        /// <param name="targetText"></param>
+        /// <returns></returns>
+        private int[] GetAllSearchResultIndex(string searchWord, string targetText)
+        {
+            if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
+            {
+                return null;
+            }
+
             // 文書中で該当するインデックスを一旦入れておくリストを用意
-            List<int> searchResultIndex = new List<int>();
+            List<int> searchResultIndexList = new List<int>();
 
             // 1箇所目をまず探す
             int foundIndex = targetText.IndexOf(searchWord);
             if (foundIndex < 0)
             {
-                // 検索したが何もない場合はエラーではないので空のdicを戻すようにする
-                return new Dictionary<int, string>();
+                // 検索したが何もない場合はエラーではないので空の配列を戻すようにする
+                return new int[0];
             }
 
             // 他の箇所を繰り返し探していく
@@ -300,7 +348,7 @@ namespace SynonyMe.Model
 
                 // 最初に[前回の検索結果インデックス]をリストに追加しておく
                 // 1箇所目も登録される
-                searchResultIndex.Add(foundIndex);
+                searchResultIndexList.Add(foundIndex);
 
                 // 次の検索位置は「前の検索位置」に「検索対象の語句の長さ」を足した地点
                 int nextIndex = foundIndex + searchWord.Length;
@@ -317,15 +365,43 @@ namespace SynonyMe.Model
                 ++resultCount;
             }
 
+            return searchResultIndexList.ToArray();
+        }
+
+        /// <summary>先頭から順に対象語句を検索し、マージンを考慮した全検索結果を取得する</summary>
+        /// <param name="allIndexArray"></param>
+        /// <param name="searchWord"></param>
+        /// <param name="targetText"></param>
+        /// <returns></returns>
+        private string[] GetAllSearchResultWords(int[] allIndexArray, string searchWord, string targetText, int margin)
+        {
+            #region check args
+
+            if (allIndexArray == null || allIndexArray.Any() == false)
+            {
+                return null;
+            }
+            else if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
+            {
+                return null;
+            }
+            else if (margin < 0)
+            {
+                return null;
+            }
+
+            #endregion
+
             // 実際にテキストから、Viewに表示対象となる語句領域を切り取っていく
             // インデックス分だけ必ずあるはず
-            string[] searchResultWordList = new string[searchResultIndex.Count];
-            for (int targetIndex = 0; targetIndex < searchResultIndex.Count; ++targetIndex)
+            int searchResultCount = allIndexArray.Count();
+            string[] searchResultWordArray = new string[searchResultCount];
+            for (int targetIndex = 0; targetIndex < searchResultCount; ++targetIndex)
             {
                 // 手前側マージン
-                int frontMargin = searchResultIndex[targetIndex] - margin;
+                int frontMargin = allIndexArray[targetIndex] - margin;
                 // 後ろ側マージン→インデックス＋検索対象語句＋マージン
-                int behindMargin = searchResultIndex[targetIndex] + searchWord.Length + margin;
+                int behindMargin = allIndexArray[targetIndex] + searchWord.Length + margin;
 
                 // 後ろのマージンがなくても、最後の検索とは限らないので、foreachは続けること
                 // 例：「あああああああ」で「あ」だけを検索した場合
@@ -333,39 +409,31 @@ namespace SynonyMe.Model
                 {
                     // 手前に規定値分のマージンがなく、後ろにも規定値分のマージンがない場合
                     // 「文字列の最初～文字列の最後」までを切り取る→検索対象の文字列をそのまま入れ込む
-                    searchResultWordList[targetIndex] = targetText;
+                    searchResultWordArray[targetIndex] = targetText;
                 }
                 else if (frontMargin < 0)
                 {
                     // 手前に規定値分のマージンがなく、後ろには規定値分のマージンがある場合
                     // 「文字列の最初～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    searchResultWordList[targetIndex] = targetText.Substring(0, searchWord.Length + margin); // substringの第2引数は切り取る文字数
+                    searchResultWordArray[targetIndex] = targetText.Substring(0, searchWord.Length + margin); // substringの第2引数は切り取る文字数
                 }
                 else if (targetText.Length < behindMargin + 1)
                 {
                     // 手前に規定値分のマージンがあり、後ろには規定値分のマージンがない場合
                     // 「手前のマージン～文字列の最後」までを切り取る
-                    searchResultWordList[targetIndex] = targetText.Substring(frontMargin);
+                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin);
 
                 }
                 else
                 {
                     // 手前に規定値分のマージンがあり、後ろにも規定値分のマージンがある場合
                     // 「手前のマージン～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    searchResultWordList[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + margin);
+                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + margin);
                 }
             }
 
-            // 最終的にDictionaryで返せばよくない？
-            Dictionary<int/*index*/, string/*result*/> searchResultIndexWordPairs = new Dictionary<int, string>();
-            for (int i = 0; i < searchResultIndex.Count; ++i)
-            {
-                searchResultIndexWordPairs.Add(searchResultIndex[i], searchResultWordList[i]);
-            }
-
-            return searchResultIndexWordPairs;
+            return searchResultWordArray;
         }
-
 
         #endregion
     }

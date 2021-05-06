@@ -206,7 +206,7 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                if(_noSearchResultVisibility == value)
+                if (_noSearchResultVisibility == value)
                 {
                     return;
                 }
