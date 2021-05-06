@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SQLite;   // DB
+using SynonyMe.CommonLibrary.Entity;
 
 
 namespace SynonyMe.Model.Manager
@@ -126,7 +127,7 @@ namespace SynonyMe.Model.Manager
         /// <param name="sql">実行対象のSQL文</param>
         /// <param name="synonymGroups">取得したSynonymGroupEntity配列</param>
         /// <returns>成功時:true, 失敗時:false</returns>
-        internal bool GetTargetSynonymGroups(string sql, out CommonLibrary.SynonymGroupEntity[] synonymGroups)
+        internal bool GetTargetSynonymGroups(string sql, out SynonymGroupEntity[] synonymGroups)
         {
             synonymGroups = null;
             if (string.IsNullOrEmpty(sql))
@@ -144,7 +145,7 @@ namespace SynonyMe.Model.Manager
                         return false;
                     }
 
-                    List<CommonLibrary.SynonymGroupEntity> synonymGroupList = new List<CommonLibrary.SynonymGroupEntity>();
+                    List<SynonymGroupEntity> synonymGroupList = new List<SynonymGroupEntity>();
 
                     // SQLの実行結果をここで格納する
                     while (reader.Read())
@@ -161,7 +162,7 @@ namespace SynonyMe.Model.Manager
                         string groupRegistDate = reader["GroupRegistDate"] as string;
                         string groupUpdateDate = reader["GroupUpdateDate"] as string;
 
-                        CommonLibrary.SynonymGroupEntity synonymGroupEntity = new CommonLibrary.SynonymGroupEntity
+                        SynonymGroupEntity synonymGroupEntity = new SynonymGroupEntity
                         {
                             GroupID = groupID,
                             GroupName = groupName,
@@ -189,7 +190,7 @@ namespace SynonyMe.Model.Manager
         /// <param name="sql"></param>
         /// <param name="synonymWords"></param>
         /// <returns></returns>
-        internal bool GetTargetSynonymWords(string sql, out CommonLibrary.SynonymWordEntity[] synonymWords)
+        internal bool GetTargetSynonymWords(string sql, out SynonymWordEntity[] synonymWords)
         {
             synonymWords = null;
 
@@ -206,7 +207,7 @@ namespace SynonyMe.Model.Manager
                     return false;
                 }
 
-                List<CommonLibrary.SynonymWordEntity> synonymWordList = new List<CommonLibrary.SynonymWordEntity>();
+                List<SynonymWordEntity> synonymWordList = new List<SynonymWordEntity>();
                 try
                 {
                     // SQLの実行結果をここで格納する
@@ -232,7 +233,7 @@ namespace SynonyMe.Model.Manager
                         string wordRegistDate = reader["RegistDate"] as string;
                         string wordUpdateDate = reader["UpdateDate"] as string;
 
-                        CommonLibrary.SynonymWordEntity synonymWordEntity = new CommonLibrary.SynonymWordEntity
+                        SynonymWordEntity synonymWordEntity = new SynonymWordEntity
                         {
                             WordID = wordID,
                             GroupID = groupID,

@@ -9,6 +9,10 @@ using System.IO;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using System.Windows.Input;
+using SynonyMe.CommonLibrary.Entity;
+using ICSharpCode.AvalonEdit.Document;
+using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace SynonyMe.ViewModel
 {
@@ -19,10 +23,6 @@ namespace SynonyMe.ViewModel
         /// <summary>Model</summary>
         private SynonyMe.Model.MainWindowModel _model = null;
 
-        /// <summary>画面表示テキスト</summary>
-        /// 将来的にタブVMへ移管予定
-        private string _displayText = null;
-
         /// <summary>画面表示中テキストの絶対パス</summary>
         /// 将来的にタブVMへ移管予定
         private string _displayTextFilePath = null;
@@ -31,9 +31,38 @@ namespace SynonyMe.ViewModel
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
 
+        /// <summary>検索結果リスト</summary>
+        private ObservableCollection<SearchResultEntity> _searchResult = new ObservableCollection<SearchResultEntity>();
+
+        /// <summary>検索結果リストの表示状態</summary>
+        private Visibility _searchResultVisibility = Visibility.Hidden;
+
+        /// <summary>検索結果無し時の表示状態</summary>
+        private Visibility _noSearchResultVisibility = Visibility.Hidden;
+
+        /// <summary>単語検索時、前後何文字を検索結果として表示するか</summary>
+        /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
+        private int SEARCHRESULT_MARGIN = 10;
+
+        /// <summary>文字数表示</summary>
+        private string _wordCount = null;
+
+        /// <summary>行数表示</summary>
+        private string _numberOfLines = null;
+
+        /// <summary>「編集済み」文字のVisibility</summary>
+        private Visibility _editedTextVisible = Visibility.Hidden;
+
+        /// <summary>AvalonEditの文章管理インスタンス</summary>
+        private TextDocument _displayTextDoc = null;
+
         #endregion
 
         #region property
+
+        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス</summary>
+        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
+        internal TextEditor TextEditor { get; } = new TextEditor();
 
         /// <summary>ウィンドウタイトル</summary>
         public string MainWindowTitle { get; } = "SynonyMe";
@@ -44,27 +73,167 @@ namespace SynonyMe.ViewModel
         /// <summary>フッター部分の高さ(固定値)</summary>
         public int FooterHeight { get; } = 30;
 
-        /// <summary>文章表示領域の表示テキスト</summary>
-        public string DisplayText
+        /// <summary>検索ボタン表示文字列</summary>
+        public string SearchButtonText { get; } = "検索";
+
+        /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
+        public TextDocument DisplayTextDoc
         {
             get
             {
-                return _displayText;
+                return _displayTextDoc;
             }
             set
             {
-                _displayText = value;
-                OnPropertyChanged("DisplayText");
+                _displayTextDoc = value;
+                OnPropertyChanged("DisplayTextDoc");
             }
         }
+
+        /// <summary>検索文字列</summary>
+        public string SearchWord { get; set; } = null;
+
+        /// <summary>検索結果</summary>
+        public ObservableCollection<SearchResultEntity> SearchResult
+        {
+            get
+            {
+                return _searchResult;
+            }
+            set
+            {
+                if (_searchResult == value)
+                {
+                    return;
+                }
+
+                _searchResult = value;
+                OnPropertyChanged("SearchResult");
+            }
+        }
+
+        /// <summary>検索結果表示状態</summary>
+        public Visibility SearchResultVisibility
+        {
+            get
+            {
+                return _searchResultVisibility;
+            }
+            set
+            {
+                if (_searchResultVisibility == value)
+                {
+                    return;
+                }
+
+                _searchResultVisibility = value;
+                OnPropertyChanged("SearchResultVisibility");
+            }
+        }
+
+        /// <summary>文字数表示の固定値「文字数」</summary>
+        public string WordCountText { get; } = "文字数：";
+
+        /// <summary>文字数表示箇所</summary>
+        public string WordCount
+        {
+            get
+            {
+                return _wordCount;
+            }
+            set
+            {
+                if (_wordCount == value)
+                {
+                    return;
+                }
+
+                _wordCount = value;
+                OnPropertyChanged("WordCount");
+            }
+        }
+
+        /// <summary>行数表示の固定値「行数」</summary>
+        public string NumberOfLinesText { get; } = "行数：";
+
+        /// <summary>行数表示箇所</summary>
+        public string NumberOfLines
+        {
+            get
+            {
+                return _numberOfLines;
+            }
+            set
+            {
+                if (_numberOfLines == value)
+                {
+                    return;
+                }
+
+                _numberOfLines = value;
+                OnPropertyChanged("NumberOfLines");
+            }
+        }
+
+        /// <summary>編集済みテキスト（固定値）</summary>
+        public string EditedText { get; } = "編集済み";
+
+        /// <summary>編集済みテキスト表示状態</summary>
+        public Visibility EditedTextVisible
+        {
+            get
+            {
+                return _editedTextVisible;
+            }
+            private set
+            {
+                if (_editedTextVisible == value)
+                {
+                    return;
+                }
+
+                _editedTextVisible = value;
+                OnPropertyChanged("EditedTextVisible");
+            }
+        }
+
+        /// <summary>検索結果が無い場合に表示される語句の表示状態</summary>
+        public Visibility NoSearchResultVisibility
+        {
+            get
+            {
+                return _noSearchResultVisibility;
+            }
+            set
+            {
+                if (_noSearchResultVisibility == value)
+                {
+                    return;
+                }
+
+                _noSearchResultVisibility = value;
+                OnPropertyChanged("NoSearchResultVisibility");
+            }
+        }
+
+        public string NoSearchResultWord { get; } = "対象語句がありません";
 
         #region command
 
         /// <summary>保存ボタン</summary>
-        public ICommand Command_Save { get; protected set; } = null;
+        public ICommand Command_Save { get; private set; } = null;
 
         /// <summary>類語コマンド</summary>
-        public ICommand Command_OpenSynonymWindow { get; protected set; } = null;
+        public ICommand Command_OpenSynonymWindow { get; private set; } = null;
+
+        /// <summary>検索コマンド</summary>
+        public ICommand Command_Search { get; private set; } = null;
+
+        /// <summary>検索結果クリック時のジャンプコマンド</summary>
+        public ICommand Command_JumpToSearchResult { get; private set; } = null;
+
+        /// <summary>文字数等の更新処理</summary>
+        public ICommand Command_UpdateTextInfo { get; private set; } = null;
 
         #endregion
 
@@ -83,9 +252,24 @@ namespace SynonyMe.ViewModel
         {
             _model = new Model.MainWindowModel(this);
 
+            _displayTextDoc = TextEditor.Document;
+
             // コマンド初期化処理
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+            Command_Search = new CommandBase(ExecuteSearch, null);
+            Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
+            Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
+
+            // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
+            // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
+            // TODO:DependencyPropertyDescriptorは強参照のためメモリリークの恐れがあり、要調査
+            var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
+            if (descripter != null)
+            {
+                descripter.RemoveValueChanged(TextEditor, OnIsModifiedChanged);
+                descripter.AddValueChanged(TextEditor, OnIsModifiedChanged);
+            }
         }
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
@@ -128,18 +312,157 @@ namespace SynonyMe.ViewModel
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
             _displayTextFilePath = displayTargetFilePaths[0];
-            DisplayText = _model.GetDisplayText(dropInfo)[0];
+            DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
         }
 
+        /// <summary>編集中のテキスト保存処理</summary>
+        /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
-            _model.Save(_displayTextFilePath, _displayText);
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteSave _model is null");
+            }
+
+            _model.Save(_displayTextFilePath, DisplayTextDoc.Text);
         }
 
+        /// <summary>類語ウィンドウを開く</summary>
+        /// <param name="parameter"></param>
         private void ExecuteOpenSynonymWindow(object parameter)
         {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteOpenSynonymWindow _model is null");
+            }
+
             _model.OpenSynonymWindow();
         }
+
+        /// <summary>検索処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSearch(object parameter)
+        {
+            if (_model == null)
+            {
+                throw new NullReferenceException("ExecuteSearch _model is null");
+            }
+
+            if (string.IsNullOrEmpty(SearchWord))
+            {
+                return;
+            }
+
+            // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
+            // 本文ハイライトは現状実装できていない
+            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
+            if (indexWordPairs == null)
+            {
+                // nullなら表示を隠す
+                SearchResultVisibility = Visibility.Hidden;
+                return;
+            }
+            else if (indexWordPairs.Count < 1)
+            {
+                // 検索結果がなければ、その旨を表示する
+                NoSearchResultVisibility = Visibility.Visible;
+                SearchResultVisibility = Visibility.Hidden;
+                return;
+            }
+            else
+            {
+                // 検索結果ありの場合、結果を表示できるようにする
+                NoSearchResultVisibility = Visibility.Hidden;
+                SearchResultVisibility = Visibility.Visible;
+            }
+
+            // 念のため昇順にソートしておく
+            indexWordPairs.OrderBy(pair => pair.Key);
+
+            SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
+            int index = 0;
+            foreach (KeyValuePair<int, string> kvp in indexWordPairs)
+            {
+                searchResults[index] = new SearchResultEntity()
+                {
+                    Index = kvp.Key,
+                    DisplayWord = kvp.Value
+                };
+                ++index;
+            }
+
+            SearchResult = new ObservableCollection<SearchResultEntity>(searchResults);
+        }
+
+        /// <summary>検索結果へのジャンプ処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteJumpToSearchResult(object parameter)
+        {
+            SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
+            if (searchResultEntity == null)
+            {
+                return;
+            }
+
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う
+            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is MainWindow);
+            MainWindow mw = view as MainWindow;
+            if (mw == null)
+            {
+                throw new NullReferenceException("MainWindow is null");
+            }
+
+            TextEditor target = mw.TextEditor;
+            if (target == null)
+            {
+                throw new NullReferenceException("TextEditor is null");
+            }
+
+            // キャレット更新
+            target.CaretOffset = searchResultEntity.Index;
+            target.TextArea.Caret.BringCaretToView();
+
+            // BeginInvokeしないとFocusしてくれない
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+        }
+
+        /// <summary>画面上部のテキスト情報更新処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteUpdateTextInfo(object parameter)
+        {
+            if (_displayTextDoc == null)
+            {
+                WordCount = null;
+                NumberOfLines = null;
+            }
+            else
+            {
+                WordCount = _displayTextDoc.TextLength.ToString();
+                NumberOfLines = _displayTextDoc.LineCount.ToString();
+            }
+        }
+
+        /// <summary>編集済み判定処理</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnIsModifiedChanged(object sender, EventArgs e)
+        {
+            TextEditor textEditor = sender as TextEditor;
+            if (textEditor == null)
+            {
+                return;
+            }
+
+            if (textEditor.IsModified)
+            {
+                EditedTextVisible = Visibility.Visible;
+            }
+            else
+            {
+                EditedTextVisible = Visibility.Hidden;
+            }
+        }
+
 
         #endregion
     }

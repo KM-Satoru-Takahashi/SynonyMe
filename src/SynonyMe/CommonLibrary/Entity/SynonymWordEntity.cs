@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SynonyMe.CommonLibrary
+namespace SynonyMe.CommonLibrary.Entity
 {
     /// <summary>DBのSynonymWordsテーブルに対応したクラス</summary>
     public class SynonymWordEntity
