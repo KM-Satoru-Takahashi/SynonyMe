@@ -37,6 +37,9 @@ namespace SynonyMe.ViewModel
         /// <summary>検索結果リストの表示状態</summary>
         private Visibility _searchResultVisibility = Visibility.Hidden;
 
+        /// <summary>検索結果無し時の表示状態</summary>
+        private Visibility _noSearchResultVisibility = Visibility.Hidden;
+
         /// <summary>単語検索時、前後何文字を検索結果として表示するか</summary>
         /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
         private int SEARCHRESULT_MARGIN = 10;
@@ -194,6 +197,27 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>検索結果が無い場合に表示される語句の表示状態</summary>
+        public Visibility NoSearchResultVisibility
+        {
+            get
+            {
+                return _noSearchResultVisibility;
+            }
+            set
+            {
+                if(_noSearchResultVisibility == value)
+                {
+                    return;
+                }
+
+                _noSearchResultVisibility = value;
+                OnPropertyChanged("NoSearchResultVisibility");
+            }
+        }
+
+        public string NoSearchResultWord { get; } = "対象語句がありません";
+
         #region command
 
         /// <summary>保存ボタン</summary>
@@ -330,20 +354,25 @@ namespace SynonyMe.ViewModel
             }
 
             // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
+            // 本文ハイライトは現状実装できていない
             Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
             if (indexWordPairs == null)
             {
                 // nullなら表示を隠す
                 SearchResultVisibility = Visibility.Hidden;
+                return;
             }
             else if (indexWordPairs.Count < 1)
             {
                 // 検索結果がなければ、その旨を表示する
-                // TODO
+                NoSearchResultVisibility = Visibility.Visible;
+                SearchResultVisibility = Visibility.Hidden;
+                return;
             }
             else
             {
                 // 検索結果ありの場合、結果を表示できるようにする
+                NoSearchResultVisibility = Visibility.Hidden;
                 SearchResultVisibility = Visibility.Visible;
             }
 
