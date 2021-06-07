@@ -205,6 +205,47 @@
                 </ae:TextEditor>
             </Grid>
 
+            <!--類語領域-->
+            <Grid Grid.Row="0" Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <!--上部余白は中央の文字数・行数カウントと同じ高さにする-->
+                    <RowDefinition Height="20" />
+                    <!--類語グループリスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--類語リスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--検索結果-->
+                    <RowDefinition Height="0.4*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <!--左側余白　※GridSplitterの実装で要らなくなるかもしれないが、開発中は一旦実装-->
+                    <ColumnDefinition Width="5"/>
+                    <!--メイン-->
+                    <ColumnDefinition Width="*"/>
+                    <!--右側余白-->
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+                
+                <!--類語グループリスト一覧-->
+                <ListView Grid.Row="1" Grid.Column="1">
+                    
+                </ListView>
+                
+                <!--類語一覧-->
+                <ListView Grid.Row="3" Grid.Column="1">
+                    
+                </ListView>
+                
+                <!--類語検索結果-->
+                <ListView Grid.Row="5" Grid.Column="1">
+                    
+                </ListView>                
+            </Grid>
+
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
 

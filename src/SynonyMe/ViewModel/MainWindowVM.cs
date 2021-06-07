@@ -31,8 +31,8 @@ namespace SynonyMe.ViewModel
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
 
-        /// <summary>検索結果リスト</summary>
-        private ObservableCollection<SearchResultEntity> _searchResult = new ObservableCollection<SearchResultEntity>();
+        /// <summary>タブの並び替えとかもあるだろうが、とりあえずこうやって管理しておくことにする</summary>
+        private int _tabId = 0;
 
         /// <summary>検索結果リストの表示状態</summary>
         private Visibility _searchResultVisibility = Visibility.Hidden;
@@ -93,24 +93,8 @@ namespace SynonyMe.ViewModel
         /// <summary>検索文字列</summary>
         public string SearchWord { get; set; } = null;
 
-        /// <summary>検索結果</summary>
-        public ObservableCollection<SearchResultEntity> SearchResult
-        {
-            get
-            {
-                return _searchResult;
-            }
-            set
-            {
-                if (_searchResult == value)
-                {
-                    return;
-                }
-
-                _searchResult = value;
-                OnPropertyChanged("SearchResult");
-            }
-        }
+        /// <summary>検索結果一覧</summary>
+        public ObservableCollection<SearchResultEntity> SearchResult { get; set; } = new ObservableCollection<SearchResultEntity>();
 
         /// <summary>検索結果表示状態</summary>
         public Visibility SearchResultVisibility
@@ -309,9 +293,14 @@ namespace SynonyMe.ViewModel
 
             // 将来的にはタブを分離させる必要があるので、そのための仮処置
             List<string> displayTargetFilePaths = _model.GetDisplayTextFilePath(dropInfo);
+            foreach (string filePath in displayTargetFilePaths)
+            {
+                _openingFiles.Add(_tabId, filePath);
+                ++_tabId;
+            }
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
-            _displayTextFilePath = displayTargetFilePaths[0];
+            _displayTextFilePath = _openingFiles[0];
             DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
         }
 
@@ -380,18 +369,16 @@ namespace SynonyMe.ViewModel
             indexWordPairs.OrderBy(pair => pair.Key);
 
             SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
-            int index = 0;
             foreach (KeyValuePair<int, string> kvp in indexWordPairs)
             {
-                searchResults[index] = new SearchResultEntity()
-                {
-                    Index = kvp.Key,
-                    DisplayWord = kvp.Value
-                };
-                ++index;
+                SearchResult.Add(
+                    new SearchResultEntity()
+                    {
+                        Index = kvp.Key,
+                        DisplayWord = kvp.Value
+                    }
+                    );
             }
-
-            SearchResult = new ObservableCollection<SearchResultEntity>(searchResults);
         }
 
         /// <summary>検索結果へのジャンプ処理</summary>
@@ -404,13 +391,8 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う
-            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is MainWindow);
-            MainWindow mw = view as MainWindow;
-            if (mw == null)
-            {
-                throw new NullReferenceException("MainWindow is null");
-            }
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う            
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
 
             TextEditor target = mw.TextEditor;
             if (target == null)
@@ -465,5 +447,46 @@ namespace SynonyMe.ViewModel
 
 
         #endregion
+
+        #region 類語検索結果関連Entity
+
+        /// <summary>表示用の類語一覧リスト</summary>
+        private class DisplaySynonymWord
+        {
+            // todo:色表示用プロパティ        
+
+            /// <summary>類語</summary>
+            public string SynonymWord { get; private set; }
+
+            /// <summary>類語の合計使用回数</summary>
+            public int WordCount { get; set; }
+
+            /// <summary>連続使用の合計回数</summary>
+            public int RepeatCount { get; set; }
+        }
+
+        /// <summary>表示用の類語検索結果</summary>
+        private class DisplaySynonymSearchResult
+        {
+            // todo:色表示用プロパティ
+
+            /// <summary>使用箇所</summary>
+            /// <remarks>通常検索の検索結果と同じ考え方</remarks>
+            public string UsingSection { get; set; }
+
+            /// <summary>検索元の類語</summary>
+            public string SynonymWord { get; set; }
+
+            /// <summary>今の時点で何回目の使用か</summary>
+            /// <remarks>最小値は1</remarks>
+            public int UsingCount { get; set; }
+
+            /// <summary>連続して使用されている場合、何回続いているか</summary>
+            /// <remarks>最小値0の次は2になることに要注意</remarks>
+            public int RepeatCount { get; set; }
+        }
+
+        #endregion
+
     }
 }

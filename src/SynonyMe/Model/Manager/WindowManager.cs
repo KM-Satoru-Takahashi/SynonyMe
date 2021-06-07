@@ -75,10 +75,10 @@ namespace SynonyMe.Model.Manager
             }
         }
 
-        /// <summary>表示中のWindowを取得する</summary>
+        /// <summary>表示中のサブWindowを取得する</summary>
         /// <param name="windowName"></param>
         /// <returns></returns>
-        internal static Window GetWindow(Define.SubWindowName windowName)
+        internal static Window GetSubWindow(Define.SubWindowName windowName)
         {
             if(_displaySubWindowList == null || _displaySubWindowList.Any()==false)
             {
@@ -86,6 +86,22 @@ namespace SynonyMe.Model.Manager
             }
 
             return _displaySubWindowList.Find(w => w.SubWindowName == windowName).Window;
+        }
+
+        /// <summary>
+        /// MainWindowを取得する
+        /// </summary>
+        /// <returns>可能ならGetSubWindowと統合させるべき……</returns>
+        internal static MainWindow GetMainWindow()
+        {
+            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is MainWindow);
+            MainWindow mw = view as MainWindow;
+            if (mw == null)
+            {
+                throw new NullReferenceException("MainWindow is null");
+            }
+
+            return mw;
         }
 
         #endregion
