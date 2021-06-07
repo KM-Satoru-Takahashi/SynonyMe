@@ -33,6 +33,18 @@ namespace SynonyMe.Model
 
         #endregion
 
+        internal event EventHandler UpdateSynonymEvent
+        {
+            add
+            {
+                Manager.SynonymManager.UpdateSynonymEvent += value;
+            }
+            remove
+            {
+                Manager.SynonymManager.UpdateSynonymEvent -= value;
+            }
+        }
+
         #region method
 
         /// <summary>コンストラクタ</summary>
@@ -428,12 +440,199 @@ namespace SynonyMe.Model
                 {
                     // 手前に規定値分のマージンがあり、後ろにも規定値分のマージンがある場合
                     // 「手前のマージン～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + margin);
+                    // marginを2倍しておかないと手前のmargin分しか切り取れない
+                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + 2 * margin);
                 }
             }
 
             return searchResultWordArray;
         }
+
+        /// <summary>DBに登録されている全類語グループを取得する</summary>
+        /// <returns></returns>
+        internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
+        {
+            return Manager.SynonymManager.GetAllSynonymGroup();
+        }
+
+        /// <summary>類語グループIDに紐付く類語一覧を取得する</summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
+        internal CommonLibrary.Entity.SynonymWordEntity[] GetSynonymWordEntities(int groupId)
+        {
+            return Manager.SynonymManager.GetSynonymWordEntities(groupId);
+        }
+
+        /// <summary>類語検索処理を実施する</summary>
+        /// <param name="groupId">選択中の類語グループID</param>
+        /// <param name="targetText">対象（表示中）テキスト</param>
+        /// <returns>結果配列</returns>
+        internal MainWindowVM.DisplaySynonymSearchResult[] SynonymSearch(MainWindowVM.DisplaySynonymWord[] targetSynonyms, string targetText)
+        {
+            #region check args
+
+            if (targetSynonyms == null || targetSynonyms.Any() == false)
+            {
+                // todo:log
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(targetText))
+            {
+                // todo:log
+                return null;
+            }
+
+            #endregion
+
+            // 類語の全検索結果を取得
+            List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
+                = GetAllSynonymSearchResult(targetSynonyms, targetText);
+
+            // Index順にSortして配列化する。昇順であることを保証したいが、動作が不安定になる場合は
+            // 将来的にSortedDictionaryとOrderdDictionaryの使用を考える
+            MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResultArray
+                = unsortedSynonymSearchResults.OrderBy(result => result.Index).ToArray();
+
+            // 参照型を値渡しして、resultのRepeatCountとUsingCountを取得してreturnする
+            // 参照型の参照渡しをするとインスタンスごと書き換えられるリスクがあるので許容しない
+            AdjustRepeatCountAndUsingCount(sortedSynonymSearchResultArray);
+            return sortedSynonymSearchResultArray;
+        }
+
+        /// <summary>渡された類語検索結果に基づいて、内部のRepeatCountとUsingCountを計算する</summary>
+        /// <param name="sortedSynonymSearchResult">indexで昇順ソート済みの類語検索結果配列</param>
+        /// <remarks>引数の連続した2要素を参照するため、ソート済みでないと結果がおかしくなる</remarks>
+        private void AdjustRepeatCountAndUsingCount(MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResult)
+        {
+            // 初回はRepeatCountもUsingCountも0確定のため、繰り返しのindexは1から開始する
+            for (int index = 1; index < sortedSynonymSearchResult.Count(); ++index)
+            {
+                // アクセス負荷軽減のため、一旦ローカルに取り出す
+                MainWindowVM.DisplaySynonymSearchResult indexEntity = sortedSynonymSearchResult[index];
+
+                // 直前に存在しているか否か（RepeatCount）
+                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = sortedSynonymSearchResult[index - 1];
+                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
+                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
+                    ++indexEntity.RepeatCount;
+                }
+                else
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を0とする
+                    indexEntity.RepeatCount = 0;
+                }
+
+                // これまでに何回ヒットしているか（UsingCount）
+                // これまでに何個同じSynonymWordが存在しているかと同義になる
+                int usingCount = sortedSynonymSearchResult.Count(
+                    entity => entity != null &&                             // nullチェック
+                              entity.Index < indexEntity.Index &&           // 現在の要素以前
+                              entity.SynonymWord == indexEntity.SynonymWord // 現在の類語と同じである
+                    );
+                indexEntity.UsingCount = usingCount;
+            }
+
+            return;
+        }
+
+        /// <summary>渡された全類語を対象の文章内から検索する</summary>
+        /// <param name="targetSynonymWords">検索対象の全類語</param>
+        /// <param name="targetText">検索先の文章</param>
+        /// <returns>正常時：検索結果、異常時：null</returns>
+        private List<MainWindowVM.DisplaySynonymSearchResult> GetAllSynonymSearchResult(MainWindowVM.DisplaySynonymWord[] targetSynonymWords, string targetText)
+        {
+            // 結果返却用のListを用意
+            List<MainWindowVM.DisplaySynonymSearchResult> synonymSearchResults
+                = new List<MainWindowVM.DisplaySynonymSearchResult>();
+
+            foreach (MainWindowVM.DisplaySynonymWord target in targetSynonymWords)
+            {
+                if (target == null)
+                {
+                    continue;
+                }
+
+                int[] allIndexinText = GetAllSearchResultIndex(target.SynonymWord, targetText);
+                if (allIndexinText == null || allIndexinText.Any() == false)
+                {
+                    return null;
+                }
+
+                // todo:marginはハードコーディングになっているので、設定ファイルに外だしなどする
+                string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, _viewModel.SEARCHRESULT_MARGIN);
+                if (allResultinText == null || allResultinText.Any() == false)
+                {
+                    return null;
+                }
+
+                // alIndexとallResultは先頭から順に対応しているはずなので、それをペアにしてDicに入れ込んでいく
+                // 個数が異なったら何かがおかしい
+                if (allIndexinText.Count() != allResultinText.Count())
+                {
+                    return null;
+                }
+
+                for (int i = 0; i < allResultinText.Count(); ++i)
+                {
+                    synonymSearchResults.Add(
+                        new MainWindowVM.DisplaySynonymSearchResult()
+                        {
+                            SynonymWord = target.SynonymWord,
+                            UsingSection = allResultinText[i],
+                            Index = allIndexinText[i]
+                        }
+                        );
+                }
+            }
+            return synonymSearchResults;
+        }
+
+        /// <summary>
+        /// キャレットの移動を行う
+        /// </summary>
+        /// <param name="index">カーソル配置位置</param>
+        /// <returns>true:正常、false:異常</returns>
+        internal bool UpdateCaretOffset(int index)
+        {
+            if(index <0)
+            {
+                return false;
+            }
+
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う    
+            TextEditor target = GetTextEditor();
+
+            // キャレット更新
+            target.CaretOffset = index;
+            target.TextArea.Caret.BringCaretToView();
+
+            // BeginInvokeしないとFocusしてくれない
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+
+            return true;
+        }
+
+        /// <summary>
+        /// Main画面に描画されているTextEditorを取得する
+        /// </summary>
+        /// <returns></returns>
+        private TextEditor GetTextEditor()
+        {
+            // ViewのAvalonEditにアクセスする            
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+
+            TextEditor target = mw.TextEditor;
+            if (target == null)
+            {
+                throw new NullReferenceException("GetTextEditor TextEditor is null");
+            }
+
+            return target;
+        }
+
 
         #endregion
     }

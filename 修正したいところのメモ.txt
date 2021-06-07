@@ -1,0 +1,26 @@
+・検索領域を起動後に開くと、幅の関係からか、検索語句入力窓が小さくなっている
+　グリッド幅をドラッグすると戻る
+　検索ウィンドウの最小値的なものを決めたい
+
+・MainWindowVMは直したが、ObservableCollectionにAdd/RemoveするだけなのにnewしたりOnPropertyChangedしたりしているところがある
+　また、Collectionの中の要素自体の値を変更した際に、Listごとnewしている箇所がないか心配なのでチェックしたい
+
+・表示画面はそのままでいいが、管理やBindingの都合上、可能ならMainWindowのXAMLとcsを分割したい
+　具体的には、検索と類語検索とメイン領域で分けて管理したい
+
+・WindowManagerもうちょいなんとかならないか
+　MainWindowの管理をどうするか
+　どうもしなくて良いかもしれない
+
+・MainWindow右側
+　類語検索結果表が見にくいので、そこ用の列をもう1ペイン作ってよい気がする
+　Expanderで不要な列は閉じられるので
+
+・MainWindowModel
+　類語検索まわりのリファクタ
+
+・MainWindow右側
+　類語検索結果クリックでキャレット遷移
+
+・MainWindow
+　検索結果、類語検索結果にBackGroundつけたいし、Textの該当箇所にもBackGroundつけたい……

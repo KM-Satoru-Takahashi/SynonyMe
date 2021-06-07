@@ -9,7 +9,7 @@
         xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="{Binding MainWindowTitle}" Height="450" Width="600">
+        Title="{Binding MainWindowTitle}" Height="600" Width="800">
 
     <Window.Resources>
         <!--保存/Saveアイコン-->
@@ -64,9 +64,11 @@
                 <ColumnDefinition Width="2*"/>
                 <!--GridSplitter-->
                 <ColumnDefinition Width="Auto"/>
-                <!--類語領域(右列)-->
+                <!--類語領域(右列-1)-->
                 <!--初期値0でバインディングしても良いかもしれない-->
                 <ColumnDefinition Width="*"/>
+                <!--類語検索結果領域(右列-2)-->
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
             <!--横方向-->
@@ -115,7 +117,7 @@
                     </Grid.RowDefinitions>
 
                     <!--検索テキストボックス-->
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SearchWord}"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding SearchWord}" />
 
                     <!--検索ボタン-->
                     <Button Grid.Row="1" Grid.Column="3" Command="{Binding Command_Search}" Content="{Binding SearchButtonText}"/>
@@ -204,6 +206,104 @@
 
                 </ae:TextEditor>
             </Grid>
+
+            <!--類語領域-->
+            <Grid Grid.Row="0" Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <!--上部余白は中央の文字数・行数カウントと同じ高さにする-->
+                    <RowDefinition Height="20" />
+                    <!--類語検索ボタン-->
+                    <RowDefinition Height="30"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--類語グループリスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                    <!--類語リスト-->
+                    <RowDefinition Height="0.3*"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <!--左側余白　※GridSplitterの実装で要らなくなるかもしれないが、開発中は一旦実装-->
+                    <ColumnDefinition Width="5"/>
+                    <!--メイン-->
+                    <ColumnDefinition Width="*"/>
+                    <!--右側余白-->
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+
+                <!--類語検索ボタン-->
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding Command_SynonymSearch}" Content="{Binding SearchSynonymText}"/>
+
+                <!--類語グループリスト一覧-->
+                <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
+                    <bh:Interaction.Triggers>
+                        <!--類語グループ選択時に類語一覧を更新する-->
+                        <bh:EventTrigger EventName="SelectionChanged">
+                            <bh:InvokeCommandAction Command="{Binding Command_SelectSynonymGroup}" PassEventArgsToCommand="True"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymGroupNameHeader}" DisplayMemberBinding="{Binding GroupName}"/>
+                                <GridViewColumn Header="{Binding SynonymGroupLastUpdateHeader}" DisplayMemberBinding="{Binding GroupUpdateDate}"/>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <!--類語一覧-->
+                <ListView Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DisplaySynonymWords}">
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <!-- 結果で表示できるため、べつにここで表示する必要ない気がしたので、一旦コメントアウト
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding WordCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                -->
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
+                <!--類語検索結果-->
+                <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="SelectionChanged">
+                            <bh:InvokeCommandAction Command="{Binding Path=Command_JumpToSynonymSearchResult}" PassEventArgsToCommand="True"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <GridViewColumn Header="{Binding SynonymWordSectionHeader}" DisplayMemberBinding="{Binding UsingSection}"/>
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding UsingCount}"/>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+
+
 
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">
