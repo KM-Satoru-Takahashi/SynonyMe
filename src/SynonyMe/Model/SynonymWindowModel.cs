@@ -94,7 +94,7 @@ namespace SynonyMe.Model
 
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"GroupID is {groupID}");
+                throw new ArgumentOutOfRangeException($"GroupID is {groupID}");
             }
 
             return Manager.SynonymManager.RegistSynonymWord(synonymWord, groupID);
@@ -113,7 +113,7 @@ namespace SynonyMe.Model
 
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                throw new ArgumentOutOfRangeException($"wordID is {wordID}");
             }
 
             return Manager.SynonymManager.UpdateSynonymWord(wordID, word);
@@ -127,7 +127,7 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
             }
 
             if (string.IsNullOrEmpty(groupName))
@@ -145,7 +145,7 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
             }
 
             return Manager.SynonymManager.UpdateSynonymGroup(groupID);
@@ -160,7 +160,7 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
             }
 
             return Manager.SynonymManager.DeleteSynonymGroup(groupID);
@@ -173,7 +173,7 @@ namespace SynonyMe.Model
         {
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                throw new ArgumentOutOfRangeException($"wordID is {wordID}");
             }
 
             return Manager.SynonymManager.DeleteSynonymWord(wordID);

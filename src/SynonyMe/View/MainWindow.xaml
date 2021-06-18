@@ -210,6 +210,10 @@
                 <Grid.RowDefinitions>
                     <!--上部余白は中央の文字数・行数カウントと同じ高さにする-->
                     <RowDefinition Height="20" />
+                    <!--類語検索ボタン-->
+                    <RowDefinition Height="30"/>
+                    <!--余白-->
+                    <RowDefinition Height="10"/>
                     <!--類語グループリスト-->
                     <RowDefinition Height="0.3*"/>
                     <!--余白-->
@@ -229,19 +233,23 @@
                     <!--右側余白-->
                     <ColumnDefinition Width="5"/>
                 </Grid.ColumnDefinitions>
+
+                <Button Grid.Row="1" Grid.Column="1" >
+                    <!--類語検索ボタン-->
+                </Button>
                 
                 <!--類語グループリスト一覧-->
-                <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
+                <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
                     
                 </ListView>
                 
                 <!--類語一覧-->
-                <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymWords}">
+                <ListView Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DisplaySynonymWords}">
                     
                 </ListView>
                 
                 <!--類語検索結果-->
-                <ListView Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
+                <ListView Grid.Row="7" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
                     
                 </ListView>                
             </Grid>

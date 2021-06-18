@@ -33,6 +33,18 @@ namespace SynonyMe.Model
 
         #endregion
 
+        internal event EventHandler UpdateSynonymEvent
+        {
+            add
+            {
+                Manager.SynonymManager.UpdateSynonymEvent += value;
+            }
+            remove
+            {
+                Manager.SynonymManager.UpdateSynonymEvent -= value;
+            }
+        }
+
         #region method
 
         /// <summary>コンストラクタ</summary>
@@ -433,6 +445,19 @@ namespace SynonyMe.Model
             }
 
             return searchResultWordArray;
+        }
+
+        /// <summary>DBに登録されている全類語グループを取得する</summary>
+        /// <returns></returns>
+        internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
+        {
+            return Manager.SynonymManager.GetAllSynonymGroup();
+        }
+
+
+        internal CommonLibrary.Entity.SynonymWordEntity[] GetSynonymWordEntities(int groupId)
+        {
+            return Manager.SynonymManager.GetSynonymWordEntities(groupId);
         }
 
         #endregion

@@ -12,6 +12,11 @@ namespace SynonyMe.Model.Manager
     /// <remarks>DBへのアクセスはこのクラスが引き受け、各Modelクラスが共通して使う前提とし、staticにする</remarks>
     internal static class SynonymManager
     {
+
+        internal static event EventHandler UpdateSynonymEvent;
+
+        // TODO:SynonymModelから持ってきただけなので、全体的なリファクタリングやExceptionの妥当性の確認
+
         /// <summary>選択した類語グループリストに紐付く類語一覧を取得する</summary>
         /// <param name="groupID">類語グループリストID</param>
         /// <returns>IDと一致する全類語</returns>
@@ -34,7 +39,7 @@ namespace SynonyMe.Model.Manager
             if (synonymWords == null)
             {
                 // 無登録の場合はnullなので異常とは言えないため、素直にnullを返す
-                return null;
+                // todo:ログ出し
             }
 
             return synonymWords;
@@ -61,7 +66,7 @@ namespace SynonyMe.Model.Manager
             if (synonymGroups == null)
             {
                 // 無登録の場合はnullを返す
-                return null;
+                // todo:ログ出し
             }
 
             return synonymGroups;
@@ -90,6 +95,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(registGroupSql);
             }
 
+            UpdateSynonymEvent(null, null);
             return true;
         }
 
@@ -122,6 +128,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(registWordSql);
             }
 
+            UpdateSynonymEvent(null, null);
             return true;
         }
 
@@ -153,6 +160,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(updateWordSql);
             }
 
+            UpdateSynonymEvent(null, null);
             return true;
         }
 
@@ -175,6 +183,7 @@ namespace SynonyMe.Model.Manager
             string updateGroupSql =
                 $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} SET GroupName = '{groupName}', GroupUpdateDate = '{GetTodayDate()}' WHERE GroupID == {groupID} ; ";
 
+            UpdateSynonymEvent(null, null);
             return UpdateSynonymGroup(updateGroupSql);
         }
 
@@ -191,6 +200,7 @@ namespace SynonyMe.Model.Manager
             string updateGroupSql =
                 $@"UPDATE {CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP} SET GroupUpdateDate = '{GetTodayDate()}' WHERE GroupID == {groupID} ; ";
 
+            UpdateSynonymEvent(null, null);
             return UpdateSynonymGroup(updateGroupSql);
         }
 
@@ -223,6 +233,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(deleteGroupSql);
             }
 
+            UpdateSynonymEvent(null, null);
             return true;
         }
 
@@ -248,6 +259,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(deleteWordSql);
             }
 
+            UpdateSynonymEvent(null, null);
             return true;
         }
 
@@ -280,8 +292,5 @@ namespace SynonyMe.Model.Manager
         {
             return DateTime.Now.ToString("yyyy/MM/dd");
         }
-
-
-
     }
 }

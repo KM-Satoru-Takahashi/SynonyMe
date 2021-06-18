@@ -239,6 +239,29 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
+        #region event
+
+        /// <summary>類語グループあるいは類語一覧に更新があった際に発火するイベントハンドラ</summary>
+        private event EventHandler UpdateSynonymEventHandler
+        {
+            add
+            {
+                if (_model != null)
+                {
+                    _model.UpdateSynonymEvent += value;
+                }
+            }
+            remove
+            {
+                if (_model != null)
+                {
+                    _model.UpdateSynonymEvent -= value;
+                }
+            }
+        }
+
+        #endregion
+
         #region method
 
         /// <summary>コンストラクタ</summary>
@@ -280,28 +303,29 @@ namespace SynonyMe.ViewModel
             Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
         }
 
+        #region Synonym method
 
         /// <summary>
         /// 画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する
         /// </summary>
         private void InitializeSynonymSearch()
         {
-            if (_model == null)
-            {
-                return;
-            }
-
             // 類語領域の表示を更新する
-            UpdateSynonymGroupsAndWords();
+            UpdateSynonymArea();
+
+            // 類語更新時のイベント登録
+            // todo
+            UpdateSynonymEventHandler -= UpdateSynonymSearchAreaEvent;
+            UpdateSynonymEventHandler += UpdateSynonymSearchAreaEvent;
         }
 
-        /// <summary>類語グループ一覧と類語一覧を最新の状態に更新する</summary>
-        private void UpdateSynonymGroupsAndWords()
+        /// <summary>類語グループ一覧、類語一覧、類語検索結果を最新の状態に更新する</summary>
+        private void UpdateSynonymArea()
         {
             UpdateDisplaySynonymGroups();
 
             // 類語グループを選択していて、当該グループが削除されずに存在している場合は更新
-            if(IsExistSynonymGroupID(_selectedSynonymGroupId))
+            if (IsExistSynonymGroupID(_selectedSynonymGroupId))
             {
                 UpdateDisplaySynonymWords(_selectedSynonymGroupId);
             }
@@ -310,17 +334,68 @@ namespace SynonyMe.ViewModel
                 // 類語グループを選択していないか、選択していたが削除されてなくなっている場合、クリア処理をかける
                 DisplaySynonymWords.Clear();
             }
+
+            // todo:タイミングどうするか
+            // 類語検索結果は一旦クリアする
+            DisplaySynonymSearchResults.Clear();
         }
 
+        /// <summary>類語グループ一覧の表示を更新する</summary>
         private void UpdateDisplaySynonymGroups()
         {
+            SynonymGroupEntity[] entities = _model.GetAllSynonymGroups();
+            if (entities == null)
+            {
+                DisplaySynonymGroups.Clear();
+                return;
+            }
 
+            foreach (SynonymGroupEntity entity in entities)
+            {
+                // GroupIDはuniqueなので、重複していなければ追加する
+                if (DisplaySynonymGroups.Any(synonymGroup => synonymGroup.GroupID == entity.GroupID))
+                {
+                    continue;
+                }
+                DisplaySynonymGroups.Add(entity);
+            }
         }
 
-
+        /// <summary>選択中の類語グループに基づき、類語一覧を更新する</summary>
+        /// <param name="groupId"></param>
         private void UpdateDisplaySynonymWords(int groupId)
         {
+            // 呼ばれるのは、類語ウィンドウで類語の更新がされたときか、メインウィンドウで類語グループ選択が変更されたとき
+            // そのため、いずれにせよ一旦表示中の類語一覧をクリアしてしまった方が良い
+            DisplaySynonymWords.Clear();
 
+            if (_model == null)
+            {
+                return;
+            }
+
+            SynonymWordEntity[] entities = _model.GetSynonymWordEntities(groupId);
+            if (entities == null || entities.Any() == false)
+            {
+                // todo:ログ
+                return;
+            }
+
+            // 表示用のEntityに入れ直して反映させる
+            foreach (SynonymWordEntity entity in entities)
+            {
+                if (entity == null)
+                {
+                    continue;
+                }
+
+                DisplaySynonymWord displaySynonymWord = new DisplaySynonymWord()
+                {
+                    WordID = entity.WordID,
+                    SynonymWord = entity.Word
+                };
+                DisplaySynonymWords.Add(displaySynonymWord);
+            }
         }
 
         /// <summary>SynonymGroupsに引数のGroupIDが存在するかどうかを調べる</summary>
@@ -336,6 +411,15 @@ namespace SynonyMe.ViewModel
             return true;
         }
 
+        /// <summary>SynonymWindowで類語グループ・類語一覧が更新された際に、MainWindowにも変更を反映させる</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UpdateSynonymSearchAreaEvent(object sender, EventArgs e)
+        {
+            UpdateSynonymArea();
+        }
+
+        #endregion
 
         #region DragAndDrop
 
@@ -388,6 +472,8 @@ namespace SynonyMe.ViewModel
         }
 
         #endregion
+
+        #region Execute method
 
         /// <summary>編集中のテキスト保存処理</summary>
         /// <param name="parameter"></param>
@@ -530,6 +616,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        #endregion
 
         #endregion
 
@@ -539,9 +626,11 @@ namespace SynonyMe.ViewModel
         public class DisplaySynonymWord
         {
             // todo:色表示用プロパティ        
+            /// <summary>類語ID</summary>
+            public int WordID { get; set; }
 
             /// <summary>類語</summary>
-            public string SynonymWord { get; private set; }
+            public string SynonymWord { get; set; }
 
             /// <summary>類語の合計使用回数</summary>
             public int WordCount { get; set; }
