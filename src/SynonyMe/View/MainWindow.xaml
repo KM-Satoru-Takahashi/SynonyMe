@@ -231,17 +231,17 @@
                 </Grid.ColumnDefinitions>
                 
                 <!--類語グループリスト一覧-->
-                <ListView Grid.Row="1" Grid.Column="1">
+                <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
                     
                 </ListView>
                 
                 <!--類語一覧-->
-                <ListView Grid.Row="3" Grid.Column="1">
+                <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymWords}">
                     
                 </ListView>
                 
                 <!--類語検索結果-->
-                <ListView Grid.Row="5" Grid.Column="1">
+                <ListView Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
                     
                 </ListView>                
             </Grid>

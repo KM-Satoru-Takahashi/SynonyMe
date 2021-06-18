@@ -21,7 +21,7 @@ namespace SynonyMe.ViewModel
         #region field
 
         /// <summary>Model</summary>
-        private SynonyMe.Model.MainWindowModel _model = null;
+        private Model.MainWindowModel _model = null;
 
         /// <summary>画面表示中テキストの絶対パス</summary>
         /// 将来的にタブVMへ移管予定
@@ -55,6 +55,9 @@ namespace SynonyMe.ViewModel
 
         /// <summary>AvalonEditの文章管理インスタンス</summary>
         private TextDocument _displayTextDoc = null;
+
+        /// <summary>現在表示中の類語グループID</summary>
+        private int _selectedSynonymGroupId = -1;
 
         #endregion
 
@@ -94,6 +97,7 @@ namespace SynonyMe.ViewModel
         public string SearchWord { get; set; } = null;
 
         /// <summary>検索結果一覧</summary>
+        /// <remarks>画面左側</remarks>
         public ObservableCollection<SearchResultEntity> SearchResult { get; set; } = new ObservableCollection<SearchResultEntity>();
 
         /// <summary>検索結果表示状態</summary>
@@ -114,6 +118,18 @@ namespace SynonyMe.ViewModel
                 OnPropertyChanged("SearchResultVisibility");
             }
         }
+
+        /// <summary>表示用の類語グループ一覧</summary>
+        /// <remarks>画面右側上段</remarks>
+        public ObservableCollection<SynonymGroupEntity> DisplaySynonymGroups = new ObservableCollection<SynonymGroupEntity>();
+
+        /// <summary>類語一覧</summary>
+        /// <remarks>画面右側中段</remarks>
+        public ObservableCollection<DisplaySynonymWord> DisplaySynonymWords { get; set; } = new ObservableCollection<DisplaySynonymWord>();
+
+        /// <summary>選択された類語グループと対応する、類語全件の検索結果</summary>
+        /// <remarks>画面右側下段</remarks>
+        public ObservableCollection<DisplaySynonymSearchResult> DisplaySynonymSearchResults { get; set; } = new ObservableCollection<DisplaySynonymSearchResult>();
 
         /// <summary>文字数表示の固定値「文字数」</summary>
         public string WordCountText { get; } = "文字数：";
@@ -239,11 +255,10 @@ namespace SynonyMe.ViewModel
             _displayTextDoc = TextEditor.Document;
 
             // コマンド初期化処理
-            Command_Save = new CommandBase(ExecuteSave, null);
-            Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
-            Command_Search = new CommandBase(ExecuteSearch, null);
-            Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
-            Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
+            InitializeCommand();
+
+            // 類語検索領域初期化処理
+            InitializeSynonymSearch();
 
             // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
@@ -255,6 +270,74 @@ namespace SynonyMe.ViewModel
                 descripter.AddValueChanged(TextEditor, OnIsModifiedChanged);
             }
         }
+
+        private void InitializeCommand()
+        {
+            Command_Save = new CommandBase(ExecuteSave, null);
+            Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+            Command_Search = new CommandBase(ExecuteSearch, null);
+            Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
+            Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
+        }
+
+
+        /// <summary>
+        /// 画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する
+        /// </summary>
+        private void InitializeSynonymSearch()
+        {
+            if (_model == null)
+            {
+                return;
+            }
+
+            // 類語領域の表示を更新する
+            UpdateSynonymGroupsAndWords();
+        }
+
+        /// <summary>類語グループ一覧と類語一覧を最新の状態に更新する</summary>
+        private void UpdateSynonymGroupsAndWords()
+        {
+            UpdateDisplaySynonymGroups();
+
+            // 類語グループを選択していて、当該グループが削除されずに存在している場合は更新
+            if(IsExistSynonymGroupID(_selectedSynonymGroupId))
+            {
+                UpdateDisplaySynonymWords(_selectedSynonymGroupId);
+            }
+            else
+            {
+                // 類語グループを選択していないか、選択していたが削除されてなくなっている場合、クリア処理をかける
+                DisplaySynonymWords.Clear();
+            }
+        }
+
+        private void UpdateDisplaySynonymGroups()
+        {
+
+        }
+
+
+        private void UpdateDisplaySynonymWords(int groupId)
+        {
+
+        }
+
+        /// <summary>SynonymGroupsに引数のGroupIDが存在するかどうかを調べる</summary>
+        /// <param name="groupId"></param>
+        /// <returns>true:存在する、false:存在しない</returns>
+        private bool IsExistSynonymGroupID(int groupId)
+        {
+            if (DisplaySynonymGroups == null ||
+                DisplaySynonymGroups.Any(group => group.GroupID == groupId) == false)
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        #region DragAndDrop
 
         /// <summary>ドラッグオーバー時(マウスをドラッグで重ねた際)に対象ファイルでなければ弾く</summary>
         /// <param name="dropInfo">ドラッグオーバーされているファイル情報</param>
@@ -303,6 +386,8 @@ namespace SynonyMe.ViewModel
             _displayTextFilePath = _openingFiles[0];
             DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
         }
+
+        #endregion
 
         /// <summary>編集中のテキスト保存処理</summary>
         /// <param name="parameter"></param>
@@ -451,7 +536,7 @@ namespace SynonyMe.ViewModel
         #region 類語検索結果関連Entity
 
         /// <summary>表示用の類語一覧リスト</summary>
-        private class DisplaySynonymWord
+        public class DisplaySynonymWord
         {
             // todo:色表示用プロパティ        
 
@@ -466,7 +551,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>表示用の類語検索結果</summary>
-        private class DisplaySynonymSearchResult
+        public class DisplaySynonymSearchResult
         {
             // todo:色表示用プロパティ
 
