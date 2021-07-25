@@ -440,7 +440,8 @@ namespace SynonyMe.Model
                 {
                     // 手前に規定値分のマージンがあり、後ろにも規定値分のマージンがある場合
                     // 「手前のマージン～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + margin);
+                    // marginを2倍しておかないと手前のmargin分しか切り取れない
+                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + 2 * margin);
                 }
             }
 
@@ -454,11 +455,126 @@ namespace SynonyMe.Model
             return Manager.SynonymManager.GetAllSynonymGroup();
         }
 
-
+        /// <summary>類語グループIDに紐付く類語一覧を取得する</summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
         internal CommonLibrary.Entity.SynonymWordEntity[] GetSynonymWordEntities(int groupId)
         {
             return Manager.SynonymManager.GetSynonymWordEntities(groupId);
         }
+
+        /// <summary>類語検索処理を実施する</summary>
+        /// <param name="groupId">選択中の類語グループID</param>
+        /// <param name="targetText">対象（表示中）テキスト</param>
+        /// <returns>結果配列</returns>
+        internal MainWindowVM.DisplaySynonymSearchResult[] SynonymSearch(MainWindowVM.DisplaySynonymWord[] targetSynonyms, string targetText)
+        {
+            if (targetSynonyms == null || targetSynonyms.Any() == false)
+            {
+                // todo:log
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(targetText))
+            {
+                // todo:log
+                return null;
+            }
+
+            // 一時的に結果を格納しておくDicを用意
+            // indexを保持しておくのは、最終的に順にsortしたいため
+            Dictionary<int/*index*/, MainWindowVM.DisplaySynonymSearchResult/*result*/> synonymSearchResults
+                = new Dictionary<int, MainWindowVM.DisplaySynonymSearchResult>();
+
+            foreach (MainWindowVM.DisplaySynonymWord target in targetSynonyms)
+            {
+                if (target == null)
+                {
+                    continue;
+                }
+
+                int[] allIndexinText = GetAllSearchResultIndex(target.SynonymWord, targetText);
+                if (allIndexinText == null || allIndexinText.Any() == false)
+                {
+                    return null;
+                }
+
+                // todo:marginはハードコーディングになっているので、設定ファイルに外だしなどする
+                string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, _viewModel.SEARCHRESULT_MARGIN);
+                if (allResultinText == null || allResultinText.Any() == false)
+                {
+                    return null;
+                }
+
+                // alIndexとallResultは先頭から順に対応しているはずなので、それをペアにしてDicに入れ込んでいく
+                // 個数が異なったら何かがおかしい
+                if (allIndexinText.Count() != allResultinText.Count())
+                {
+                    return null;
+                }
+
+                for (int i = 0; i < allResultinText.Count(); ++i)
+                {
+                    synonymSearchResults.Add(
+                        allIndexinText[i]/*key*/,
+                        new MainWindowVM.DisplaySynonymSearchResult()
+                        {
+                            SynonymWord = target.SynonymWord,
+                            UsingSection = allResultinText[i]
+                        }
+                        );/*value*/
+                }
+            }
+
+            // 整列済みのDicから、結果として戻す配列へ入れ込む
+            MainWindowVM.DisplaySynonymSearchResult[] displaySynonymSearchResults = new MainWindowVM.DisplaySynonymSearchResult[synonymSearchResults.Count];
+            int displaySynonymArrayIndex = 0;
+
+            // 昇順にソートした状態で順に取り出していく
+            // 動作が不安定になる場合、SortedDictionaryとOrderdDictionaryを使用することを想定するが、現状この取り出し方で問題ない想定
+            foreach (KeyValuePair<int, MainWindowVM.DisplaySynonymSearchResult> keyValuePair in synonymSearchResults.OrderBy(i => i.Key))
+            {
+                // indexにDicから順にValueを与え、昇順にソートされた状態とする
+                displaySynonymSearchResults[displaySynonymArrayIndex] = keyValuePair.Value;
+
+                // アクセス負荷軽減のため、一旦ローカルに取り出す
+                MainWindowVM.DisplaySynonymSearchResult indexEntity = displaySynonymSearchResults[displaySynonymArrayIndex];
+
+                // 0番目以降は、これまでの使用個数と繰り返し個数をカウントする必要がある
+                if (displaySynonymArrayIndex == 0)
+                {
+                    ++displaySynonymArrayIndex;
+                    continue;
+                }
+
+                // 直前に存在しているか否か（RepeatCount）
+                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = displaySynonymSearchResults[displaySynonymArrayIndex - 1];
+                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
+                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
+                    ++indexEntity.RepeatCount;
+                }
+                else
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を-1する
+                    indexEntity.RepeatCount = 0;
+                }
+
+                // これまでに何回ヒットしているか（UsingCount）
+                // これまでに何個同じSynonymWordが存在しているかと同義になる
+                int usingCount = displaySynonymSearchResults.Count(
+                    entity => entity != null &&
+                              entity.SynonymWord == indexEntity.SynonymWord
+                    );
+                indexEntity.UsingCount = usingCount;
+
+                ++displaySynonymArrayIndex;
+            }
+
+            return displaySynonymSearchResults;
+        }
+
 
         #endregion
     }

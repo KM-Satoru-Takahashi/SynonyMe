@@ -12,4 +12,15 @@
 　MainWindowの管理をどうするか
 　どうもしなくて良いかもしれない
 
-・
+・MainWindow右側
+　類語検索結果表が見にくいので、そこ用の列をもう1ペイン作ってよい気がする
+　Expanderで不要な列は閉じられるので
+
+・MainWindowModel
+　類語検索まわりのリファクタ
+
+・MainWindow右側
+　類語検索結果クリックでキャレット遷移
+
+・MainWindow
+　検索結果、類語検索結果にBackGroundつけたいし、Textの該当箇所にもBackGroundつけたい……

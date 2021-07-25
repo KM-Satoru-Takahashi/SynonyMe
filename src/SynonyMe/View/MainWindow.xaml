@@ -234,9 +234,8 @@
                     <ColumnDefinition Width="5"/>
                 </Grid.ColumnDefinitions>
 
-                <Button Grid.Row="1" Grid.Column="1" >
-                    <!--類語検索ボタン-->
-                </Button>
+                <!--類語検索ボタン-->
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding Command_SynonymSearch}" Content="Todo"/>
 
                 <!--類語グループリスト一覧-->
                 <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
@@ -271,7 +270,16 @@
 
                 <!--類語検索結果-->
                 <ListView Grid.Row="7" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
-
+                    <ListView.View>
+                        <GridView>
+                            <GridView.Columns>
+                                <GridViewColumn Header="TodoWord" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <GridViewColumn Header="TodoUsing" DisplayMemberBinding="{Binding UsingSection}"/>
+                                <GridViewColumn Header="TodoRepeat" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                <GridViewColumn Header="TodoCount" DisplayMemberBinding="{Binding UsingCount}"/>
+                            </GridView.Columns>
+                        </GridView>
+                    </ListView.View>
                 </ListView>
             </Grid>
 

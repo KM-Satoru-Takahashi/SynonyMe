@@ -43,7 +43,7 @@ namespace SynonyMe.ViewModel
 
         /// <summary>単語検索時、前後何文字を検索結果として表示するか</summary>
         /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
-        private int SEARCHRESULT_MARGIN = 10;
+        internal int SEARCHRESULT_MARGIN = 10;
 
         /// <summary>文字数表示</summary>
         private string _wordCount = null;
@@ -239,6 +239,9 @@ namespace SynonyMe.ViewModel
         /// <summary>類語グループ選択時の処理</summary>
         public ICommand Command_SelectSynonymGroup { get; private set; } = null;
 
+        /// <summary>類語検索</summary>
+        public ICommand Command_SynonymSearch { get; private set; } = null;
+
         #endregion
 
         #endregion
@@ -306,6 +309,7 @@ namespace SynonyMe.ViewModel
             Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
             Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
             Command_SelectSynonymGroup = new CommandBase(ExecuteSelectSynonymGroup, null);
+            Command_SynonymSearch = new CommandBase(ExecuteSynonymSearch, null);
         }
 
         #region Synonym method
@@ -643,6 +647,33 @@ namespace SynonyMe.ViewModel
             UpdateDisplaySynonymWords(_selectedSynonymGroupId);
         }
 
+        /// <summary>
+        /// 類語検索処理
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSynonymSearch(object parameter)
+        {
+            if (_model == null)
+            {
+                return;
+            }
+
+            // 配列に変換
+            DisplaySynonymWord[] synonymWords = new DisplaySynonymWord[DisplaySynonymWords.Count];
+            DisplaySynonymWords.CopyTo(synonymWords, 0);
+
+            // 類語検索はmodelに依頼
+            DisplaySynonymSearchResult[] synonymSearchResults = _model.SynonymSearch(synonymWords, DisplayTextDoc.Text);
+
+            // 現状、特に表示しているモノとの整合性は考えずに更新する
+            // メモリの負荷が大きくなってきたら、別途検討することにする
+            DisplaySynonymSearchResults.Clear();
+            foreach (DisplaySynonymSearchResult result in synonymSearchResults)
+            {
+                DisplaySynonymSearchResults.Add(result);
+            }
+        }
+
         /// <summary>編集済み判定処理</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -704,7 +735,6 @@ namespace SynonyMe.ViewModel
             public int UsingCount { get; set; }
 
             /// <summary>連続して使用されている場合、何回続いているか</summary>
-            /// <remarks>最小値0の次は2になることに要注意</remarks>
             public int RepeatCount { get; set; }
         }
 
