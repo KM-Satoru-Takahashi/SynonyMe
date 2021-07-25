@@ -350,7 +350,7 @@ namespace SynonyMe.ViewModel
         private void UpdateDisplaySynonymGroups()
         {
             SynonymGroupEntity[] entities = _model.GetAllSynonymGroups();
-            if (entities == null)
+            if (entities == null || entities.Any() == false)
             {
                 DisplaySynonymGroups.Clear();
                 return;
