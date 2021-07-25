@@ -13,6 +13,7 @@ using SynonyMe.CommonLibrary.Entity;
 using ICSharpCode.AvalonEdit.Document;
 using System.ComponentModel;
 using System.Windows.Threading;
+using System.Windows.Controls;
 
 namespace SynonyMe.ViewModel
 {
@@ -121,7 +122,7 @@ namespace SynonyMe.ViewModel
 
         /// <summary>表示用の類語グループ一覧</summary>
         /// <remarks>画面右側上段</remarks>
-        public ObservableCollection<SynonymGroupEntity> DisplaySynonymGroups = new ObservableCollection<SynonymGroupEntity>();
+        public ObservableCollection<SynonymGroupEntity> DisplaySynonymGroups { get; set; } = new ObservableCollection<SynonymGroupEntity>();
 
         /// <summary>類語一覧</summary>
         /// <remarks>画面右側中段</remarks>
@@ -235,6 +236,9 @@ namespace SynonyMe.ViewModel
         /// <summary>文字数等の更新処理</summary>
         public ICommand Command_UpdateTextInfo { get; private set; } = null;
 
+        /// <summary>類語グループ選択時の処理</summary>
+        public ICommand Command_SelectSynonymGroup { get; private set; } = null;
+
         #endregion
 
         #endregion
@@ -301,6 +305,7 @@ namespace SynonyMe.ViewModel
             Command_Search = new CommandBase(ExecuteSearch, null);
             Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
             Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
+            Command_SelectSynonymGroup = new CommandBase(ExecuteSelectSynonymGroup, null);
         }
 
         #region Synonym method
@@ -311,7 +316,7 @@ namespace SynonyMe.ViewModel
         private void InitializeSynonymSearch()
         {
             // 類語領域の表示を更新する
-            UpdateSynonymArea();
+            UpdateSynonymArea(true);
 
             // 類語更新時のイベント登録
             // todo
@@ -320,7 +325,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>類語グループ一覧、類語一覧、類語検索結果を最新の状態に更新する</summary>
-        private void UpdateSynonymArea()
+        private void UpdateSynonymArea(bool isInitialize = false)
         {
             UpdateDisplaySynonymGroups();
 
@@ -329,9 +334,10 @@ namespace SynonyMe.ViewModel
             {
                 UpdateDisplaySynonymWords(_selectedSynonymGroupId);
             }
-            else
+            else if (isInitialize == false)
             {
                 // 類語グループを選択していないか、選択していたが削除されてなくなっている場合、クリア処理をかける
+                // 初回起動時は選択していないこと確定なので、除外する
                 DisplaySynonymWords.Clear();
             }
 
@@ -593,6 +599,48 @@ namespace SynonyMe.ViewModel
                 WordCount = _displayTextDoc.TextLength.ToString();
                 NumberOfLines = _displayTextDoc.LineCount.ToString();
             }
+        }
+
+        /// <summary>
+        /// 類語グループ選択時に類語一覧と選択中の類語グループIDを更新する
+        /// </summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSelectSynonymGroup(object parameter)
+        {
+            #region convert args
+
+            if (parameter == null)
+            {
+                return;
+            }
+
+            SelectionChangedEventArgs e = parameter as SelectionChangedEventArgs;
+            if (e == null)
+            {
+                return;
+            }
+
+            object[] obj = e.AddedItems as object[];
+            if (obj == null || obj.Any() == false)
+            {
+                return;
+            }
+
+            SynonymGroupEntity selectedSynonymGroup = obj[0] as SynonymGroupEntity;
+            if (selectedSynonymGroup == null)
+            {
+                return;
+            }
+
+            #endregion
+
+            if (IsExistSynonymGroupID(selectedSynonymGroup.GroupID) == false)
+            {
+                return;
+            }
+
+            _selectedSynonymGroupId = selectedSynonymGroup.GroupID;
+            UpdateDisplaySynonymWords(_selectedSynonymGroupId);
         }
 
         /// <summary>編集済み判定処理</summary>
