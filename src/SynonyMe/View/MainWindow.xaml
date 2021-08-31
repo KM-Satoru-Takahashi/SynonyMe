@@ -64,9 +64,11 @@
                 <ColumnDefinition Width="2*"/>
                 <!--GridSplitter-->
                 <ColumnDefinition Width="Auto"/>
-                <!--類語領域(右列)-->
+                <!--類語領域(右列-1)-->
                 <!--初期値0でバインディングしても良いかもしれない-->
                 <ColumnDefinition Width="*"/>
+                <!--類語検索結果領域(右列-2)-->
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
             <!--横方向-->
@@ -222,8 +224,6 @@
                     <RowDefinition Height="0.3*"/>
                     <!--余白-->
                     <RowDefinition Height="10"/>
-                    <!--検索結果-->
-                    <RowDefinition Height="0.4*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <!--左側余白　※GridSplitterの実装で要らなくなるかもしれないが、開発中は一旦実装-->
@@ -268,8 +268,21 @@
                     </ListView.View>
                 </ListView>
 
+            </Grid>
+
+            <Grid Grid.Row="0" Grid.Column="6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="5"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="10"/>
+                </Grid.RowDefinitions>
                 <!--類語検索結果-->
-                <ListView Grid.Row="7" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
+                <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>
@@ -282,6 +295,8 @@
                     </ListView.View>
                 </ListView>
             </Grid>
+
+
 
             <!--フッター部分-->
             <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3">

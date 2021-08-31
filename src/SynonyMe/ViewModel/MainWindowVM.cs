@@ -736,6 +736,9 @@ namespace SynonyMe.ViewModel
 
             /// <summary>連続して使用されている場合、何回続いているか</summary>
             public int RepeatCount { get; set; }
+
+            /// <summary>キャレット遷移用のインデックス</summary>
+            public int Index { get; set; }
         }
 
         #endregion

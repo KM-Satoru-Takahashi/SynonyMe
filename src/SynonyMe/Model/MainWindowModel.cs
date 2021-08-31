@@ -469,6 +469,8 @@ namespace SynonyMe.Model
         /// <returns>結果配列</returns>
         internal MainWindowVM.DisplaySynonymSearchResult[] SynonymSearch(MainWindowVM.DisplaySynonymWord[] targetSynonyms, string targetText)
         {
+            #region check args
+
             if (targetSynonyms == null || targetSynonyms.Any() == false)
             {
                 // todo:log
@@ -481,12 +483,72 @@ namespace SynonyMe.Model
                 return null;
             }
 
-            // 一時的に結果を格納しておくDicを用意
-            // indexを保持しておくのは、最終的に順にsortしたいため
-            Dictionary<int/*index*/, MainWindowVM.DisplaySynonymSearchResult/*result*/> synonymSearchResults
-                = new Dictionary<int, MainWindowVM.DisplaySynonymSearchResult>();
+            #endregion
 
-            foreach (MainWindowVM.DisplaySynonymWord target in targetSynonyms)
+            // 類語の全検索結果を取得
+            List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
+                = GetAllSynonymSearchResult(targetSynonyms, targetText);
+
+            // Index順にSortして配列化する。昇順であることを保証したいが、動作が不安定になる場合は
+            // 将来的にSortedDictionaryとOrderdDictionaryの使用を考える
+            MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResultArray
+                = unsortedSynonymSearchResults.OrderBy(result => result.Index).ToArray();
+
+            // 参照型を値渡しして、resultのRepeatCountとUsingCountを取得してreturnする
+            // 参照型の参照渡しをするとインスタンスごと書き換えられるリスクがあるので許容しない
+            AdjustRepeatCountAndUsingCount(sortedSynonymSearchResultArray);
+            return sortedSynonymSearchResultArray;
+        }
+
+        /// <summary>渡された類語検索結果に基づいて、内部のRepeatCountとUsingCountを計算する</summary>
+        /// <param name="sortedSynonymSearchResult">indexで昇順ソート済みの類語検索結果配列</param>
+        /// <remarks>引数の連続した2要素を参照するため、ソート済みでないと結果がおかしくなる</remarks>
+        private void AdjustRepeatCountAndUsingCount(MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResult)
+        {
+            // 初回はRepeatCountもUsingCountも0確定のため、繰り返しのindexは1から開始する
+            for (int index = 1; index < sortedSynonymSearchResult.Count(); ++index)
+            {
+                // アクセス負荷軽減のため、一旦ローカルに取り出す
+                MainWindowVM.DisplaySynonymSearchResult indexEntity = sortedSynonymSearchResult[index];
+
+                // 直前に存在しているか否か（RepeatCount）
+                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = sortedSynonymSearchResult[index - 1];
+                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
+                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
+                    ++indexEntity.RepeatCount;
+                }
+                else
+                {
+                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を0とする
+                    indexEntity.RepeatCount = 0;
+                }
+
+                // これまでに何回ヒットしているか（UsingCount）
+                // これまでに何個同じSynonymWordが存在しているかと同義になる
+                int usingCount = sortedSynonymSearchResult.Count(
+                    entity => entity != null &&                             // nullチェック
+                              entity.Index < indexEntity.Index &&           // 現在の要素以前
+                              entity.SynonymWord == indexEntity.SynonymWord // 現在の類語と同じである
+                    );
+                indexEntity.UsingCount = usingCount;
+            }
+
+            return;
+        }
+
+        /// <summary>渡された全類語を対象の文章内から検索する</summary>
+        /// <param name="targetSynonymWords">検索対象の全類語</param>
+        /// <param name="targetText">検索先の文章</param>
+        /// <returns>正常時：検索結果、異常時：null</returns>
+        private List<MainWindowVM.DisplaySynonymSearchResult> GetAllSynonymSearchResult(MainWindowVM.DisplaySynonymWord[] targetSynonymWords, string targetText)
+        {
+            // 結果返却用のListを用意
+            List<MainWindowVM.DisplaySynonymSearchResult> synonymSearchResults
+                = new List<MainWindowVM.DisplaySynonymSearchResult>();
+
+            foreach (MainWindowVM.DisplaySynonymWord target in targetSynonymWords)
             {
                 if (target == null)
                 {
@@ -516,63 +578,16 @@ namespace SynonyMe.Model
                 for (int i = 0; i < allResultinText.Count(); ++i)
                 {
                     synonymSearchResults.Add(
-                        allIndexinText[i]/*key*/,
                         new MainWindowVM.DisplaySynonymSearchResult()
                         {
                             SynonymWord = target.SynonymWord,
-                            UsingSection = allResultinText[i]
+                            UsingSection = allResultinText[i],
+                            Index = allIndexinText[i]
                         }
-                        );/*value*/
+                        );
                 }
             }
-
-            // 整列済みのDicから、結果として戻す配列へ入れ込む
-            MainWindowVM.DisplaySynonymSearchResult[] displaySynonymSearchResults = new MainWindowVM.DisplaySynonymSearchResult[synonymSearchResults.Count];
-            int displaySynonymArrayIndex = 0;
-
-            // 昇順にソートした状態で順に取り出していく
-            // 動作が不安定になる場合、SortedDictionaryとOrderdDictionaryを使用することを想定するが、現状この取り出し方で問題ない想定
-            foreach (KeyValuePair<int, MainWindowVM.DisplaySynonymSearchResult> keyValuePair in synonymSearchResults.OrderBy(i => i.Key))
-            {
-                // indexにDicから順にValueを与え、昇順にソートされた状態とする
-                displaySynonymSearchResults[displaySynonymArrayIndex] = keyValuePair.Value;
-
-                // アクセス負荷軽減のため、一旦ローカルに取り出す
-                MainWindowVM.DisplaySynonymSearchResult indexEntity = displaySynonymSearchResults[displaySynonymArrayIndex];
-
-                // 0番目以降は、これまでの使用個数と繰り返し個数をカウントする必要がある
-                if (displaySynonymArrayIndex == 0)
-                {
-                    ++displaySynonymArrayIndex;
-                    continue;
-                }
-
-                // 直前に存在しているか否か（RepeatCount）
-                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = displaySynonymSearchResults[displaySynonymArrayIndex - 1];
-                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
-                {
-                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
-                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
-                    ++indexEntity.RepeatCount;
-                }
-                else
-                {
-                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を-1する
-                    indexEntity.RepeatCount = 0;
-                }
-
-                // これまでに何回ヒットしているか（UsingCount）
-                // これまでに何個同じSynonymWordが存在しているかと同義になる
-                int usingCount = displaySynonymSearchResults.Count(
-                    entity => entity != null &&
-                              entity.SynonymWord == indexEntity.SynonymWord
-                    );
-                indexEntity.UsingCount = usingCount;
-
-                ++displaySynonymArrayIndex;
-            }
-
-            return displaySynonymSearchResults;
+            return synonymSearchResults;
         }
 
 
