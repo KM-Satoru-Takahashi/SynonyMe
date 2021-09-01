@@ -80,6 +80,29 @@ namespace SynonyMe.ViewModel
         /// <summary>検索ボタン表示文字列</summary>
         public string SearchButtonText { get; } = "検索";
 
+        /// <summary>類語検索ボタン表示文字列</summary>
+        public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
+
+
+        public string SynonymGroupNameHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupName;
+
+
+        public string SynonymGroupLastUpdateHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupLastUpdate;
+
+
+        public string SynonymWordHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordHeader;
+
+
+        public string SynonymWordRepeatingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
+
+
+        public string SynonymWordUsingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordUsingCountHeader;
+
+
+        public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
+
+
+
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument DisplayTextDoc
         {
@@ -242,6 +265,9 @@ namespace SynonyMe.ViewModel
         /// <summary>類語検索</summary>
         public ICommand Command_SynonymSearch { get; private set; } = null;
 
+
+        public ICommand Command_JumpToSynonymSearchResult { get; private set; } = null;
+
         #endregion
 
         #endregion
@@ -307,6 +333,7 @@ namespace SynonyMe.ViewModel
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
             Command_Search = new CommandBase(ExecuteSearch, null);
             Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
+            Command_JumpToSynonymSearchResult = new CommandBase(ExecuteJumpToSynonymSearchResult, null);
             Command_UpdateTextInfo = new CommandBase(ExecuteUpdateTextInfo, null);
             Command_SelectSynonymGroup = new CommandBase(ExecuteSelectSynonymGroup, null);
             Command_SynonymSearch = new CommandBase(ExecuteSynonymSearch, null);
@@ -589,6 +616,46 @@ namespace SynonyMe.ViewModel
             Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
         }
 
+        /// <summary>類語検索結果へのジャンプ処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteJumpToSynonymSearchResult(object parameter)
+        {
+            if (parameter == null)
+            {
+                return;
+            }
+
+            SelectionChangedEventArgs args = parameter as SelectionChangedEventArgs;
+            if (args == null || args.AddedItems == null || args.AddedItems.Count < 1)
+            {
+                return;
+            }
+
+            DisplaySynonymSearchResult synonym = args.AddedItems[0] as DisplaySynonymSearchResult;
+            if (synonym == null)
+            {
+                return;
+            }
+
+            int index = synonym.Index;
+
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う            
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+
+            TextEditor target = mw.TextEditor;
+            if (target == null)
+            {
+                throw new NullReferenceException("TextEditor is null");
+            }
+
+            // キャレット更新
+            target.CaretOffset = index;
+            target.TextArea.Caret.BringCaretToView();
+
+            // BeginInvokeしないとFocusしてくれない
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+        }
+
         /// <summary>画面上部のテキスト情報更新処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteUpdateTextInfo(object parameter)
@@ -658,7 +725,14 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // 配列に変換
+            // 表示するモノがないか、空テキストなら検索する意味がない
+            if (_displayTextDoc == null ||
+                string.IsNullOrEmpty(_displayTextDoc.Text))
+            {
+                return;
+            }
+
+            // 検索するべき類語のすべてを配列に変換
             DisplaySynonymWord[] synonymWords = new DisplaySynonymWord[DisplaySynonymWords.Count];
             DisplaySynonymWords.CopyTo(synonymWords, 0);
 

@@ -9,7 +9,7 @@
         xmlns:ae="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="{Binding MainWindowTitle}" Height="450" Width="600">
+        Title="{Binding MainWindowTitle}" Height="600" Width="800">
 
     <Window.Resources>
         <!--保存/Saveアイコン-->
@@ -235,7 +235,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!--類語検索ボタン-->
-                <Button Grid.Row="1" Grid.Column="1" Command="{Binding Command_SynonymSearch}" Content="Todo"/>
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding Command_SynonymSearch}" Content="{Binding SearchSynonymText}"/>
 
                 <!--類語グループリスト一覧-->
                 <ListView Grid.Row="3" Grid.Column="1" ItemsSource="{Binding DisplaySynonymGroups}">
@@ -248,8 +248,8 @@
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>
-                                <GridViewColumn Header="TodoName" DisplayMemberBinding="{Binding GroupName}"/>
-                                <GridViewColumn Header="TodoDate" DisplayMemberBinding="{Binding GroupRegistDate}"/>
+                                <GridViewColumn Header="{Binding SynonymGroupNameHeader}" DisplayMemberBinding="{Binding GroupName}"/>
+                                <GridViewColumn Header="{Binding SynonymGroupLastUpdateHeader}" DisplayMemberBinding="{Binding GroupUpdateDate}"/>
                             </GridView.Columns>
                         </GridView>
                     </ListView.View>
@@ -260,9 +260,11 @@
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>
-                                <GridViewColumn Header="TodoWord" DisplayMemberBinding="{Binding SynonymWord}"/>
-                                <GridViewColumn Header="TodoCount" DisplayMemberBinding="{Binding WordCount}"/>
-                                <GridViewColumn Header="TodoRepeat" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <!-- 結果で表示できるため、べつにここで表示する必要ない気がしたので、一旦コメントアウト
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding WordCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                -->
                             </GridView.Columns>
                         </GridView>
                     </ListView.View>
@@ -283,13 +285,18 @@
                 </Grid.RowDefinitions>
                 <!--類語検索結果-->
                 <ListView Grid.Row="1" Grid.Column="1" ItemsSource="{Binding DisplaySynonymSearchResults}">
+                    <bh:Interaction.Triggers>
+                        <bh:EventTrigger EventName="SelectionChanged">
+                            <bh:InvokeCommandAction Command="{Binding Path=Command_JumpToSynonymSearchResult}" PassEventArgsToCommand="True"/>
+                        </bh:EventTrigger>
+                    </bh:Interaction.Triggers>
                     <ListView.View>
                         <GridView>
                             <GridView.Columns>
-                                <GridViewColumn Header="TodoWord" DisplayMemberBinding="{Binding SynonymWord}"/>
-                                <GridViewColumn Header="TodoUsing" DisplayMemberBinding="{Binding UsingSection}"/>
-                                <GridViewColumn Header="TodoRepeat" DisplayMemberBinding="{Binding RepeatCount}"/>
-                                <GridViewColumn Header="TodoCount" DisplayMemberBinding="{Binding UsingCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
+                                <GridViewColumn Header="{Binding SynonymWordSectionHeader}" DisplayMemberBinding="{Binding UsingSection}"/>
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding UsingCount}"/>
                             </GridView.Columns>
                         </GridView>
                     </ListView.View>

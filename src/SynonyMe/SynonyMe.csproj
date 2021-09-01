@@ -74,6 +74,7 @@
     <Compile Include="CommonLibrary\Entity\SearchResultEntity.cs" />
     <Compile Include="CommonLibrary\Entity\SynonymGroupEntity.cs" />
     <Compile Include="CommonLibrary\Entity\SynonymWordEntity.cs" />
+    <Compile Include="CommonLibrary\MessageLibrary.cs" />
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\Manager\SynonymManager.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
