@@ -13,7 +13,7 @@ namespace SynonyMe.Model.Manager
     internal static class SynonymManager
     {
 
-        internal static event EventHandler UpdateSynonymEvent;
+        internal static event EventHandler UpdateSynonymEvent = delegate { };
 
         // TODO:SynonymModelから持ってきただけなので、全体的なリファクタリングやExceptionの妥当性の確認
 
