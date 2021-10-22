@@ -590,6 +590,49 @@ namespace SynonyMe.Model
             return synonymSearchResults;
         }
 
+        /// <summary>
+        /// キャレットの移動を行う
+        /// </summary>
+        /// <param name="index">カーソル配置位置</param>
+        /// <returns>true:正常、false:異常</returns>
+        internal bool UpdateCaretOffset(int index)
+        {
+            if(index <0)
+            {
+                return false;
+            }
+
+            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う    
+            TextEditor target = GetTextEditor();
+
+            // キャレット更新
+            target.CaretOffset = index;
+            target.TextArea.Caret.BringCaretToView();
+
+            // BeginInvokeしないとFocusしてくれない
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+
+            return true;
+        }
+
+        /// <summary>
+        /// Main画面に描画されているTextEditorを取得する
+        /// </summary>
+        /// <returns></returns>
+        private TextEditor GetTextEditor()
+        {
+            // ViewのAvalonEditにアクセスする            
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+
+            TextEditor target = mw.TextEditor;
+            if (target == null)
+            {
+                throw new NullReferenceException("GetTextEditor TextEditor is null");
+            }
+
+            return target;
+        }
+
 
         #endregion
     }

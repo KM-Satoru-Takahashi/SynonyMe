@@ -599,21 +599,16 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う            
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-
-            TextEditor target = mw.TextEditor;
-            if (target == null)
+            // キャレットの更新とFocusを行う            
+            if (_model == null)
             {
-                throw new NullReferenceException("TextEditor is null");
+                throw new NullReferenceException("ExecuteJumpToSynonymSearchResult model is null");
             }
 
-            // キャレット更新
-            target.CaretOffset = searchResultEntity.Index;
-            target.TextArea.Caret.BringCaretToView();
-
-            // BeginInvokeしないとFocusしてくれない
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+            if (_model.UpdateCaretOffset(searchResultEntity.Index) == false)
+            {
+                // error log
+            }
         }
 
         /// <summary>類語検索結果へのジャンプ処理</summary>
@@ -637,23 +632,16 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            int index = synonym.Index;
-
-            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う            
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-
-            TextEditor target = mw.TextEditor;
-            if (target == null)
+            // キャレットの更新とFocusを行う            
+            if (_model == null)
             {
-                throw new NullReferenceException("TextEditor is null");
+                throw new NullReferenceException("ExecuteJumpToSynonymSearchResult model is null");
             }
 
-            // キャレット更新
-            target.CaretOffset = index;
-            target.TextArea.Caret.BringCaretToView();
-
-            // BeginInvokeしないとFocusしてくれない
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+            if (_model.UpdateCaretOffset(synonym.Index) == false)
+            {
+                // error log
+            }
         }
 
         /// <summary>画面上部のテキスト情報更新処理</summary>
