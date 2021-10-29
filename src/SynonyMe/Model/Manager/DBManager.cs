@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SQLite;   // DB
 using SynonyMe.CommonLibrary.Entity;
-
+using System.IO;
 
 namespace SynonyMe.Model.Manager
 {
@@ -69,7 +69,20 @@ namespace SynonyMe.Model.Manager
                 throw new ArgumentException("DBName is null or empty");
             }
 
-            SQLiteConnectionStringBuilder sqlDBName = new SQLiteConnectionStringBuilder { DataSource = DBName };
+            // DBへの接続に必要なパス関連を取得する
+            string filePath = CommonLibrary.SystemUtility.GetSynonymeExeFilePath();
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new FileNotFoundException("DBManager constructor:Cannot find SynonyMe.exe");
+            }
+
+            // ファイル名情報は不要なので削除する
+            filePath = filePath.Replace(CommonLibrary.Define.SYNONYME_EXENAME, "");
+
+            // DBへのファイルパスを構築する。直後の[\]はファイル名ではなく、Replaceで削除されていないので、直に連結してOK
+            filePath += @"DB\SynonymData.db";
+
+            SQLiteConnectionStringBuilder sqlDBName = new SQLiteConnectionStringBuilder { DataSource = filePath };
             if (sqlDBName == null)
             {
                 throw new NullReferenceException("sqlDBName is null");

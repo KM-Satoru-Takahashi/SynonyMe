@@ -14,6 +14,9 @@ using ICSharpCode.AvalonEdit.Document;
 using System.ComponentModel;
 using System.Windows.Threading;
 using System.Windows.Controls;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using System.Windows.Media;
 
 namespace SynonyMe.ViewModel
 {
@@ -59,6 +62,9 @@ namespace SynonyMe.ViewModel
 
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
+
+
+        private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
         #endregion
 
@@ -240,6 +246,11 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>テキスト表示領域の背景色</summary>
+        public Brush AvalonEditBackGround { get; set; } = Brushes.White;
+
+        /// <summary>検索結果がない場合に表示する文言</summary>
+        /// <remarks>todo:CommonLibのDefineに移動させるべきでは？</remarks>
         public string NoSearchResultWord { get; } = "対象語句がありません";
 
         #region command
@@ -307,6 +318,7 @@ namespace SynonyMe.ViewModel
         private void Initialize()
         {
             _model = new Model.MainWindowModel(this);
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(AvalonEditBackGround);
 
             _displayTextDoc = TextEditor.Document;
 
@@ -318,7 +330,8 @@ namespace SynonyMe.ViewModel
 
             // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
-            // TODO:DependencyPropertyDescriptorは強参照のためメモリリークの恐れがあり、要調査
+            // DependencyPropertyDescriptorは強参照のため、参照を解除できず、繰り返し行うとメモリリークにつながる
+            // 現状、Initializeは起動時にしか呼ばれず、動的にメインの文章表示領域が削除・再表示されることは現状ないので、一旦この実装で機能を満たす
             var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
             if (descripter != null)
             {
@@ -550,28 +563,15 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
-            // 本文ハイライトは現状実装できていない
+            // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
             Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
-            if (indexWordPairs == null)
+            if (UpdateSearchResultVisiblity(indexWordPairs) == false)
             {
-                // nullなら表示を隠す
-                SearchResultVisibility = Visibility.Hidden;
                 return;
             }
-            else if (indexWordPairs.Count < 1)
-            {
-                // 検索結果がなければ、その旨を表示する
-                NoSearchResultVisibility = Visibility.Visible;
-                SearchResultVisibility = Visibility.Hidden;
-                return;
-            }
-            else
-            {
-                // 検索結果ありの場合、結果を表示できるようにする
-                NoSearchResultVisibility = Visibility.Hidden;
-                SearchResultVisibility = Visibility.Visible;
-            }
+
+            // 旧検索結果をクリアする
+            SearchResult.Clear();
 
             // 念のため昇順にソートしておく
             indexWordPairs.OrderBy(pair => pair.Key);
@@ -587,7 +587,20 @@ namespace SynonyMe.ViewModel
                     }
                     );
             }
+
+            // 検索結果にハイライトをかける
+            string[] searchWord = new string[1]
+            {
+                SearchWord
+            };
+            if (_highlightManager == null)
+            {
+                // error log
+                return;
+            }
+            _highlightManager.UpdateXshdFile(searchWord);
         }
+
 
         /// <summary>検索結果へのジャンプ処理</summary>
         /// <param name="parameter"></param>
@@ -734,6 +747,52 @@ namespace SynonyMe.ViewModel
             {
                 DisplaySynonymSearchResults.Add(result);
             }
+
+            // 検索結果にハイライトをかける
+            string[] searchWords = new string[DisplaySynonymWords.Count];
+            for (int i = 0; i < DisplaySynonymWords.Count; ++i)
+            {
+                searchWords[i] = DisplaySynonymWords[i].SynonymWord;
+            }
+
+            if (_highlightManager == null)
+            {
+                // error log
+                return;
+            }
+            _highlightManager.UpdateXshdFile(searchWords);
+
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 検索結果表示領域のVisibilityを更新します
+        /// </summary>
+        /// <returns>true:検索結果あり、false;検索結果なし</returns>
+        private bool UpdateSearchResultVisiblity(Dictionary<int, string> searchResult)
+        {
+            if (searchResult == null)
+            {
+                // nullなら表示を隠す
+                SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else if (searchResult.Count < 1)
+            {
+                // 検索結果がなければ、その旨を表示する
+                NoSearchResultVisibility = Visibility.Visible;
+                SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else
+            {
+                // 検索結果ありの場合、結果を表示できるようにする
+                NoSearchResultVisibility = Visibility.Hidden;
+                SearchResultVisibility = Visibility.Visible;
+            }
+
+            return true;
         }
 
         /// <summary>編集済み判定処理</summary>
@@ -747,6 +806,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            // ドラッグアンドドロップ直後には編集済み表示を出さない
             if (textEditor.IsModified)
             {
                 EditedTextVisible = Visibility.Visible;
@@ -757,7 +817,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        #endregion
+
 
         #endregion
 

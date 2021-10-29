@@ -201,6 +201,8 @@ namespace SynonyMe.Model
             try
             {
                 textEditor.Load(filePath);
+                System.Windows.Media.Brush b = textEditor.Background;
+                textEditor.Background = System.Windows.Media.Brushes.Red;
             }
             catch (Exception e)
             {
@@ -597,7 +599,7 @@ namespace SynonyMe.Model
         /// <returns>true:正常、false:異常</returns>
         internal bool UpdateCaretOffset(int index)
         {
-            if(index <0)
+            if (index < 0)
             {
                 return false;
             }

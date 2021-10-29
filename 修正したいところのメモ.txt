@@ -19,8 +19,8 @@
 ・MainWindowModel
 　類語検索まわりのリファクタ
 
-・MainWindow右側
-　類語検索結果クリックでキャレット遷移
+・MainWindow
+　類語検索結果に、何がどの色かを紐付けたい
 
 ・MainWindow
-　検索結果、類語検索結果にBackGroundつけたいし、Textの該当箇所にもBackGroundつけたい……
+　「編集済み」文字列の表示は、ドラッグアンドドロップ直後に表示しないでほしい

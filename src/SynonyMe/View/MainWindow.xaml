@@ -191,7 +191,8 @@
                 <ae:TextEditor Grid.Row="1" x:Name="TextEditor"
                     dd:DragDrop.IsDropTarget="True"
                     dd:DragDrop.DropHandler="{Binding}"                    
-                    Document="{Binding Path=DisplayTextDoc}">
+                    Document="{Binding Path=DisplayTextDoc}"
+                    Background="{Binding AvalonEditBackGround}"> <!--BackGroundは文字色を設定するために必要-->
                     <!-- 添付ビヘイビアの使用は一旦停止
                     <bh:Interaction.Behaviors>
                         <vm:AvalonEditBehavior AvalonEditorText="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
