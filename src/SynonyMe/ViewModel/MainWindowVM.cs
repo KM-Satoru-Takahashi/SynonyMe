@@ -63,9 +63,6 @@ namespace SynonyMe.ViewModel
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
 
-
-        private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
-
         #endregion
 
         #region property
@@ -89,22 +86,22 @@ namespace SynonyMe.ViewModel
         /// <summary>類語検索ボタン表示文字列</summary>
         public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
 
-
+        /// <summary類語グループリストの類語名ヘッダ</summary>
         public string SynonymGroupNameHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupName;
 
-
+        /// <summary>類語グループリストの最終更新日ヘッダ</summary>
         public string SynonymGroupLastUpdateHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupLastUpdate;
 
-
+        /// <summary>類語リストの類語名ヘッダ</summary>
         public string SynonymWordHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordHeader;
 
-
+        /// <summary>類語リストの連続使用(繰り返し)回数ヘッダ</summary>
         public string SynonymWordRepeatingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
 
-
+        /// <summary>類語リストの合計使用回数ヘッダ</summary>
         public string SynonymWordUsingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordUsingCountHeader;
 
-
+        /// <summary>類語リストの使用箇所ヘッダ</summary>
         public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
 
 
@@ -276,7 +273,7 @@ namespace SynonyMe.ViewModel
         /// <summary>類語検索</summary>
         public ICommand Command_SynonymSearch { get; private set; } = null;
 
-
+        /// <summary>類語検索結果クリック時のキャレット遷移処理</summary>
         public ICommand Command_JumpToSynonymSearchResult { get; private set; } = null;
 
         #endregion
@@ -318,8 +315,6 @@ namespace SynonyMe.ViewModel
         private void Initialize()
         {
             _model = new Model.MainWindowModel(this);
-            _highlightManager = new AvalonEdit.Highlight.HighlightManager(AvalonEditBackGround);
-
             _displayTextDoc = TextEditor.Document;
 
             // コマンド初期化処理
@@ -340,6 +335,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>各種コマンドを初期化します</summary>
         private void InitializeCommand()
         {
             Command_Save = new CommandBase(ExecuteSave, null);
@@ -354,9 +350,7 @@ namespace SynonyMe.ViewModel
 
         #region Synonym method
 
-        /// <summary>
-        /// 画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する
-        /// </summary>
+        /// <summary>画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する</summary>
         private void InitializeSynonymSearch()
         {
             // 類語領域の表示を更新する
@@ -412,7 +406,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>選択中の類語グループに基づき、類語一覧を更新する</summary>
-        /// <param name="groupId"></param>
+        /// <param name="groupId">取得対象のグループID</param>
         private void UpdateDisplaySynonymWords(int groupId)
         {
             // 呼ばれるのは、類語ウィンドウで類語の更新がされたときか、メインウィンドウで類語グループ選択が変更されたとき
@@ -589,16 +583,7 @@ namespace SynonyMe.ViewModel
             }
 
             // 検索結果にハイライトをかける
-            string[] searchWord = new string[1]
-            {
-                SearchWord
-            };
-            if (_highlightManager == null)
-            {
-                // error log
-                return;
-            }
-            _highlightManager.UpdateXshdFile(searchWord);
+            _model.ApplyHighlightToTarget(SearchWord);
         }
 
 
@@ -628,6 +613,8 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteJumpToSynonymSearchResult(object parameter)
         {
+            #region convert args and null check
+
             if (parameter == null)
             {
                 return;
@@ -645,12 +632,14 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // キャレットの更新とFocusを行う            
             if (_model == null)
             {
                 throw new NullReferenceException("ExecuteJumpToSynonymSearchResult model is null");
             }
 
+            #endregion
+
+            // キャレットの更新とFocusを行う            
             if (_model.UpdateCaretOffset(synonym.Index) == false)
             {
                 // error log
@@ -673,13 +662,11 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        /// <summary>
-        /// 類語グループ選択時に類語一覧と選択中の類語グループIDを更新する
-        /// </summary>
+        /// <summary>類語グループ選択時に類語一覧と選択中の類語グループIDを更新する</summary>
         /// <param name="parameter"></param>
         private void ExecuteSelectSynonymGroup(object parameter)
         {
-            #region convert args
+            #region convert args and null check
 
             if (parameter == null)
             {
@@ -715,9 +702,7 @@ namespace SynonyMe.ViewModel
             UpdateDisplaySynonymWords(_selectedSynonymGroupId);
         }
 
-        /// <summary>
-        /// 類語検索処理
-        /// </summary>
+        /// <summary>類語検索処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteSynonymSearch(object parameter)
         {
@@ -754,21 +739,12 @@ namespace SynonyMe.ViewModel
             {
                 searchWords[i] = DisplaySynonymWords[i].SynonymWord;
             }
-
-            if (_highlightManager == null)
-            {
-                // error log
-                return;
-            }
-            _highlightManager.UpdateXshdFile(searchWords);
-
+            _model.ApplyHighlightToTargets(searchWords);
         }
 
         #endregion
 
-        /// <summary>
-        /// 検索結果表示領域のVisibilityを更新します
-        /// </summary>
+        /// <summary>検索結果表示領域のVisibilityを更新します</summary>
         /// <returns>true:検索結果あり、false;検索結果なし</returns>
         private bool UpdateSearchResultVisiblity(Dictionary<int, string> searchResult)
         {

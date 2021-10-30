@@ -138,7 +138,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 return false;
             }
 
-            Color foreGround = GetForeGround();
+            Color foreGround = GetForeGroundColor();
 
             foreach (string target in targetWords)
             {
@@ -160,7 +160,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         /// <summary>AvalonEditの背景色から、文字色を取得します</summary>
         /// <returns>背景色が白寄りの場合は黒、背景色が黒寄りの場合は白</returns>
-        private Color GetForeGround()
+        private Color GetForeGroundColor()
         {
             if (_avalonEditBackground == null)
             {
@@ -215,6 +215,13 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <returns>true:正常、false:異常</returns>
         internal bool UpdateXshdFile(string[] targetWords)
         {
+            // 既存の保持情報をクリアしないと、延々と残り続けてしまう
+            if (ResetHighlightInfo() == false)
+            {
+                // error log
+                return false;
+            }
+
             if (CreateHighlightInfos(targetWords) == false)
             {
                 // error log
@@ -234,6 +241,31 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
 
             return SetXshdFile();
+        }
+
+
+        private bool ResetHighlightInfo()
+        {
+            ResetBackGroundColorIndex();
+
+            if (_infos == null)
+            {
+                // 空Listで初期化しているので、nullは異常と判断する
+                _infos = new List<TextHighlightInfo>();
+                // error log
+                // ただし、この後は正常系で処理を行える可能性があるため、falseをreturnすることは現状しない。
+                // 問題があるようなら、将来ここでfalseをreturnすること
+                return true;
+            }
+
+            _infos.Clear();
+            return true;
+        }
+
+
+        private void ResetBackGroundColorIndex()
+        {
+            _backgroundColorIndex = 0;
         }
 
         /// <summary>
@@ -376,7 +408,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             // FileInfoはコンストラクタ生成時にのみ正規化するが、Fileは都度正規化する
             // 削除処理は多くの回数呼ばれることが想定されるため、パフォーマンスを考慮してFileInfoを使用する
-            System.IO.FileInfo fi = new FileInfo(_xshdFilePath);
+            FileInfo fi = new FileInfo(GetXshdFilePath());
 
             if (fi.Exists)
             {

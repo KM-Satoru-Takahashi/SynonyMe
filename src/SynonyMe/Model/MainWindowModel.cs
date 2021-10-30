@@ -31,6 +31,9 @@ namespace SynonyMe.Model
         /// <remarks>将来的に設定ファイルで外出しする予定</remarks>
         private const int SEARCH_RESULT_DISPLAY_NUMBER = 100;
 
+
+        private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
+
         #endregion
 
         internal event EventHandler UpdateSynonymEvent
@@ -51,8 +54,51 @@ namespace SynonyMe.Model
         /// <param name="viewModel">メンバに保持するVM</param>
         internal MainWindowModel(ViewModel.MainWindowVM viewModel)
         {
+            if (viewModel == null)
+            {
+                // error log
+                return;
+            }
+
             _viewModel = viewModel;
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
         }
+
+
+        internal bool ApplyHighlightToTargets(string[] targets)
+        {
+            if (targets == null || targets.Any() == false)
+            {
+                // error log
+                return false;
+            }
+
+            if (_highlightManager == null)
+            {
+                // error log
+                return false;
+            }
+
+            return _highlightManager.UpdateXshdFile(targets);
+        }
+
+
+        internal bool ApplyHighlightToTarget(string target)
+        {
+            if (string.IsNullOrEmpty(target))
+            {
+                // error log
+                return false;
+            }
+
+            string[] targets = new string[1]
+            {
+                target
+            };
+
+            return ApplyHighlightToTargets(targets);
+        }
+
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
