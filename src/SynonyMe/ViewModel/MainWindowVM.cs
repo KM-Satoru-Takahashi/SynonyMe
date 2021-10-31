@@ -314,6 +314,8 @@ namespace SynonyMe.ViewModel
         /// <summary>modelの生成等の初期化処理を実施</summary>
         private void Initialize()
         {
+            CommonLibrary.Log.Logger.WriteStandardLog("TEST");
+
             _model = new Model.MainWindowModel(this);
             _displayTextDoc = TextEditor.Document;
 
