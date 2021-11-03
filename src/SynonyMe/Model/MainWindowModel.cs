@@ -10,12 +10,15 @@ using SynonyMe.View;
 using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model
 {
     internal class MainWindowModel
     {
         #region field
+
+        private const string CLASS_NAME = "MainWindowModel";
 
         /// <summary>ViewModel</summary>
         private ViewModel.MainWindowVM _viewModel = null;
@@ -56,7 +59,7 @@ namespace SynonyMe.Model
         {
             if (viewModel == null)
             {
-                // error log
+                Logger.WriteFatalLog(CLASS_NAME, "MainWindowModel", "viewModel is null");
                 return;
             }
 
@@ -69,13 +72,13 @@ namespace SynonyMe.Model
         {
             if (targets == null || targets.Any() == false)
             {
-                // error log
+                Logger.WriteFatalLog(CLASS_NAME, "ApplyHighlightToTargets", "targets is null or empty!");
                 return false;
             }
 
             if (_highlightManager == null)
             {
-                // error log
+                Logger.WriteFatalLog(CLASS_NAME, "ApplyHighlightToTargets", "_highlightManager is null!");
                 return false;
             }
 
@@ -87,7 +90,7 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(target))
             {
-                // error log
+                Logger.WriteFatalLog(CLASS_NAME, "ApplyHighlightToTarget", "target is null or empty!");
                 return false;
             }
 
@@ -191,6 +194,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "Save", e.Message);
                 return false;
             }
 
@@ -252,6 +256,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "Load", e.Message);
                 return false;
             }
 
@@ -326,14 +331,17 @@ namespace SynonyMe.Model
             // check args
             if (string.IsNullOrEmpty(searchWord))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "SearchAllWordsInText", "searchWord is null or empty!");
                 return null;
             }
             else if (string.IsNullOrEmpty(targetText))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "SearchAllWordsInText", "targetText is null or empty!");
                 return null;
             }
             else if (margin < 0 /*最大値は現状未定、最小値も設定ファイルや定数で外出しする予定だが、現状ハードコーティングとする*/)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "SearchAllWordsInText", $"margin is incorrect! value:[{margin}]");
                 return null;
             }
 
@@ -342,11 +350,13 @@ namespace SynonyMe.Model
             if (searchResultIndexArray == null)
             {
                 // nullは異常な場合
+                Logger.WriteFatalLog(CLASS_NAME, "SearchAllWordsInText", "searchResultIndexArray is null!");
                 return null;
             }
             else if (searchResultIndexArray.Any() == false)
             {
                 // 検索したが結果が無い場合はEmptyを返す
+                Logger.WriteErrorLog(CLASS_NAME, "SearchAllWordsInText", "searchResultIndexArray is empty!");
                 return new Dictionary<int, string>();
             }
             int searchResultCount = searchResultIndexArray.Count();
@@ -354,11 +364,13 @@ namespace SynonyMe.Model
             string[] searchResultWordArray = GetAllSearchResultWords(searchResultIndexArray, searchWord, targetText, margin);
             if (searchResultWordArray == null)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is null!");
                 return null;
             }
             else if (searchResultWordArray.Any() == false)
             {
                 // 検索したが結果が無い場合はEmptyを返す
+                Logger.WriteErrorLog(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is empty!");
                 return new Dictionary<int, string>();
             }
 
@@ -382,6 +394,7 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "GetAllSearchResultIndex", "args is null or empty!");
                 return null;
             }
 
@@ -521,13 +534,13 @@ namespace SynonyMe.Model
 
             if (targetSynonyms == null || targetSynonyms.Any() == false)
             {
-                // todo:log
+                Logger.WriteFatalLog(CLASS_NAME, "SynonymSearch", "targetSynonyms are null");
                 return null;
             }
 
             if (string.IsNullOrEmpty(targetText))
             {
-                // todo:log
+                Logger.WriteFatalLog(CLASS_NAME, "SynonymSearch", "targetText is null");
                 return null;
             }
 
@@ -600,12 +613,14 @@ namespace SynonyMe.Model
             {
                 if (target == null)
                 {
+                    Logger.WriteErrorLog(CLASS_NAME, "GetAllSynonymSearchResult", "target is null!");
                     continue;
                 }
 
                 int[] allIndexinText = GetAllSearchResultIndex(target.SynonymWord, targetText);
                 if (allIndexinText == null || allIndexinText.Any() == false)
                 {
+                    Logger.WriteFatalLog(CLASS_NAME, "GetAllSynonymSearchResult", "allIndexInText is null or empty!");
                     return null;
                 }
 
@@ -613,6 +628,7 @@ namespace SynonyMe.Model
                 string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, _viewModel.SEARCHRESULT_MARGIN);
                 if (allResultinText == null || allResultinText.Any() == false)
                 {
+                    Logger.WriteFatalLog(CLASS_NAME, "GetAllSynonymSearchResult", "allResultinText is null or empty!");
                     return null;
                 }
 
@@ -620,6 +636,7 @@ namespace SynonyMe.Model
                 // 個数が異なったら何かがおかしい
                 if (allIndexinText.Count() != allResultinText.Count())
                 {
+                    Logger.WriteFatalLog(CLASS_NAME, "GetAllSynonymSearchResult", $"index and result is incorrect. index:[{allIndexinText.Count()}], result[{allResultinText.Count()}]");
                     return null;
                 }
 
@@ -647,6 +664,7 @@ namespace SynonyMe.Model
         {
             if (index < 0)
             {
+                Logger.WriteErrorLog(CLASS_NAME, "UpdateCaretOffset", $"index is incorrect. index:[{index}]");
                 return false;
             }
 
@@ -675,7 +693,8 @@ namespace SynonyMe.Model
             TextEditor target = mw.TextEditor;
             if (target == null)
             {
-                throw new NullReferenceException("GetTextEditor TextEditor is null");
+                Logger.WriteFatalLog(CLASS_NAME, "GetTextEditor", "target is null!");
+                return null;
             }
 
             return target;

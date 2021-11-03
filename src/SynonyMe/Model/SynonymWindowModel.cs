@@ -7,6 +7,7 @@ using SynonyMe.ViewModel;
 using System.Data.SQLite;   // DB
 using System.Data;
 using SynonyMe.CommonLibrary.Entity;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model
 {
@@ -16,6 +17,8 @@ namespace SynonyMe.Model
 
         /// <summary>ViewModel</summary>
         private SynonymWindowVM _vm = null;
+
+        private const string CLASS_NAME = "SynonymWindowModel";
 
         #endregion
 
@@ -61,7 +64,7 @@ namespace SynonyMe.Model
             if (synonymGroups == null)
             {
                 // 無登録の場合はnullを返す
-                // todo:Log
+                Logger.WriteStandardLog(CLASS_NAME, "GetAllSynonymGroup", "Registed synonym groups are nothing");
                 return null;
             }
 
@@ -89,12 +92,14 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(synonymWord))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "RegistSynonymWord", "synonymWord is null or empty!");
                 return false;
             }
 
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new ArgumentOutOfRangeException($"GroupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "RegistSynonymWord", $"GroupID is {groupID}");
+                return false;
             }
 
             return Manager.SynonymManager.RegistSynonymWord(synonymWord, groupID);
@@ -108,12 +113,14 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(word))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymWord", "word is null or empty!");
                 return false;
             }
 
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new ArgumentOutOfRangeException($"wordID is {wordID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymWord", $"WordID is incorrect! wordID is [{wordID}]");
+                return false;
             }
 
             return Manager.SynonymManager.UpdateSynonymWord(wordID, word);
@@ -127,11 +134,13 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymGroup", $"groupID is incorrect! groupID is [{groupID}]");
+                return false;
             }
 
             if (string.IsNullOrEmpty(groupName))
             {
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymGroup", "groupName is null or empty!");
                 return false;
             }
 
@@ -145,7 +154,8 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymGroup", $"groupID is incorrect! groupID is [{groupID}]");
+                return false;
             }
 
             return Manager.SynonymManager.UpdateSynonymGroup(groupID);
@@ -160,7 +170,8 @@ namespace SynonyMe.Model
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new ArgumentOutOfRangeException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "DeleteSynonymGroup", $"groupID is incorrect! groupID is [{groupID}]");
+                return false;
             }
 
             return Manager.SynonymManager.DeleteSynonymGroup(groupID);
@@ -173,7 +184,8 @@ namespace SynonyMe.Model
         {
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new ArgumentOutOfRangeException($"wordID is {wordID}");
+                Logger.WriteFatalLog(CLASS_NAME, "DeleteSynonymWord", $"wordID is incorrect!wordID is {wordID}");
+                return false;
             }
 
             return Manager.SynonymManager.DeleteSynonymWord(wordID);

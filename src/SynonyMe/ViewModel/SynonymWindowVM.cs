@@ -8,6 +8,7 @@ using SynonyMe.Model;
 using System.Collections.ObjectModel;
 using System.Windows;
 using SynonyMe.CommonLibrary.Entity;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.ViewModel
 {
@@ -23,6 +24,8 @@ namespace SynonyMe.ViewModel
 
         /// <summary>類語グループリストから選択した類語グループ</summary>
         private ObservableCollection<SynonymWordEntity> _displaySynonymWords = null;
+
+        private const string CLASS_NAME = "SynonymWindowVM";
 
         #endregion
 
@@ -193,7 +196,8 @@ namespace SynonyMe.ViewModel
         {
             if (_model == null)
             {
-                throw new NullReferenceException("SynonymWindowModel is null");
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteClose", "_model is null");
+                return;
             }
 
             _model.CloseSynonymWindow();
@@ -205,17 +209,20 @@ namespace SynonyMe.ViewModel
         {
             if (string.IsNullOrEmpty(InputGroupWord))
             {
+                Logger.WriteErrorLog(CLASS_NAME, "ExecuteRegistSynonymGroup", "InputGroupWord is null or empty!");
                 return;
             }
 
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteRegistSynonymGroup _model is null");
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteRegistSynonymGroup", "_model is null");
+                return;
             }
 
             if (_model.RegistSynonymGroup(InputGroupWord) == false)
             {
-                throw new Exception("ExecuteRegistSynonymGroup exception");
+                Logger.WriteErrorLog(CLASS_NAME, "ExecuteRegistSynonymGroup", "RegistSynonymGroup return false");
+                return;
             }
 
             // 登録が正常に行われたなら、表示中の類語グループリストを更新する
@@ -228,21 +235,28 @@ namespace SynonyMe.ViewModel
         {
             if (parameter == null)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteEditSynonymGroup", "parameter is null!");
                 return;
             }
 
             SynonymGroupEntity targetGroup = parameter as SynonymGroupEntity;
             if (targetGroup == null)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteEditSynonymGroup", "targetGroup is null!");
                 return;
             }
 
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteEditSynonymGroup _model is null");
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteEditSynonymGroup", "_model is null!");
+                return;
             }
 
-            _model.UpdateSynonymGroup(targetGroup.GroupID, targetGroup.GroupName);
+            if (_model.UpdateSynonymGroup(targetGroup.GroupID, targetGroup.GroupName) == false)
+            {
+                Logger.WriteErrorLog(CLASS_NAME, "ExecuteEditSynonymGroup", "UpdateSynonymGroup return false");
+                return;
+            }
 
             UpdateDisplayGroupsAndWords(targetGroup.GroupID);
         }
@@ -253,15 +267,21 @@ namespace SynonyMe.ViewModel
         {
             if (SelectedGroup == null)
             {
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteDeleteSynonymGroup", "SelectedGroup is null");
                 return;
             }
 
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteDeleteSynonymGroup _model is null");
+                Logger.WriteFatalLog(CLASS_NAME, "ExecuteDeleteSynonymGroup", "_model is null");
+                return;
             }
 
-            _model.DeleteSynonymGroup(SelectedGroup.GroupID);
+            if (_model.DeleteSynonymGroup(SelectedGroup.GroupID) == false)
+            {
+                Logger.WriteErrorLog(CLASS_NAME, "ExecuteDeleteSynonymGroup", "DeleteSynonymGroup return false");
+                return;
+            }
 
             // 画面表示の更新
             // 類語リストは一旦空にする

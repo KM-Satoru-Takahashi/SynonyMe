@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SynonyMe.CommonLibrary.Entity;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model.Manager
 {
@@ -12,6 +13,8 @@ namespace SynonyMe.Model.Manager
     /// <remarks>DBへのアクセスはこのクラスが引き受け、各Modelクラスが共通して使う前提とし、staticにする</remarks>
     internal static class SynonymManager
     {
+
+        private const string CLASS_NAME = "SynonymManager";
 
         internal static event EventHandler UpdateSynonymEvent = delegate { };
 
@@ -39,7 +42,7 @@ namespace SynonyMe.Model.Manager
             if (synonymWords == null)
             {
                 // 無登録の場合はnullなので異常とは言えないため、素直にnullを返す
-                // todo:ログ出し
+                Logger.WriteStandardLog(CLASS_NAME, "GetSynonymWordEntites", "synonymWords are null");
             }
 
             return synonymWords;
@@ -66,7 +69,8 @@ namespace SynonyMe.Model.Manager
             if (synonymGroups == null)
             {
                 // 無登録の場合はnullを返す
-                // todo:ログ出し
+                Logger.WriteStandardLog(CLASS_NAME, "GetAllSynonymGroup", "Registed synonym words are nothing!");
+                return null;
             }
 
             return synonymGroups;
@@ -112,7 +116,8 @@ namespace SynonyMe.Model.Manager
 
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"GroupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "RegistSynonymWord", $"GroupID is {groupID}");
+                return false;
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
@@ -145,7 +150,8 @@ namespace SynonyMe.Model.Manager
 
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymWord", $"wordID is {wordID}");
+                return false;
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
@@ -172,7 +178,8 @@ namespace SynonyMe.Model.Manager
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             if (string.IsNullOrEmpty(groupName))
@@ -194,7 +201,8 @@ namespace SynonyMe.Model.Manager
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "UpdateSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             string updateGroupSql =
@@ -213,7 +221,8 @@ namespace SynonyMe.Model.Manager
         {
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.WriteFatalLog(CLASS_NAME, "DeleteSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             using (DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
@@ -244,7 +253,8 @@ namespace SynonyMe.Model.Manager
         {
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                Logger.WriteFatalLog(CLASS_NAME, "DeleteSynonymWord", $"wordID is {wordID}");
+                return falsel
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))

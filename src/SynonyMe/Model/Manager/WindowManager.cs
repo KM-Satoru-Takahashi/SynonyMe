@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SynonyMe.CommonLibrary;
 using SynonyMe.View;
 using System.Windows;
+using SynonyMe.CommonLibrary.Log;
 
 
 namespace SynonyMe.Model.Manager
@@ -17,6 +18,8 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>現在画面で表示中のサブウィンドウリスト</summary>
         private static List<SubWindowData> _displaySubWindowList = new List<SubWindowData>();
+
+        private static readonly string CLASS_NAME = "WindowManager";
 
         #endregion
 
@@ -38,7 +41,8 @@ namespace SynonyMe.Model.Manager
 
                 default:
                     // 想定していないSubWindow名が来ることはあり得ず、対処不能
-                    throw new ArgumentException();
+                    Logger.WriteFatalLog(CLASS_NAME, "OpenSubWindow", $"SubWindowName is incorrect! subWindowName:[{subWindowName}]");
+                    break;
             }
         }
 
@@ -80,7 +84,7 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         internal static Window GetSubWindow(Define.SubWindowName windowName)
         {
-            if(_displaySubWindowList == null || _displaySubWindowList.Any()==false)
+            if (_displaySubWindowList == null || _displaySubWindowList.Any() == false)
             {
                 return null;
             }
@@ -98,7 +102,8 @@ namespace SynonyMe.Model.Manager
             MainWindow mw = view as MainWindow;
             if (mw == null)
             {
-                throw new NullReferenceException("MainWindow is null");
+                Logger.WriteFatalLog(CLASS_NAME, "GetMainWindow", "MainWindow is null");
+                return null;
             }
 
             return mw;

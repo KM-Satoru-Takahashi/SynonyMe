@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.AvalonEdit.Highlight
 {
@@ -18,6 +19,8 @@ namespace SynonyMe.AvalonEdit.Highlight
         #region field
 
         private SolidColorBrush _brush = null;
+
+        private const string CLASS_NAME = "XshdBrush";
 
         #endregion
 
@@ -50,7 +53,8 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (_brush == null)
             {
-                throw new NullReferenceException("XshdBrush ToString _brush is null");
+                Logger.WriteErrorLog(CLASS_NAME, "ToString", "XshdBrush ToString _brush is null");
+                return null;
             }
 
             return _brush.ToString();
