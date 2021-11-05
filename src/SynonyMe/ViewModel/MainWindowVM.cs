@@ -318,7 +318,7 @@ namespace SynonyMe.ViewModel
         /// <summary>modelの生成等の初期化処理を実施</summary>
         private void Initialize()
         {
-            Logger.WriteStandardLog(CLASS_NAME, "Initialize", "TEST");
+            Logger.Info(CLASS_NAME, "Initialize", "start");
 
             _model = new Model.MainWindowModel(this);
             _displayTextDoc = TextEditor.Document;
@@ -428,7 +428,7 @@ namespace SynonyMe.ViewModel
             if (entities == null || entities.Any() == false)
             {
                 // todo:ログ
-                Logger.WriteErrorLog(CLASS_NAME, "UpdateDisplaySynonymWords", "search synonym entites are null!");
+                Logger.Error(CLASS_NAME, "UpdateDisplaySynonymWords", "search synonym entites are null!");
             }
 
             // 表示用のEntityに入れ直して反映させる
@@ -482,7 +482,7 @@ namespace SynonyMe.ViewModel
             {
                 // ドラッグオーバー時に異常があった場合、握りつぶしてログ出しすると負荷がかかる
                 // この後、他の処理が正常に進むことはあり得ないので、落とすことを想定してthrow+ログ出しする
-                Logger.WriteFatalLog(CLASS_NAME, "DragOver", "_model is null!");
+                Logger.Fatal(CLASS_NAME, "DragOver", "_model is null!");
                 throw new Exception();
             }
 
@@ -503,13 +503,13 @@ namespace SynonyMe.ViewModel
         {
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "Drop", "_model is null!");
+                Logger.Fatal(CLASS_NAME, "Drop", "_model is null!");
                 return;
             }
 
             if (_model.CanDrop(dropInfo) == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "Drop", "CanDrop return false");
+                Logger.Fatal(CLASS_NAME, "Drop", "CanDrop return false");
                 return;
             }
 
@@ -539,9 +539,11 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSave", "start");
+
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteSave", "_model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteSave", "_model is null");
                 return;
             }
 
@@ -552,9 +554,11 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteOpenSynonymWindow(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteOpenSynonymWindow", "start");
+
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteOpenSynonymWindow", "_model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenSynonymWindow", "_model is null");
                 return;
             }
 
@@ -565,14 +569,17 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSearch(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSearch", $"start. SearchWord:[{SearchWord}]");
+
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteSearch", "_model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteSearch", "_model is null");
                 return;
             }
 
             if (string.IsNullOrEmpty(SearchWord))
             {
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "SearchWord is null or empty!");
                 return;
             }
 
@@ -580,6 +587,7 @@ namespace SynonyMe.ViewModel
             Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
             if (UpdateSearchResultVisiblity(indexWordPairs) == false)
             {
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
                 return;
             }
 
@@ -610,22 +618,26 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteJumpToSearchResult(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteJumpToSearchResult", "start");
+
             SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
             if (searchResultEntity == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "searchResultEntity is null!");
                 return;
             }
 
             // キャレットの更新とFocusを行う            
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteJumpToSearchResult", "_model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "_model is null");
                 return;
             }
 
             if (_model.UpdateCaretOffset(searchResultEntity.Index) == false)
             {
-                // error log
+                Logger.Error(CLASS_NAME, "ExecuteJumpToSearchResult", "UpdateCaretOffset return false!");
+                return;
             }
         }
 
@@ -637,27 +649,27 @@ namespace SynonyMe.ViewModel
 
             if (parameter == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "parameter is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "parameter is null");
                 return;
             }
 
             SelectionChangedEventArgs args = parameter as SelectionChangedEventArgs;
             if (args == null || args.AddedItems == null || args.AddedItems.Count < 1)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "args is incollect");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "args is incollect");
                 return;
             }
 
             DisplaySynonymSearchResult synonym = args.AddedItems[0] as DisplaySynonymSearchResult;
             if (synonym == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "synonym is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "synonym is null");
                 return;
             }
 
             if (_model == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "_model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "_model is null");
                 return;
             }
 
@@ -666,7 +678,8 @@ namespace SynonyMe.ViewModel
             // キャレットの更新とFocusを行う            
             if (_model.UpdateCaretOffset(synonym.Index) == false)
             {
-                // error log
+                Logger.Error(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "UpdateCaretOffset return false!");
+                return;
             }
         }
 
@@ -674,6 +687,9 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteUpdateTextInfo(object parameter)
         {
+            // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
+            // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
+
             if (_displayTextDoc == null)
             {
                 WordCount = null;
@@ -694,24 +710,28 @@ namespace SynonyMe.ViewModel
 
             if (parameter == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "parameter is null!");
                 return;
             }
 
             SelectionChangedEventArgs e = parameter as SelectionChangedEventArgs;
             if (e == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "EventArgs is null!");
                 return;
             }
 
             object[] obj = e.AddedItems as object[];
             if (obj == null || obj.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "target object is null!");
                 return;
             }
 
             SynonymGroupEntity selectedSynonymGroup = obj[0] as SynonymGroupEntity;
             if (selectedSynonymGroup == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "selectedSynonymGroup is null!");
                 return;
             }
 
@@ -719,6 +739,7 @@ namespace SynonyMe.ViewModel
 
             if (IsExistSynonymGroupID(selectedSynonymGroup.GroupID) == false)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", $"target synonymGroup is not exist! groupID:[{selectedSynonymGroup.GroupID}]");
                 return;
             }
 
@@ -730,8 +751,11 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSynonymSearch(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSynonymSearch", "start");
+
             if (_model == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSynonymSearch", "_model is null!");
                 return;
             }
 
@@ -739,6 +763,7 @@ namespace SynonyMe.ViewModel
             if (_displayTextDoc == null ||
                 string.IsNullOrEmpty(_displayTextDoc.Text))
             {
+                Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;
             }
 
@@ -803,10 +828,11 @@ namespace SynonyMe.ViewModel
             TextEditor textEditor = sender as TextEditor;
             if (textEditor == null)
             {
+                Logger.Fatal(CLASS_NAME, "OnIsModifiedChanged", "textEditor is null!");
                 return;
             }
 
-            // ドラッグアンドドロップ直後には編集済み表示を出さない
+
             if (textEditor.IsModified)
             {
                 EditedTextVisible = Visibility.Visible;

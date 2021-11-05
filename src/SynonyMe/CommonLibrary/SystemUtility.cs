@@ -21,7 +21,7 @@ namespace SynonyMe.CommonLibrary
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             if (assembly == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GeySynonymeExeFilePath", "assembly is null!");
+                Logger.Fatal(CLASS_NAME, "GeySynonymeExeFilePath", "assembly is null!");
                 return null;
             }
 
@@ -29,7 +29,7 @@ namespace SynonyMe.CommonLibrary
 
             if (string.IsNullOrEmpty(synonymeExePath))
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GetSynonymeExeFilePath", "synonymeExePath is null or empty!");
+                Logger.Fatal(CLASS_NAME, "GetSynonymeExeFilePath", "synonymeExePath is null or empty!");
                 return null;
             }
 

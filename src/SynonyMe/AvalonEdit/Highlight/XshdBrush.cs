@@ -53,7 +53,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (_brush == null)
             {
-                Logger.WriteErrorLog(CLASS_NAME, "ToString", "XshdBrush ToString _brush is null");
+                Logger.Error(CLASS_NAME, "ToString", "XshdBrush ToString _brush is null");
                 return null;
             }
 

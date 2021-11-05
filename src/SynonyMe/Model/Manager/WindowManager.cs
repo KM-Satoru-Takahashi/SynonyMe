@@ -41,7 +41,7 @@ namespace SynonyMe.Model.Manager
 
                 default:
                     // 想定していないSubWindow名が来ることはあり得ず、対処不能
-                    Logger.WriteFatalLog(CLASS_NAME, "OpenSubWindow", $"SubWindowName is incorrect! subWindowName:[{subWindowName}]");
+                    Logger.Fatal(CLASS_NAME, "OpenSubWindow", $"SubWindowName is incorrect! subWindowName:[{subWindowName}]");
                     break;
             }
         }
@@ -102,7 +102,7 @@ namespace SynonyMe.Model.Manager
             MainWindow mw = view as MainWindow;
             if (mw == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GetMainWindow", "MainWindow is null");
+                Logger.Fatal(CLASS_NAME, "GetMainWindow", "MainWindow is null");
                 return null;
             }
 

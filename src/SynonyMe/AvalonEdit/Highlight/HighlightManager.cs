@@ -100,7 +100,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 if (BACKGROUND_COLORS_DEFAULT.Count() - 1 < _backgroundColorIndex)
                 {
                     // 上限までいったので、リセットする
-                    Logger.WriteStandardLog(CLASS_NAME, "GetBackGroundColorIndex", $"index is [{_backgroundColorIndex}], reset to 0");
+                    Logger.Info(CLASS_NAME, "GetBackGroundColorIndex", $"index is [{_backgroundColorIndex}], reset to 0");
                     _backgroundColorIndex = 0;
                 }
 
@@ -111,20 +111,21 @@ namespace SynonyMe.AvalonEdit.Highlight
         }
 
         /// <summary>
-        /// TextHighlightInfoが不正かどうか調べます
+        /// TextHighlightInfoが正常かどうか調べます
         /// </summary>
-        /// <returns>true:nullまたは不正値、false:正常</returns>
-        private bool IsInfoNullOrIncorrect(TextHighlightInfo info)
+        /// <returns>true:正常、false:異常</returns>
+        private bool IsInfoCorrect(TextHighlightInfo info)
         {
             if (info == null ||
                 info.ForeGround == null ||
                 info.BackGrouond == null ||
                 string.IsNullOrEmpty(info.TargetWord))
             {
-                return true;
+                Logger.Error(CLASS_NAME, "IsInfoCorrect", "info is incorrrect!");
+                return false;
             }
 
-            return false;
+            return true;
         }
 
 
@@ -136,9 +137,11 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         private bool CreateHighlightInfos(string[] targetWords)
         {
+            Logger.Info(CLASS_NAME, "CreateHighlightInfos", "start");
+
             if (targetWords == null || targetWords.Any() == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "CreateHighlightInfos", "targetWords are null or empty.");
+                Logger.Fatal(CLASS_NAME, "CreateHighlightInfos", "targetWords are null or empty.");
                 return false;
             }
 
@@ -146,14 +149,11 @@ namespace SynonyMe.AvalonEdit.Highlight
 
             foreach (string target in targetWords)
             {
-                if (string.IsNullOrEmpty(target))
-                {
-                    continue;
-                }
-
                 Color backGround = BACKGROUND_COLORS_DEFAULT[GetBackgroundColorIndex];
+
                 if (string.IsNullOrEmpty(target))
                 {
+                    Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround.ToString()}]");
                     continue;
                 }
                 _infos.Add(new TextHighlightInfo(foreGround, backGround, target));
@@ -168,7 +168,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (_avalonEditBackground == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GetForeGroundColor", "_avalonEditBackGround is null!");
+                Logger.Fatal(CLASS_NAME, "GetForeGroundColor", "_avalonEditBackGround is null!");
                 // 異常時はとりあえず黒色の文字とする
                 return Colors.Black;
             }
@@ -178,7 +178,8 @@ namespace SynonyMe.AvalonEdit.Highlight
             if (string.IsNullOrEmpty(backGroundColorCode) ||
                backGroundColorCode.Length != "#AARRGGBB".Length)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GetForeGroundColor", "backGroundColorCode is null or incorrect!");
+                string back = string.IsNullOrEmpty(backGroundColorCode) ? "" : backGroundColorCode;
+                Logger.Error(CLASS_NAME, "GetForeGroundColor", $"backGroundColorCode is incorrect! value[{back}]");
                 return Colors.Black;
             }
 
@@ -195,13 +196,14 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
             catch (Exception e)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "GetForeGroundColor", e.Message);
+                Logger.Fatal(CLASS_NAME, "GetForeGroundColor", $"ErrorMessage:[{e.Message}], R:[{stringRValue}], G:[{stringGValue}], B:[{stringBValue}]");
                 return Colors.Black;
             }
 
             // RGBをグレースケール化する。255は白、0は黒なので、127を境界にする
             double gray = byteRValue * 0.3 + byteGValue * 0.59 + byteBValue * 0.11;
             byte byteGray = (byte)Math.Round(gray);
+            Logger.Info(CLASS_NAME, "GetForeGroundColor", $"byteGray:[{byteGray}]");
             if (byteGray < 127)
             {
                 // 127以下→背景色は黒に近いので、文字色は白
@@ -219,44 +221,51 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <returns>true:正常、false:異常</returns>
         internal bool UpdateXshdFile(string[] targetWords)
         {
+            Logger.Info(CLASS_NAME, "UpdateXshdFile", "start");
+
             // 既存の保持情報をクリアしないと、延々と残り続けてしまう
             if (ResetHighlightInfo() == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "UpdateXshdFile", "ResetHighlightInfo is incorrect!");
+                Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "ResetHighlightInfo is incorrect!");
                 return false;
             }
 
             if (CreateHighlightInfos(targetWords) == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "UpdateXshdFile", "CreateHighlightInfos is incorrect!");
+                Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "CreateHighlightInfos is incorrect!");
                 return false;
             }
 
             if (DeleteXshdFile() == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "UpdateXshdFile", "DeleteXshdFile is incorrect!");
+                Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "DeleteXshdFile is incorrect!");
                 return false;
             }
 
             if (CreateXshdFile() == false)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "UpdateXshdFile", "CreateXshdFile is incorrect!");
+                Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "CreateXshdFile is incorrect!");
                 return false;
             }
 
             return SetXshdFile();
         }
 
-
+        /// <summary>
+        /// ハイライト設定をリセット(破棄)します
+        /// </summary>
+        /// <returns>true:成功, false:失敗</returns>
         private bool ResetHighlightInfo()
         {
+            Logger.Info(CLASS_NAME, "ResetHighlightInfo", "start");
+
             ResetBackGroundColorIndex();
 
             if (_infos == null)
             {
                 // 空Listで初期化しているので、nullは異常と判断する
+                Logger.Fatal(CLASS_NAME, "ResetHighlightInfo", "_infos is null!");
                 _infos = new List<TextHighlightInfo>();
-                Logger.WriteFatalLog(CLASS_NAME, "ResetHighlightInfo", "_infos is null!");
                 // ただし、この後は正常系で処理を行える可能性があるため、falseをreturnすることは現状しない。
                 // 問題があるようなら、将来ここでfalseをreturnすること
                 return true;
@@ -266,18 +275,23 @@ namespace SynonyMe.AvalonEdit.Highlight
             return true;
         }
 
-
+        /// <summary>
+        /// ハイライト用の背景色インデックスをリセットします
+        /// </summary>
         private void ResetBackGroundColorIndex()
         {
+            Logger.Info(CLASS_NAME, "ResetBackGroundColorIndex", "start");
             _backgroundColorIndex = 0;
         }
 
         /// <summary>
         /// 保持しているInfoに従い、Xshdファイルを生成します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true:成功, false:失敗</returns>
         private bool CreateXshdFile()
         {
+            Logger.Info(CLASS_NAME, "CreateXshdFile", "start");
+
             XshdSyntaxDefinition def = new XshdSyntaxDefinition();
             def.Name = "TXT";
             def.Extensions.Add(".txt"); // .txtファイルのみ対象としているので、将来拡張するならここをいじる必要がある
@@ -290,9 +304,9 @@ namespace SynonyMe.AvalonEdit.Highlight
             int i = 0;
             foreach (TextHighlightInfo info in _infos)
             {
-                if (IsInfoNullOrIncorrect(info))
+                if (IsInfoCorrect(info) == false)
                 {
-                    Logger.WriteErrorLog(CLASS_NAME, "CreateXshdFile", "info is null or incorrect");
+                    Logger.Error(CLASS_NAME, "CreateXshdFile", $"info is null or incorrect! index:[{i}]");
                     continue;
                 }
 
@@ -315,6 +329,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 string target = info.TargetWord;
                 if (string.IsNullOrEmpty(target))
                 {
+                    Logger.Error(CLASS_NAME, "CreateXshdFile", $"target is null! target:[{target}]");
                     continue;
                 }
 
@@ -339,12 +354,15 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>
         /// Xshdファイルを書き込みます
         /// </summary>
-        /// <param name="def"></param>
-        /// <returns></returns>
+        /// <param name="def">書き込み対象のDefinitionインスタンス</param>
+        /// <returns>true:成功, false:失敗</returns>
         private bool WriteXshdFile(XshdSyntaxDefinition def)
         {
+            Logger.Info(CLASS_NAME, "WriteXshdFile", "start");
+
             if (def == null)
             {
+                Logger.Error(CLASS_NAME, "WriteXshdFile", "def is null!");
                 return false;
             }
 
@@ -361,7 +379,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 }
                 catch (Exception e)
                 {
-                    Logger.WriteFatalLog(CLASS_NAME, "WriteXshdFile", e.Message);
+                    Logger.Fatal(CLASS_NAME, "WriteXshdFile", e.Message);
                     return false;
                 }
                 finally
@@ -376,15 +394,17 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>
         /// Xshdファイルを画面のAvalonEditに適用させ、ハイライトを有効にします
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true:成功, false:失敗</returns>
         private bool SetXshdFile()
         {
+            Logger.Info(CLASS_NAME, "SetXshdFile", "start");
+
             MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
 
             ICSharpCode.AvalonEdit.TextEditor target = mw.TextEditor;
             if (target == null)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "SetXshdFile", "GetTextEditor TextEditor is null");
+                Logger.Fatal(CLASS_NAME, "SetXshdFile", "GetTextEditor TextEditor is null");
                 return false;
             }
 
@@ -399,7 +419,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
             catch (Exception e)
             {
-                Logger.WriteFatalLog(CLASS_NAME, "SetXshdFile", e.Message);
+                Logger.Fatal(CLASS_NAME, "SetXshdFile", e.Message);
                 return false;
             }
 
@@ -409,29 +429,36 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>
         /// 既存のXshdファイルを削除します
         /// </summary>
+        /// <returns>true:成功, false:失敗</returns>
         private bool DeleteXshdFile()
         {
+            Logger.Info(CLASS_NAME, "DeleteXshdFile", "start");
+
             // FileInfoはコンストラクタ生成時にのみ正規化するが、Fileは都度正規化する
             // 削除処理は多くの回数呼ばれることが想定されるため、パフォーマンスを考慮してFileInfoを使用する
-            FileInfo fi = new FileInfo(GetXshdFilePath());
-
-            if (fi.Exists)
+            string xshdFilePath = GetXshdFilePath();
+            FileInfo fi = new FileInfo(xshdFilePath);
+            if (fi.Exists == false)
             {
-                // 読み取り専用属性は付与させない想定だが、念のため考慮する
-                if ((fi.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                {
-                    fi.Attributes = FileAttributes.Normal;
-                }
+                Logger.Fatal(CLASS_NAME, "DeleteXshdFile", $"File is not exist! filePath:[{xshdFilePath}]");
+                return false;
+            }
 
-                try
-                {
-                    fi.Delete();
-                }
-                catch (Exception e)
-                {
-                    Logger.WriteFatalLog(CLASS_NAME, "DeleteXshdFile", e.Message);
-                    return false;
-                }
+            // 読み取り専用属性は付与させない想定だが、念のため考慮する
+            if ((fi.Attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+            {
+                Logger.Info(CLASS_NAME, "DeleteXshdFile", "FileAttributes is ReadOnly, change FileAttributes to Normal");
+                fi.Attributes = FileAttributes.Normal;
+            }
+
+            try
+            {
+                fi.Delete();
+            }
+            catch (Exception e)
+            {
+                Logger.Fatal(CLASS_NAME, "DeleteXshdFile", e.Message);
+                return false;
             }
 
             return true;
@@ -441,12 +468,13 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>
         /// 処理対象のXshdファイルパスを取得します
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Xshd設定ファイルへの絶対パス</returns>
         private string GetXshdFilePath()
         {
             string filePath = CommonLibrary.SystemUtility.GetSynonymeExeFilePath();
             if (string.IsNullOrEmpty(filePath))
             {
+                Logger.Fatal(CLASS_NAME, "GetXshdFilePath", "filePath is null or empty!");
                 return null;
             }
 
@@ -455,6 +483,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
             // Xshdへのファイルパスを構築する。[filePath]直後の[\]はファイル名ではなく、Replaceで削除されていないので、直に連結してOK
             filePath = filePath + @"work\" + CommonLibrary.Define.XSHD_FILENAME;
+            Logger.Info(CLASS_NAME, "GetXshdFilePath", $"XshdFilePath:[{filePath}]");
 
             return filePath;
         }
