@@ -14,6 +14,10 @@ using ICSharpCode.AvalonEdit.Document;
 using System.ComponentModel;
 using System.Windows.Threading;
 using System.Windows.Controls;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using System.Windows.Media;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.ViewModel
 {
@@ -60,6 +64,9 @@ namespace SynonyMe.ViewModel
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
 
+
+        private const string CLASS_NAME = "MainWindowVM";
+
         #endregion
 
         #region property
@@ -83,22 +90,22 @@ namespace SynonyMe.ViewModel
         /// <summary>類語検索ボタン表示文字列</summary>
         public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
 
-
+        /// <summary類語グループリストの類語名ヘッダ</summary>
         public string SynonymGroupNameHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupName;
 
-
+        /// <summary>類語グループリストの最終更新日ヘッダ</summary>
         public string SynonymGroupLastUpdateHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupLastUpdate;
 
-
+        /// <summary>類語リストの類語名ヘッダ</summary>
         public string SynonymWordHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordHeader;
 
-
+        /// <summary>類語リストの連続使用(繰り返し)回数ヘッダ</summary>
         public string SynonymWordRepeatingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
 
-
+        /// <summary>類語リストの合計使用回数ヘッダ</summary>
         public string SynonymWordUsingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordUsingCountHeader;
 
-
+        /// <summary>類語リストの使用箇所ヘッダ</summary>
         public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
 
 
@@ -240,6 +247,11 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>テキスト表示領域の背景色</summary>
+        public Brush AvalonEditBackGround { get; set; } = Brushes.White;
+
+        /// <summary>検索結果がない場合に表示する文言</summary>
+        /// <remarks>todo:CommonLibのDefineに移動させるべきでは？</remarks>
         public string NoSearchResultWord { get; } = "対象語句がありません";
 
         #region command
@@ -265,7 +277,7 @@ namespace SynonyMe.ViewModel
         /// <summary>類語検索</summary>
         public ICommand Command_SynonymSearch { get; private set; } = null;
 
-
+        /// <summary>類語検索結果クリック時のキャレット遷移処理</summary>
         public ICommand Command_JumpToSynonymSearchResult { get; private set; } = null;
 
         #endregion
@@ -306,8 +318,9 @@ namespace SynonyMe.ViewModel
         /// <summary>modelの生成等の初期化処理を実施</summary>
         private void Initialize()
         {
-            _model = new Model.MainWindowModel(this);
+            Logger.Info(CLASS_NAME, "Initialize", "start");
 
+            _model = new Model.MainWindowModel(this);
             _displayTextDoc = TextEditor.Document;
 
             // コマンド初期化処理
@@ -318,7 +331,8 @@ namespace SynonyMe.ViewModel
 
             // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
-            // TODO:DependencyPropertyDescriptorは強参照のためメモリリークの恐れがあり、要調査
+            // DependencyPropertyDescriptorは強参照のため、参照を解除できず、繰り返し行うとメモリリークにつながる
+            // 現状、Initializeは起動時にしか呼ばれず、動的にメインの文章表示領域が削除・再表示されることは現状ないので、一旦この実装で機能を満たす
             var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
             if (descripter != null)
             {
@@ -327,6 +341,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>各種コマンドを初期化します</summary>
         private void InitializeCommand()
         {
             Command_Save = new CommandBase(ExecuteSave, null);
@@ -341,9 +356,7 @@ namespace SynonyMe.ViewModel
 
         #region Synonym method
 
-        /// <summary>
-        /// 画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する
-        /// </summary>
+        /// <summary>画面右側の類語検索領域にある類語グループと、紐付く類語リストを取得する</summary>
         private void InitializeSynonymSearch()
         {
             // 類語領域の表示を更新する
@@ -399,7 +412,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>選択中の類語グループに基づき、類語一覧を更新する</summary>
-        /// <param name="groupId"></param>
+        /// <param name="groupId">取得対象のグループID</param>
         private void UpdateDisplaySynonymWords(int groupId)
         {
             // 呼ばれるのは、類語ウィンドウで類語の更新がされたときか、メインウィンドウで類語グループ選択が変更されたとき
@@ -415,7 +428,7 @@ namespace SynonyMe.ViewModel
             if (entities == null || entities.Any() == false)
             {
                 // todo:ログ
-                return;
+                Logger.Error(CLASS_NAME, "UpdateDisplaySynonymWords", "search synonym entites are null!");
             }
 
             // 表示用のEntityに入れ直して反映させる
@@ -467,7 +480,10 @@ namespace SynonyMe.ViewModel
         {
             if (_model == null)
             {
-                throw new NullReferenceException();
+                // ドラッグオーバー時に異常があった場合、握りつぶしてログ出しすると負荷がかかる
+                // この後、他の処理が正常に進むことはあり得ないので、落とすことを想定してthrow+ログ出しする
+                Logger.Fatal(CLASS_NAME, "DragOver", "_model is null!");
+                throw new Exception();
             }
 
             if (_model.CanDrop(dropInfo))
@@ -487,11 +503,13 @@ namespace SynonyMe.ViewModel
         {
             if (_model == null)
             {
-                throw new NullReferenceException();
+                Logger.Fatal(CLASS_NAME, "Drop", "_model is null!");
+                return;
             }
 
             if (_model.CanDrop(dropInfo) == false)
             {
+                Logger.Fatal(CLASS_NAME, "Drop", "CanDrop return false");
                 return;
             }
 
@@ -506,6 +524,11 @@ namespace SynonyMe.ViewModel
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
             _displayTextFilePath = _openingFiles[0];
             DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
+
+            // ドロップ直後に「編集済み」が出るのを抑制する
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+            TextEditor target = mw.TextEditor;
+            target.IsModified = false;
         }
 
         #endregion
@@ -516,9 +539,12 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSave", "start");
+
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteSave _model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteSave", "_model is null");
+                return;
             }
 
             _model.Save(_displayTextFilePath, DisplayTextDoc.Text);
@@ -528,9 +554,12 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteOpenSynonymWindow(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteOpenSynonymWindow", "start");
+
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteOpenSynonymWindow _model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenSynonymWindow", "_model is null");
+                return;
             }
 
             _model.OpenSynonymWindow();
@@ -540,38 +569,30 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSearch(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSearch", $"start. SearchWord:[{SearchWord}]");
+
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteSearch _model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteSearch", "_model is null");
+                return;
             }
 
             if (string.IsNullOrEmpty(SearchWord))
             {
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "SearchWord is null or empty!");
                 return;
             }
 
-            // dicのintはindex部分なので本文ハイライト、stringは結果表示リストに使用する
-            // 本文ハイライトは現状実装できていない
+            // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
             Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
-            if (indexWordPairs == null)
+            if (UpdateSearchResultVisiblity(indexWordPairs) == false)
             {
-                // nullなら表示を隠す
-                SearchResultVisibility = Visibility.Hidden;
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
                 return;
             }
-            else if (indexWordPairs.Count < 1)
-            {
-                // 検索結果がなければ、その旨を表示する
-                NoSearchResultVisibility = Visibility.Visible;
-                SearchResultVisibility = Visibility.Hidden;
-                return;
-            }
-            else
-            {
-                // 検索結果ありの場合、結果を表示できるようにする
-                NoSearchResultVisibility = Visibility.Hidden;
-                SearchResultVisibility = Visibility.Visible;
-            }
+
+            // 旧検索結果をクリアする
+            SearchResult.Clear();
 
             // 念のため昇順にソートしておく
             indexWordPairs.OrderBy(pair => pair.Key);
@@ -587,27 +608,36 @@ namespace SynonyMe.ViewModel
                     }
                     );
             }
+
+            // 検索結果にハイライトをかける
+            _model.ApplyHighlightToTarget(SearchWord);
         }
+
 
         /// <summary>検索結果へのジャンプ処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteJumpToSearchResult(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteJumpToSearchResult", "start");
+
             SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
             if (searchResultEntity == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "searchResultEntity is null!");
                 return;
             }
 
             // キャレットの更新とFocusを行う            
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteJumpToSynonymSearchResult model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "_model is null");
+                return;
             }
 
             if (_model.UpdateCaretOffset(searchResultEntity.Index) == false)
             {
-                // error log
+                Logger.Error(CLASS_NAME, "ExecuteJumpToSearchResult", "UpdateCaretOffset return false!");
+                return;
             }
         }
 
@@ -615,32 +645,41 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteJumpToSynonymSearchResult(object parameter)
         {
+            #region convert args and null check
+
             if (parameter == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "parameter is null");
                 return;
             }
 
             SelectionChangedEventArgs args = parameter as SelectionChangedEventArgs;
             if (args == null || args.AddedItems == null || args.AddedItems.Count < 1)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "args is incollect");
                 return;
             }
 
             DisplaySynonymSearchResult synonym = args.AddedItems[0] as DisplaySynonymSearchResult;
             if (synonym == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "synonym is null");
                 return;
             }
 
-            // キャレットの更新とFocusを行う            
             if (_model == null)
             {
-                throw new NullReferenceException("ExecuteJumpToSynonymSearchResult model is null");
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "_model is null");
+                return;
             }
 
+            #endregion
+
+            // キャレットの更新とFocusを行う            
             if (_model.UpdateCaretOffset(synonym.Index) == false)
             {
-                // error log
+                Logger.Error(CLASS_NAME, "ExecuteJumpToSynonymSearchResult", "UpdateCaretOffset return false!");
+                return;
             }
         }
 
@@ -648,6 +687,9 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteUpdateTextInfo(object parameter)
         {
+            // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
+            // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
+
             if (_displayTextDoc == null)
             {
                 WordCount = null;
@@ -660,34 +702,36 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        /// <summary>
-        /// 類語グループ選択時に類語一覧と選択中の類語グループIDを更新する
-        /// </summary>
+        /// <summary>類語グループ選択時に類語一覧と選択中の類語グループIDを更新する</summary>
         /// <param name="parameter"></param>
         private void ExecuteSelectSynonymGroup(object parameter)
         {
-            #region convert args
+            #region convert args and null check
 
             if (parameter == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "parameter is null!");
                 return;
             }
 
             SelectionChangedEventArgs e = parameter as SelectionChangedEventArgs;
             if (e == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "EventArgs is null!");
                 return;
             }
 
             object[] obj = e.AddedItems as object[];
             if (obj == null || obj.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "target object is null!");
                 return;
             }
 
             SynonymGroupEntity selectedSynonymGroup = obj[0] as SynonymGroupEntity;
             if (selectedSynonymGroup == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", "selectedSynonymGroup is null!");
                 return;
             }
 
@@ -695,6 +739,7 @@ namespace SynonyMe.ViewModel
 
             if (IsExistSynonymGroupID(selectedSynonymGroup.GroupID) == false)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSelectSynonymGroup", $"target synonymGroup is not exist! groupID:[{selectedSynonymGroup.GroupID}]");
                 return;
             }
 
@@ -702,14 +747,15 @@ namespace SynonyMe.ViewModel
             UpdateDisplaySynonymWords(_selectedSynonymGroupId);
         }
 
-        /// <summary>
-        /// 類語検索処理
-        /// </summary>
+        /// <summary>類語検索処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteSynonymSearch(object parameter)
         {
+            Logger.Info(CLASS_NAME, "ExecuteSynonymSearch", "start");
+
             if (_model == null)
             {
+                Logger.Fatal(CLASS_NAME, "ExecuteSynonymSearch", "_model is null!");
                 return;
             }
 
@@ -717,6 +763,7 @@ namespace SynonyMe.ViewModel
             if (_displayTextDoc == null ||
                 string.IsNullOrEmpty(_displayTextDoc.Text))
             {
+                Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;
             }
 
@@ -734,6 +781,43 @@ namespace SynonyMe.ViewModel
             {
                 DisplaySynonymSearchResults.Add(result);
             }
+
+            // 検索結果にハイライトをかける
+            string[] searchWords = new string[DisplaySynonymWords.Count];
+            for (int i = 0; i < DisplaySynonymWords.Count; ++i)
+            {
+                searchWords[i] = DisplaySynonymWords[i].SynonymWord;
+            }
+            _model.ApplyHighlightToTargets(searchWords);
+        }
+
+        #endregion
+
+        /// <summary>検索結果表示領域のVisibilityを更新します</summary>
+        /// <returns>true:検索結果あり、false;検索結果なし</returns>
+        private bool UpdateSearchResultVisiblity(Dictionary<int, string> searchResult)
+        {
+            if (searchResult == null)
+            {
+                // nullなら表示を隠す
+                SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else if (searchResult.Count < 1)
+            {
+                // 検索結果がなければ、その旨を表示する
+                NoSearchResultVisibility = Visibility.Visible;
+                SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else
+            {
+                // 検索結果ありの場合、結果を表示できるようにする
+                NoSearchResultVisibility = Visibility.Hidden;
+                SearchResultVisibility = Visibility.Visible;
+            }
+
+            return true;
         }
 
         /// <summary>編集済み判定処理</summary>
@@ -744,8 +828,10 @@ namespace SynonyMe.ViewModel
             TextEditor textEditor = sender as TextEditor;
             if (textEditor == null)
             {
+                Logger.Fatal(CLASS_NAME, "OnIsModifiedChanged", "textEditor is null!");
                 return;
             }
+
 
             if (textEditor.IsModified)
             {
@@ -757,7 +843,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        #endregion
+
 
         #endregion
 

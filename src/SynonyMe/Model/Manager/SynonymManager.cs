@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SynonyMe.CommonLibrary.Entity;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model.Manager
 {
@@ -12,6 +13,8 @@ namespace SynonyMe.Model.Manager
     /// <remarks>DBへのアクセスはこのクラスが引き受け、各Modelクラスが共通して使う前提とし、staticにする</remarks>
     internal static class SynonymManager
     {
+
+        private const string CLASS_NAME = "SynonymManager";
 
         internal static event EventHandler UpdateSynonymEvent = delegate { };
 
@@ -22,12 +25,15 @@ namespace SynonyMe.Model.Manager
         /// <returns>IDと一致する全類語</returns>
         internal static SynonymWordEntity[] GetSynonymWordEntities(int groupID)
         {
+            Logger.Info(CLASS_NAME, "GetSynonymWordEntities", $"start. groupID:[{groupID}]");
+
             SynonymWordEntity[] synonymWords = null;
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "GetSynonymWordEntities", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return null;
                 }
 
@@ -39,7 +45,8 @@ namespace SynonyMe.Model.Manager
             if (synonymWords == null)
             {
                 // 無登録の場合はnullなので異常とは言えないため、素直にnullを返す
-                // todo:ログ出し
+                Logger.Info(CLASS_NAME, "GetSynonymWordEntites", "synonymWords are null");
+                return null;
             }
 
             return synonymWords;
@@ -49,12 +56,15 @@ namespace SynonyMe.Model.Manager
         /// <returns>DBに登録されている全類語グループリスト</returns>
         internal static SynonymGroupEntity[] GetAllSynonymGroup()
         {
+            Logger.Info(CLASS_NAME, "GetAllSynonymGroup", "start");
+
             SynonymGroupEntity[] synonymGroups = null;
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "GetAllSynonymGroup", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return null;
                 }
 
@@ -66,7 +76,8 @@ namespace SynonyMe.Model.Manager
             if (synonymGroups == null)
             {
                 // 無登録の場合はnullを返す
-                // todo:ログ出し
+                Logger.Info(CLASS_NAME, "GetAllSynonymGroup", "Registed synonym words are nothing!");
+                return null;
             }
 
             return synonymGroups;
@@ -77,8 +88,11 @@ namespace SynonyMe.Model.Manager
         /// <returns>正常時true, 異常時false</returns>
         internal static bool RegistSynonymGroup(string groupName)
         {
+            Logger.Info(CLASS_NAME, "RegistSynonymGroup", $"start. groupName:[{groupName}]");
+
             if (string.IsNullOrEmpty(groupName))
             {
+                Logger.Error(CLASS_NAME, "RegistSynonymGroup", "groupName is null or empty!");
                 return false;
             }
 
@@ -86,6 +100,7 @@ namespace SynonyMe.Model.Manager
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "RegistSynonymGroup", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 
@@ -95,6 +110,7 @@ namespace SynonyMe.Model.Manager
                 dBManager.ExecuteNonQuery(registGroupSql);
             }
 
+            // 登録したので更新イベントを発火させる
             UpdateSynonymEvent(null, null);
             return true;
         }
@@ -105,20 +121,25 @@ namespace SynonyMe.Model.Manager
         /// <returns>成功:true, 失敗:false</returns>
         internal static bool RegistSynonymWord(string synonymWord, int groupID)
         {
+            Logger.Info(CLASS_NAME, "RegistSynonymWord", $"start. synonymWord:[{synonymWord}], groupID:[{groupID}]");
+
             if (string.IsNullOrEmpty(synonymWord))
             {
+                Logger.Error(CLASS_NAME, "RegistSynonymWord", "synonymWord is null or empty!");
                 return false;
             }
 
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"GroupID is {groupID}");
+                Logger.Fatal(CLASS_NAME, "RegistSynonymWord", $"GroupID is {groupID}");
+                return false;
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "RegistSynonymWord", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 
@@ -138,20 +159,25 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         internal static bool UpdateSynonymWord(int wordID, string word)
         {
+            Logger.Info(CLASS_NAME, "UpdateSynonymWord", $"start. wordID:[{wordID}], word:[{word}]");
+
             if (string.IsNullOrEmpty(word))
             {
+                Logger.Error(CLASS_NAME, "UpdateSynonymWord", "word is null or empty!");
                 return false;
             }
 
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                Logger.Fatal(CLASS_NAME, "UpdateSynonymWord", $"wordID is {wordID}");
+                return false;
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "UpdateSynonymWord", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 
@@ -170,13 +196,17 @@ namespace SynonyMe.Model.Manager
         /// <returns>true:成功, false:失敗</returns>
         internal static bool UpdateSynonymGroup(int groupID, string groupName)
         {
+            Logger.Info(CLASS_NAME, "UpdateSynonymGroup", $"start. groupID:[{groupID}], groupName:[{groupName}]");
+
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.Fatal(CLASS_NAME, "UpdateSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             if (string.IsNullOrEmpty(groupName))
             {
+                Logger.Error(CLASS_NAME, "UpdateSynonymGroup", "groupName is null or empty!");
                 return false;
             }
 
@@ -192,9 +222,12 @@ namespace SynonyMe.Model.Manager
         /// <returns>true:成功, false:失敗</returns>
         internal static bool UpdateSynonymGroup(int groupID)
         {
+            Logger.Info(CLASS_NAME, "UpdateSynonymGroup", $"start. groupID:[{groupID}]");
+
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.Fatal(CLASS_NAME, "UpdateSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             string updateGroupSql =
@@ -211,15 +244,19 @@ namespace SynonyMe.Model.Manager
         /// <returns>true:成功, false:失敗</returns>
         internal static bool DeleteSynonymGroup(int groupID)
         {
+            Logger.Info(CLASS_NAME, "DeleteSynonymGroup", $"start. groupID:[{groupID}]");
+
             if (groupID < CommonLibrary.Define.MIN_GROUPID)
             {
-                throw new SQLiteException($"groupID is {groupID}");
+                Logger.Fatal(CLASS_NAME, "DeleteSynonymGroup", $"groupID is {groupID}");
+                return false;
             }
 
             using (DBManager dBManager = new Manager.DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "DeleteSynonymGroup", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 
@@ -242,15 +279,19 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         internal static bool DeleteSynonymWord(int wordID)
         {
+            Logger.Info(CLASS_NAME, "DeleteSynonymWord", $"start. wordID:[{wordID}]");
+
             if (wordID < CommonLibrary.Define.MIN_WORDID)
             {
-                throw new SQLiteException($"wordID is {wordID}");
+                Logger.Fatal(CLASS_NAME, "DeleteSynonymWord", $"wordID is {wordID}");
+                return false;
             }
 
             using (DBManager dBManager = new DBManager(CommonLibrary.Define.DB_NAME))
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "DeleteSynonymWord", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 
@@ -268,8 +309,11 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         private static bool UpdateSynonymGroup(string updateSql)
         {
+            Logger.Info(CLASS_NAME, "UpdateSynonymGroup", $"start. SQL:[{updateSql}]");
+
             if (string.IsNullOrEmpty(updateSql))
             {
+                Logger.Error(CLASS_NAME, "UpdateSynonymGroup", "updateSql is null or empty!");
                 return false;
             }
 
@@ -277,6 +321,7 @@ namespace SynonyMe.Model.Manager
             {
                 if (dBManager == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "UpdateSynonymGroup", $"dBManager is null! DB_NAME:[{CommonLibrary.Define.DB_NAME}]");
                     return false;
                 }
 

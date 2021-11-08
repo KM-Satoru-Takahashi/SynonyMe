@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SQLite;   // DB
 using SynonyMe.CommonLibrary.Entity;
-
+using System.IO;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model.Manager
 {
@@ -23,6 +24,8 @@ namespace SynonyMe.Model.Manager
         private SQLiteTransaction sqLiteTransaction = null;
 
         private bool _isDisposed = false;
+
+        private const string CLASS_NAME = "DBManager";
 
         // unmanaged resourceがあるため、IDisposable関連を実装する
         #region IDisposable, Dispose, Destructor
@@ -63,22 +66,39 @@ namespace SynonyMe.Model.Manager
         /// <param name="DBName">拡張子コミのDB名</param>
         internal DBManager(string DBName)
         {
+            Logger.Info(CLASS_NAME, "DBManager", "constructor start.");
+
             if (string.IsNullOrEmpty(DBName))
             {
-                // DB名は内部的に保持しているので、異常はthrowするべき
-                throw new ArgumentException("DBName is null or empty");
+                Logger.Fatal(CLASS_NAME, "DBManager", "DBName is null or empty!");
+                return;
             }
 
-            SQLiteConnectionStringBuilder sqlDBName = new SQLiteConnectionStringBuilder { DataSource = DBName };
+            // DBへの接続に必要なパス関連を取得する
+            string filePath = CommonLibrary.SystemUtility.GetSynonymeExeFilePath();
+            if (string.IsNullOrEmpty(filePath))
+            {
+                Logger.Fatal(CLASS_NAME, "DBManager", "DBManager constructor:Cannot find SynonyMe.exe");
+                return;
+            }
+
+            // ファイル名情報は不要なので削除する
+            filePath = filePath.Replace(CommonLibrary.Define.SYNONYME_EXENAME, "");
+
+            // DBへのファイルパスを構築する。直後の[\]はファイル名ではなく、Replaceで削除されていないので、直に連結してOK
+            filePath += @"DB\SynonymData.db";
+
+            SQLiteConnectionStringBuilder sqlDBName = new SQLiteConnectionStringBuilder { DataSource = filePath };
             if (sqlDBName == null)
             {
-                throw new NullReferenceException("sqlDBName is null");
+                Logger.Fatal(CLASS_NAME, "DBManager", "sqlDBName is null");
             }
 
             sqLiteConnection = new SQLiteConnection(sqlDBName.ToString());
             if (sqLiteConnection == null)
             {
-                throw new ArgumentException("sqLiteConnection is null");
+                Logger.Fatal(CLASS_NAME, "DBManager", "sqLiteConnection is null");
+                return;
             }
 
             // 直後に次のDB操作が来ることは自明なので開いておく
@@ -88,6 +108,8 @@ namespace SynonyMe.Model.Manager
         /// <summary>DB接続を閉じる</summary>
         private void Close()
         {
+            Logger.Info(CLASS_NAME, "Close", "start");
+
             // returnするとconnectionの処理ができないので、非null判定で実施
             if (sqLiteTransaction != null)
             {
@@ -96,6 +118,7 @@ namespace SynonyMe.Model.Manager
 
             if (sqLiteConnection == null)
             {
+                Logger.Fatal(CLASS_NAME, "Close", "sqLiteConnection is null!");
                 return;
             }
 
@@ -107,14 +130,18 @@ namespace SynonyMe.Model.Manager
         /// <returns>true:正常, false:異常</returns>
         private bool BeginTransaction()
         {
+            Logger.Info(CLASS_NAME, "BeginTrasaction", "start");
+
             if (sqLiteConnection == null)
             {
+                Logger.Fatal(CLASS_NAME, "BeginTrasaction", "sqLiteConnection is null!");
                 return false;
             }
 
             sqLiteTransaction = sqLiteConnection.BeginTransaction();
             if (sqLiteTransaction == null)
             {
+                Logger.Fatal(CLASS_NAME, "BeginTrasaction", "sqLiteTransaction is null!");
                 return false;
             }
             else
@@ -129,9 +156,12 @@ namespace SynonyMe.Model.Manager
         /// <returns>成功時:true, 失敗時:false</returns>
         internal bool GetTargetSynonymGroups(string sql, out SynonymGroupEntity[] synonymGroups)
         {
+            Logger.Info(CLASS_NAME, "GetTargetSynonymGroups", $"start, SQL:[{sql}]");
+
             synonymGroups = null;
             if (string.IsNullOrEmpty(sql))
             {
+                Logger.Error(CLASS_NAME, "GetTargetSynonymGroups", "sql is null or empty");
                 return false;
             }
 
@@ -142,6 +172,7 @@ namespace SynonyMe.Model.Manager
                     if (reader == null)
                     {
                         // 実行結果が必ずあるはずなのに、何もないのは異常だろう
+                        Logger.Error(CLASS_NAME, "GetTargetSynonymGroups", "reader result is null");
                         return false;
                     }
 
@@ -181,7 +212,8 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(e.Message);
+                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymGroups", e.Message);
+                    return false;
                 }
             }
         }
@@ -192,10 +224,13 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         internal bool GetTargetSynonymWords(string sql, out SynonymWordEntity[] synonymWords)
         {
+            Logger.Info(CLASS_NAME, "GetTargetSynonymWrods", $"start, SQL[{sql}]");
+
             synonymWords = null;
 
             if (string.IsNullOrEmpty(sql))
             {
+                Logger.Fatal(CLASS_NAME, "GetTargetSynonymWrods", "sql is null or empty!");
                 return false;
             }
 
@@ -204,6 +239,7 @@ namespace SynonyMe.Model.Manager
                 if (reader == null)
                 {
                     // 実行結果が必ずあるはずなのに、何もないのは異常だろう
+                    Logger.Error(CLASS_NAME, "GetTargetSynonymWrods", "reader result is null");
                     return false;
                 }
 
@@ -253,7 +289,8 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(e.Message);
+                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymWords", e.Message);
+                    return false;
                 }
             }
         }
@@ -263,13 +300,18 @@ namespace SynonyMe.Model.Manager
         /// <returns>結果を保持したReaderインスタンス★呼び出し元で適切に破棄する！</returns>
         private SQLiteDataReader ExecuteQuery(string sql)
         {
+            Logger.Info(CLASS_NAME, "ExecuteQuery", $"start, SQL:[{sql}]");
+
             if (string.IsNullOrEmpty(sql))
             {
+                Logger.Error(CLASS_NAME, "ExecuteQuery", "sql is null or empty");
                 return null;
             }
 
             if (sqLiteConnection == null || sqLiteConnection.State != ConnectionState.Open)
             {
+                string conStatus = sqLiteConnection == null ? "null" : sqLiteConnection.State.ToString();
+                Logger.Fatal(CLASS_NAME, "ExecuteQuery", $"sqLiteConnection is incorrect! status:[{conStatus}]");
                 return null;
             }
 
@@ -277,6 +319,7 @@ namespace SynonyMe.Model.Manager
             {
                 if (command == null)
                 {
+                    Logger.Error(CLASS_NAME, "ExecuteQuery", "command is null!");
                     return null;
                 }
 
@@ -287,7 +330,8 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(e.Message);
+                    Logger.Fatal(CLASS_NAME, "ExecuteQuery", e.Message);
+                    return null;
                 }
                 // 呼び出し元でCloseしているので、ExecuteQueryではfinally句でCloseしなくて良い
             }
@@ -299,13 +343,18 @@ namespace SynonyMe.Model.Manager
         /// <returns></returns>
         internal bool ExecuteNonQuery(string sql)
         {
+            Logger.Info(CLASS_NAME, "ExecuteNonQuery", $"start, SQL[{sql}]");
+
             if (string.IsNullOrEmpty(sql))
             {
+                Logger.Error(CLASS_NAME, "ExecuteNonQuery", "sql is incorrect!");
                 return false;
             }
 
             if (sqLiteConnection == null || sqLiteConnection.State != ConnectionState.Open)
             {
+                string conStatus = sqLiteConnection == null ? "null" : sqLiteConnection.State.ToString();
+                Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", $"sqLiteConnection is incorrect! status:[{conStatus}]");
                 return false;
             }
 
@@ -313,6 +362,7 @@ namespace SynonyMe.Model.Manager
             {
                 if (command == null)
                 {
+                    Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", "command is null");
                     return false;
                 }
 
@@ -321,6 +371,7 @@ namespace SynonyMe.Model.Manager
                 {
                     if (BeginTransaction() == false)
                     {
+                        Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", "BeginTransaction Failed");
                         return false;
                     }
 
@@ -333,13 +384,15 @@ namespace SynonyMe.Model.Manager
                     }
                     else
                     {
+                        Logger.Error(CLASS_NAME, "ExecuteNonQuery", "Execute query failed. Rollback start.");
                         Rollback();
                         return false;
                     }
                 }
                 catch (Exception e)
                 {
-                    throw new Exception(e.Message);
+                    Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", e.Message);
+                    return false;
                 }
             }
         }
@@ -364,7 +417,8 @@ namespace SynonyMe.Model.Manager
         {
             if (sqLiteTransaction == null)
             {
-                throw new NullReferenceException("Commit sqLiteTransaction is null");
+                Logger.Fatal(CLASS_NAME, "Commit", "sqLiteTransaction is null");
+                return;
             }
 
             sqLiteTransaction.Commit();
@@ -375,7 +429,8 @@ namespace SynonyMe.Model.Manager
         {
             if (sqLiteTransaction == null)
             {
-                throw new NullReferenceException("Rollback sqLiteTransaction is null");
+                Logger.Fatal(CLASS_NAME, "Rollback", "sqLiteTransaction is null");
+                return;
             }
 
             sqLiteTransaction.Rollback();

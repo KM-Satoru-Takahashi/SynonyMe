@@ -1,0 +1,26 @@
+類語系で使うColors候補
+
+とりあえず見分けがつきそう、目に優しい系でPUしておく
+BackGround
+　HotPink
+　Cyan
+　Yellow
+　Lime
+　Violet
+　Red
+　Blue
+　Chocolate
+　Green
+　DarkViolet
+　Gray
+
+foreground
+　Black
+　DarkSlateGray
+　Navy
+　MidnightBlue
+　---
+　White
+　FloralWhite
+　Show
+　SeaShell

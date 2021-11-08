@@ -10,12 +10,15 @@ using SynonyMe.View;
 using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.Model
 {
     internal class MainWindowModel
     {
         #region field
+
+        private const string CLASS_NAME = "MainWindowModel";
 
         /// <summary>ViewModel</summary>
         private ViewModel.MainWindowVM _viewModel = null;
@@ -30,6 +33,9 @@ namespace SynonyMe.Model
         /// <summary>検索結果を何個まで表示するか(何個まで検索対象とするか)</summary>
         /// <remarks>将来的に設定ファイルで外出しする予定</remarks>
         private const int SEARCH_RESULT_DISPLAY_NUMBER = 100;
+
+
+        private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
         #endregion
 
@@ -51,8 +57,51 @@ namespace SynonyMe.Model
         /// <param name="viewModel">メンバに保持するVM</param>
         internal MainWindowModel(ViewModel.MainWindowVM viewModel)
         {
+            if (viewModel == null)
+            {
+                Logger.Fatal(CLASS_NAME, "MainWindowModel", "viewModel is null");
+                return;
+            }
+
             _viewModel = viewModel;
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
         }
+
+
+        internal bool ApplyHighlightToTargets(string[] targets)
+        {
+            if (targets == null || targets.Any() == false)
+            {
+                Logger.Fatal(CLASS_NAME, "ApplyHighlightToTargets", "targets is null or empty!");
+                return false;
+            }
+
+            if (_highlightManager == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ApplyHighlightToTargets", "_highlightManager is null!");
+                return false;
+            }
+
+            return _highlightManager.UpdateXshdFile(targets);
+        }
+
+
+        internal bool ApplyHighlightToTarget(string target)
+        {
+            if (string.IsNullOrEmpty(target))
+            {
+                Logger.Fatal(CLASS_NAME, "ApplyHighlightToTarget", "target is null or empty!");
+                return false;
+            }
+
+            string[] targets = new string[1]
+            {
+                target
+            };
+
+            return ApplyHighlightToTargets(targets);
+        }
+
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
@@ -62,11 +111,13 @@ namespace SynonyMe.Model
 
             if (ConvertDropInfoToPathList(dropInfo, out dragOverFilePathList) == false)
             {
+                Logger.Error(CLASS_NAME, "CanDrop", "ConvertDropInfoToPathList return false!");
                 return false;
             }
 
             if (dragOverFilePathList == null || dragOverFilePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "CanDrop", "dragOverFilePathList is invalid!");
                 return false;
             }
 
@@ -75,6 +126,7 @@ namespace SynonyMe.Model
                 // 1つでも対象外のファイルがあれば弾く
                 if (IsTargetFile(filePath) == false)
                 {
+                    Logger.Error(CLASS_NAME, "CanDrop", $"there is not target file. file name is {filePath}");
                     return false;
                 }
             }
@@ -89,12 +141,14 @@ namespace SynonyMe.Model
         {
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayText", "dropInfo is null!");
                 return null;
             }
 
             List<string> filePathList = new List<string>();
             if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayText", "ConvertDropInfoToPathList return false!");
                 return null;
             }
 
@@ -110,12 +164,14 @@ namespace SynonyMe.Model
         {
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayTextFilePath", "dropInfo is null!");
                 return null;
             }
 
             List<string> filePathList = new List<string>();
             if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayTextInfo", "ConvertDropInfoToPathList return false!");
                 return null;
             }
 
@@ -131,8 +187,9 @@ namespace SynonyMe.Model
         internal bool Save(string filePath, string displayText)
         {
             if (string.IsNullOrEmpty(filePath) ||
-               string.IsNullOrEmpty(displayText))
+               displayText == null) // displayTextは空文字の場合emptyはあり得る
             {
+                Logger.Fatal(CLASS_NAME, "Save", "filePath or displayText is null or empty!");
                 return false;
             }
 
@@ -145,6 +202,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
+                Logger.Fatal(CLASS_NAME, "Save", e.Message);
                 return false;
             }
 
@@ -164,6 +222,7 @@ namespace SynonyMe.Model
         {
             if (filePathList == null || filePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetTextFromFilePath", "filePathList is null or empty!");
                 return null;
             }
 
@@ -172,6 +231,7 @@ namespace SynonyMe.Model
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
+                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", "filePath is null or empty!");
                     continue;
                 }
 
@@ -179,6 +239,10 @@ namespace SynonyMe.Model
                 if (Load(filePath, out text))
                 {
                     textList.Add(text);
+                }
+                else
+                {
+                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", $"Load failed! filePath is {filePath}");
                 }
             }
 
@@ -194,6 +258,7 @@ namespace SynonyMe.Model
             text = null;
             if (string.IsNullOrEmpty(filePath))
             {
+                Logger.Error(CLASS_NAME, "Load", "filePath is null or empty!");
                 return false;
             }
 
@@ -201,9 +266,12 @@ namespace SynonyMe.Model
             try
             {
                 textEditor.Load(filePath);
+                System.Windows.Media.Brush b = textEditor.Background;
+                textEditor.Background = System.Windows.Media.Brushes.Red;
             }
             catch (Exception e)
             {
+                Logger.Fatal(CLASS_NAME, "Load", e.Message);
                 return false;
             }
 
@@ -221,24 +289,28 @@ namespace SynonyMe.Model
 
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dropInfo is null!");
                 return false;
             }
 
             DataObject dragOverFiles = (DataObject)dropInfo.Data;
             if (dragOverFiles == null)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFiles are null!");
                 return false;
             }
 
             System.Collections.Specialized.StringCollection dragOverFileList = dragOverFiles.GetFileDropList();
             if (dragOverFileList == null || dragOverFileList.Count < 1)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFileList is invalid!");
                 return false;
             }
 
             filePathList = dragOverFileList.Cast<string>().ToList();
             if (filePathList == null || filePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "filePathList is invalid!");
                 return false;
             }
 
@@ -251,8 +323,11 @@ namespace SynonyMe.Model
         /// <remarks>ファイルパスは拡張子をチェックするので、絶対・相対いずれも可</remarks>
         private bool IsTargetFile(string filePath)
         {
+            // CanDropで高頻度呼ばれるため、基本的にログを出さない
+
             if (string.IsNullOrEmpty(filePath))
             {
+                Logger.Fatal(CLASS_NAME, "IsTargetFile", "filePath is null or empty!");
                 return false;
             }
 
@@ -275,17 +350,22 @@ namespace SynonyMe.Model
         /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
         internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText, int margin)
         {
+            Logger.Info(CLASS_NAME, "SearchAllWordsInText", $"start. searchWord:[{searchWord}], margin:[{margin}]");
+
             // check args
             if (string.IsNullOrEmpty(searchWord))
             {
+                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchWord is null or empty!");
                 return null;
             }
             else if (string.IsNullOrEmpty(targetText))
             {
+                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "targetText is null or empty!");
                 return null;
             }
             else if (margin < 0 /*最大値は現状未定、最小値も設定ファイルや定数で外出しする予定だが、現状ハードコーティングとする*/)
             {
+                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", $"margin is incorrect! value:[{margin}]");
                 return null;
             }
 
@@ -294,11 +374,13 @@ namespace SynonyMe.Model
             if (searchResultIndexArray == null)
             {
                 // nullは異常な場合
+                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchResultIndexArray is null!");
                 return null;
             }
             else if (searchResultIndexArray.Any() == false)
             {
                 // 検索したが結果が無い場合はEmptyを返す
+                Logger.Info(CLASS_NAME, "SearchAllWordsInText", "No search result.");
                 return new Dictionary<int, string>();
             }
             int searchResultCount = searchResultIndexArray.Count();
@@ -306,11 +388,13 @@ namespace SynonyMe.Model
             string[] searchResultWordArray = GetAllSearchResultWords(searchResultIndexArray, searchWord, targetText, margin);
             if (searchResultWordArray == null)
             {
+                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is null!");
                 return null;
             }
             else if (searchResultWordArray.Any() == false)
             {
                 // 検索したが結果が無い場合はEmptyを返す
+                Logger.Error(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is empty!");
                 return new Dictionary<int, string>();
             }
 
@@ -334,6 +418,7 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
             {
+                Logger.Fatal(CLASS_NAME, "GetAllSearchResultIndex", "args is null or empty!");
                 return null;
             }
 
@@ -473,17 +558,19 @@ namespace SynonyMe.Model
 
             if (targetSynonyms == null || targetSynonyms.Any() == false)
             {
-                // todo:log
+                Logger.Fatal(CLASS_NAME, "SynonymSearch", "targetSynonyms are null");
                 return null;
             }
 
             if (string.IsNullOrEmpty(targetText))
             {
-                // todo:log
+                Logger.Fatal(CLASS_NAME, "SynonymSearch", "targetText is null");
                 return null;
             }
 
             #endregion
+
+            Logger.Info(CLASS_NAME, "SynonymSearch", $"start. targetSynonyms count is {targetSynonyms.Count}");
 
             // 類語の全検索結果を取得
             List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
@@ -552,12 +639,14 @@ namespace SynonyMe.Model
             {
                 if (target == null)
                 {
+                    Logger.Error(CLASS_NAME, "GetAllSynonymSearchResult", "target is null!");
                     continue;
                 }
 
                 int[] allIndexinText = GetAllSearchResultIndex(target.SynonymWord, targetText);
                 if (allIndexinText == null || allIndexinText.Any() == false)
                 {
+                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "allIndexInText is null or empty!");
                     return null;
                 }
 
@@ -565,6 +654,7 @@ namespace SynonyMe.Model
                 string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, _viewModel.SEARCHRESULT_MARGIN);
                 if (allResultinText == null || allResultinText.Any() == false)
                 {
+                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "allResultinText is null or empty!");
                     return null;
                 }
 
@@ -572,6 +662,7 @@ namespace SynonyMe.Model
                 // 個数が異なったら何かがおかしい
                 if (allIndexinText.Count() != allResultinText.Count())
                 {
+                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", $"index and result is incorrect. index:[{allIndexinText.Count()}], result[{allResultinText.Count()}]");
                     return null;
                 }
 
@@ -597,8 +688,9 @@ namespace SynonyMe.Model
         /// <returns>true:正常、false:異常</returns>
         internal bool UpdateCaretOffset(int index)
         {
-            if(index <0)
+            if (index < 0)
             {
+                Logger.Error(CLASS_NAME, "UpdateCaretOffset", $"index is incorrect. index:[{index}]");
                 return false;
             }
 
@@ -627,7 +719,8 @@ namespace SynonyMe.Model
             TextEditor target = mw.TextEditor;
             if (target == null)
             {
-                throw new NullReferenceException("GetTextEditor TextEditor is null");
+                Logger.Fatal(CLASS_NAME, "GetTextEditor", "target is null!");
+                return null;
             }
 
             return target;
