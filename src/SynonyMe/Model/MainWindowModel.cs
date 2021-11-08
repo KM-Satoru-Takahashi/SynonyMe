@@ -111,11 +111,13 @@ namespace SynonyMe.Model
 
             if (ConvertDropInfoToPathList(dropInfo, out dragOverFilePathList) == false)
             {
+                Logger.Error(CLASS_NAME, "CanDrop", "ConvertDropInfoToPathList return false!");
                 return false;
             }
 
             if (dragOverFilePathList == null || dragOverFilePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "CanDrop", "dragOverFilePathList is invalid!");
                 return false;
             }
 
@@ -124,6 +126,7 @@ namespace SynonyMe.Model
                 // 1つでも対象外のファイルがあれば弾く
                 if (IsTargetFile(filePath) == false)
                 {
+                    Logger.Error(CLASS_NAME, "CanDrop", $"there is not target file. file name is {filePath}");
                     return false;
                 }
             }
@@ -138,12 +141,14 @@ namespace SynonyMe.Model
         {
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayText", "dropInfo is null!");
                 return null;
             }
 
             List<string> filePathList = new List<string>();
             if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayText", "ConvertDropInfoToPathList return false!");
                 return null;
             }
 
@@ -159,12 +164,14 @@ namespace SynonyMe.Model
         {
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayTextFilePath", "dropInfo is null!");
                 return null;
             }
 
             List<string> filePathList = new List<string>();
             if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetDisplayTextInfo", "ConvertDropInfoToPathList return false!");
                 return null;
             }
 
@@ -180,8 +187,9 @@ namespace SynonyMe.Model
         internal bool Save(string filePath, string displayText)
         {
             if (string.IsNullOrEmpty(filePath) ||
-               string.IsNullOrEmpty(displayText))
+               displayText == null) // displayTextは空文字の場合emptyはあり得る
             {
+                Logger.Fatal(CLASS_NAME, "Save", "filePath or displayText is null or empty!");
                 return false;
             }
 
@@ -214,6 +222,7 @@ namespace SynonyMe.Model
         {
             if (filePathList == null || filePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "GetTextFromFilePath", "filePathList is null or empty!");
                 return null;
             }
 
@@ -222,6 +231,7 @@ namespace SynonyMe.Model
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
+                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", "filePath is null or empty!");
                     continue;
                 }
 
@@ -229,6 +239,10 @@ namespace SynonyMe.Model
                 if (Load(filePath, out text))
                 {
                     textList.Add(text);
+                }
+                else
+                {
+                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", $"Load failed! filePath is {filePath}");
                 }
             }
 
@@ -244,6 +258,7 @@ namespace SynonyMe.Model
             text = null;
             if (string.IsNullOrEmpty(filePath))
             {
+                Logger.Error(CLASS_NAME, "Load", "filePath is null or empty!");
                 return false;
             }
 
@@ -274,24 +289,28 @@ namespace SynonyMe.Model
 
             if (dropInfo == null)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dropInfo is null!");
                 return false;
             }
 
             DataObject dragOverFiles = (DataObject)dropInfo.Data;
             if (dragOverFiles == null)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFiles are null!");
                 return false;
             }
 
             System.Collections.Specialized.StringCollection dragOverFileList = dragOverFiles.GetFileDropList();
             if (dragOverFileList == null || dragOverFileList.Count < 1)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFileList is invalid!");
                 return false;
             }
 
             filePathList = dragOverFileList.Cast<string>().ToList();
             if (filePathList == null || filePathList.Any() == false)
             {
+                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "filePathList is invalid!");
                 return false;
             }
 
@@ -304,8 +323,11 @@ namespace SynonyMe.Model
         /// <remarks>ファイルパスは拡張子をチェックするので、絶対・相対いずれも可</remarks>
         private bool IsTargetFile(string filePath)
         {
+            // CanDropで高頻度呼ばれるため、基本的にログを出さない
+
             if (string.IsNullOrEmpty(filePath))
             {
+                Logger.Fatal(CLASS_NAME, "IsTargetFile", "filePath is null or empty!");
                 return false;
             }
 
@@ -328,6 +350,8 @@ namespace SynonyMe.Model
         /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
         internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText, int margin)
         {
+            Logger.Info(CLASS_NAME, "SearchAllWordsInText", $"start. searchWord:[{searchWord}], margin:[{margin}]");
+
             // check args
             if (string.IsNullOrEmpty(searchWord))
             {
@@ -356,7 +380,7 @@ namespace SynonyMe.Model
             else if (searchResultIndexArray.Any() == false)
             {
                 // 検索したが結果が無い場合はEmptyを返す
-                Logger.Error(CLASS_NAME, "SearchAllWordsInText", "searchResultIndexArray is empty!");
+                Logger.Info(CLASS_NAME, "SearchAllWordsInText", "No search result.");
                 return new Dictionary<int, string>();
             }
             int searchResultCount = searchResultIndexArray.Count();
@@ -545,6 +569,8 @@ namespace SynonyMe.Model
             }
 
             #endregion
+
+            Logger.Info(CLASS_NAME, "SynonymSearch", $"start. targetSynonyms count is {targetSynonyms.Count}");
 
             // 類語の全検索結果を取得
             List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
