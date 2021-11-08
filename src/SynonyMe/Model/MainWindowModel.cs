@@ -570,7 +570,7 @@ namespace SynonyMe.Model
 
             #endregion
 
-            Logger.Info(CLASS_NAME, "SynonymSearch", $"start. targetSynonyms count is {targetSynonyms.Count}");
+            Logger.Info(CLASS_NAME, "SynonymSearch", $"start. targetSynonyms count is {targetSynonyms.Count()}");
 
             // 類語の全検索結果を取得
             List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
