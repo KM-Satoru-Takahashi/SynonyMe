@@ -13,10 +13,23 @@
 
     <Window.Resources>
         <!--保存/Saveアイコン-->
-        <Image x:Key="SaveIcon" Source="../Resources/save.png"/>
-        <!--類語ウィンドウアイコン-->
-        <Image x:Key="SynonymIcon" Source="../Resources/synonym.png"/>
+        <Image x:Key="SaveIcon" Source="../Resources/Save_16x.png"/>
 
+        <!--名前をつけて保存-->
+        <Image x:Key="SaveAsIcon" Source="../Resources/SaveAs_16x.png"/>
+
+        <!--類語ウィンドウアイコン-->
+        <Image x:Key="SynonymIcon" Source="../Resources/EditString_16x.png"/>
+
+        <!--新規作成アイコン-->
+        <Image x:Key="NewFile" Source="../Resources/NewFile_16x.png"/>
+
+        <!--開くアイコン-->
+        <Image x:Key="OpenFile" Source="../Resources/FolderOpened_16x.png"/>
+
+        <!--設定アイコン-->
+        <Image x:Key="SettingsIcon" Source="../Resources/Settings_16x.png"/>
+        
         <!--標準検索結果のListViewでHeaderを非表示にする-->
         <Style x:Key="HeaderHiddenStyle" TargetType="{x:Type  GridViewColumnHeader}">
             <Setter Property="Visibility" Value="Collapsed"/>
@@ -28,6 +41,11 @@
         <vm:MainWindowVM/>
     </Window.DataContext>
 
+    <!--ショートカットキー設定-->
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding Keyboard_Save}"/>
+    </Window.InputBindings>
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <!--現状、ツールバーとメイン部分を縦に並べて配置しているため、横のGridは1つのみでOK-->
@@ -44,12 +62,31 @@
         <!--ツールバー表示-->
         <ToolBarTray Grid.Row="0" Grid.Column="0">
             <ToolBar>
-                <!--保存/Saveアイコン-->
-                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}">
-                </Button>
+                <!--新規作成-->
+                <Button Content="{StaticResource NewFile}" Command="{Binding Command_CreateNewFile}"
+                        ToolTip="{Binding ToolTip_CreateNewFile}"/>
+
+                <!--開く-->
+                <Button Content="{StaticResource OpenFile}" Command="{Binding Command_OpenFile}"
+                        ToolTip="{Binding ToolTip_OpenFile}"/>
+
+                <!--上書き保存/Saveアイコン-->
+                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}"
+                        ToolTip="{Binding ToolTip_Save}"/>
+
+                <!--名前をつけて保存-->
+                <Button Content="{StaticResource SaveAsIcon}" Command="{Binding Command_SaveAs}"
+                        ToolTip="{Binding ToolTip_SaveAs}"/>
+
                 <!--類語追加アイコン-->
-                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}">
-                </Button>
+                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}"
+                        ToolTip="{Binding ToolTip_OpenSynonymWindow}"/>
+
+                <!--設定アイコン-->
+                <Button Content="{StaticResource SettingsIcon}" Command="{Binding Command_OpenSettingsWindow}"
+                        ToolTip="{Binding ToolTip_OpenSettingsWindow}"/>
+
+                <!--新規作成、開く、上書き保存、名前をつけて保存、類語Window、Option、-->
             </ToolBar>
         </ToolBarTray>
 
@@ -192,7 +229,8 @@
                     dd:DragDrop.IsDropTarget="True"
                     dd:DragDrop.DropHandler="{Binding}"                    
                     Document="{Binding Path=DisplayTextDoc}"
-                    Background="{Binding AvalonEditBackGround}"> <!--BackGroundは文字色を設定するために必要-->
+                    Background="{Binding AvalonEditBackGround}">
+                    <!--BackGroundは文字色を設定するために必要-->
                     <!-- 添付ビヘイビアの使用は一旦停止
                     <bh:Interaction.Behaviors>
                         <vm:AvalonEditBehavior AvalonEditorText="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>

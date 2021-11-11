@@ -256,11 +256,45 @@ namespace SynonyMe.ViewModel
 
         #region command
 
+        #region toolbar
+
+        /// <summary>新規作成ボタン</summary>
+        public ICommand Command_CreateNewFile { get; private set; } = null;
+
+        public string ToolTip_CreateNewFile { get; } = "新規作成";
+
+        /// <summary>ファイル開くボタン</summary>
+        public ICommand Command_OpenFile { get; private set; } = null;
+
+        public string ToolTip_OpenFile { get; } = "開く";
+
         /// <summary>保存ボタン</summary>
         public ICommand Command_Save { get; private set; } = null;
 
+        public string ToolTip_Save { get; } = "上書き保存";
+
+        /// <summary>名前をつけて保存ボタン</summary>
+        public ICommand Command_SaveAs { get; private set; } = null;
+
+        public string ToolTip_SaveAs { get; } = "名前をつけて保存";
+
         /// <summary>類語コマンド</summary>
         public ICommand Command_OpenSynonymWindow { get; private set; } = null;
+
+        public string ToolTip_OpenSynonymWindow { get; } = "類語設定";
+
+        /// <summary>設定画面コマンド</summary>
+        public ICommand Command_OpenSettingsWindow { get; private set; } = null;
+
+        public string ToolTip_OpenSettingsWindow { get; } = "設定";
+
+        #endregion
+
+        #region ショートカットキー
+
+        public ICommand Keyboard_Save { get; private set; } = null;
+
+        #endregion
 
         /// <summary>検索コマンド</summary>
         public ICommand Command_Search { get; private set; } = null;
@@ -344,6 +378,12 @@ namespace SynonyMe.ViewModel
         /// <summary>各種コマンドを初期化します</summary>
         private void InitializeCommand()
         {
+            Command_CreateNewFile = new CommandBase(ExecuteCreateNewFile, null);
+            Command_OpenFile = new CommandBase(ExecuteOpenFile, null);
+            Command_SaveAs = new CommandBase(ExecuteSaveAs, null);
+
+            Keyboard_Save = new CommandBase(ExecuteSave, null);
+
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
             Command_Search = new CommandBase(ExecuteSearch, null);
@@ -534,6 +574,46 @@ namespace SynonyMe.ViewModel
         #endregion
 
         #region Execute method
+
+        /// <summary>ツールバーの新規作成ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteCreateNewFile(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "_model is null");
+            }
+
+            _model.CreateNewFile();
+        }
+
+
+        private void ExecuteOpenFile(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteOpenFile", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenFile", "_model is null");
+            }
+
+            _model.OpenFile();
+        }
+
+
+        private void ExecuteSaveAs(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteSaveAs", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteSaveAs", "_model is null");
+            }
+
+            _model.SaveAs();
+        }
 
         /// <summary>編集中のテキスト保存処理</summary>
         /// <param name="parameter"></param>

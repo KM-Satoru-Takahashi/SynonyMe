@@ -20,6 +20,10 @@ namespace SynonyMe.Model
 
         private const string CLASS_NAME = "MainWindowModel";
 
+        /// <summary>上書き保存実行時でも、強制的に「名前をつけて保存」にするフラグ</summary>
+        /// <remarks>ファイルの新規作成時は上書き保存でも名前をつけて保存させる必要があるため、フラグで管理する</remarks>
+        private bool _forceSaveAsFlag = false;
+
         /// <summary>ViewModel</summary>
         private ViewModel.MainWindowVM _viewModel = null;
 
@@ -186,6 +190,14 @@ namespace SynonyMe.Model
         /// <returns>true:成功, false:失敗</returns>
         internal bool Save(string filePath, string displayText)
         {
+            Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{filePath}]");
+
+            // 名前をつけて保存を実行する
+            if (_forceSaveAsFlag)
+            {
+                return SaveAs(displayText);
+            }
+
             if (string.IsNullOrEmpty(filePath) ||
                displayText == null) // displayTextは空文字の場合emptyはあり得る
             {
@@ -206,7 +218,35 @@ namespace SynonyMe.Model
                 return false;
             }
 
+            // AvalonEditの編集済みフラグをOffにする
             return true;
+        }
+
+
+        internal bool SaveAs()
+        {
+            // AvalonEditから保存対象テキストの取得
+
+            return SaveAs("");
+        }
+
+        /// <summary>名前をつけて保存</summary>
+        /// <param name="displayTest">保存対象テキスト</param>
+        /// <returns></returns>
+        private bool SaveAs(string displayTest)
+        {
+            Logger.Info(CLASS_NAME, "SaveAs", "start");
+
+            // ダイアログを開き、保存要求を出す
+
+            // 失敗時はログを出す
+            return false;
+
+            // AvalonEditの編集済みフラグをOffにする
+
+            // 名前をつけて保存フラグをOffにする
+            _forceSaveAsFlag = false;
+            // return true;
         }
 
         /// <summary>類語ウィンドウを開く</summary>
@@ -533,8 +573,47 @@ namespace SynonyMe.Model
             return searchResultWordArray;
         }
 
+        /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>
+        internal void OpenFile()
+        {
+            // 現在表示中のテキストが編集済みか否かを判定する
+
+            // 保存されていなければ、Yes/Noダイアログを出して確認する
+
+            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
+
+            // ファイルを開く
+
+            // MainWindowのAvalonEditに適用する
+        }
+
+        /// <summary>テキストファイルを新規作成します</summary>
+        internal void CreateNewFile()
+        {
+            // 現在表示中のテキストが編集済みか否かを判定する
+
+            // 保存されていなければ、Yes/Noダイアログを出して確認する
+
+            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
+
+            // 保存時、強制的に名前をつけて保存にするフラグを立てる
+            _forceSaveAsFlag = true;
+
+            throw new NotImplementedException();
+        }
+
+        /// <summary>現在画面に表示されているテキストが編集済み(未保存)か否かを取得します</summary>
+        /// <returns>true:編集済み, false:未編集、または保存済み</returns>
+        private bool IsCurrentTextModifiedOrUnsaved()
+        {
+            return false;
+        }
+
+
+
+
         /// <summary>DBに登録されている全類語グループを取得する</summary>
-        /// <returns></returns>
+        /// <returns>正常時：DBに登録されている全類語グループ、異常時:false</returns>
         internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
         {
             return Manager.SynonymManager.GetAllSynonymGroup();
