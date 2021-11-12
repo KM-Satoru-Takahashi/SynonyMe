@@ -216,7 +216,7 @@ namespace SynonyMe.ViewModel
             {
                 return _editedTextVisible;
             }
-            private set
+            set
             {
                 if (_editedTextVisible == value)
                 {
@@ -378,14 +378,23 @@ namespace SynonyMe.ViewModel
         /// <summary>各種コマンドを初期化します</summary>
         private void InitializeCommand()
         {
+            #region toolbar
+
             Command_CreateNewFile = new CommandBase(ExecuteCreateNewFile, null);
+            Command_OpenSettingsWindow = new CommandBase(ExecuteOpenSettingsWindow, null);
             Command_OpenFile = new CommandBase(ExecuteOpenFile, null);
             Command_SaveAs = new CommandBase(ExecuteSaveAs, null);
+            Command_Save = new CommandBase(ExecuteSave, null);
+            Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+
+            #endregion
+
+            #region shortcut key
 
             Keyboard_Save = new CommandBase(ExecuteSave, null);
 
-            Command_Save = new CommandBase(ExecuteSave, null);
-            Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+            #endregion
+
             Command_Search = new CommandBase(ExecuteSearch, null);
             Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
             Command_JumpToSynonymSearchResult = new CommandBase(ExecuteJumpToSynonymSearchResult, null);
@@ -569,11 +578,29 @@ namespace SynonyMe.ViewModel
             MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
             TextEditor target = mw.TextEditor;
             target.IsModified = false;
+
+            // Ctrl + Sで名前をつけて保存にしなくて良くなる
+            _model.ForceSaveAsFlag = false;
         }
 
         #endregion
 
         #region Execute method
+
+        /// <summary>設定ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteOpenSettingsWindow(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteOpenSettingsWindow", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenSettingsWindow", "_model is null");
+                return;
+            }
+
+            _model.OpenSettingsWindow();
+        }
 
         /// <summary>ツールバーの新規作成ボタン押下時処理</summary>
         /// <param name="parameter"></param>
@@ -584,12 +611,21 @@ namespace SynonyMe.ViewModel
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "_model is null");
+                return;
             }
 
-            _model.CreateNewFile();
+            string filePath = _model.CreateNewFile();
+            if (string.IsNullOrEmpty(filePath))
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "Created filename is null or empty!");
+            }
+
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", $"New file created. File path : [{filePath}]");
+            _displayTextFilePath = filePath;
         }
 
-
+        /// <summary>ツールバーの「開く」ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
         private void ExecuteOpenFile(object parameter)
         {
             Logger.Info(CLASS_NAME, "ExecuteOpenFile", "start");
@@ -597,12 +633,14 @@ namespace SynonyMe.ViewModel
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteOpenFile", "_model is null");
+                return;
             }
 
             _model.OpenFile();
         }
 
-
+        /// <summary>ツールバーの「名前をつけて保存」押下時処理</summary>
+        /// <param name="parameter"></param>
         private void ExecuteSaveAs(object parameter)
         {
             Logger.Info(CLASS_NAME, "ExecuteSaveAs", "start");
@@ -610,12 +648,13 @@ namespace SynonyMe.ViewModel
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteSaveAs", "_model is null");
+                return;
             }
 
             _model.SaveAs();
         }
 
-        /// <summary>編集中のテキスト保存処理</summary>
+        /// <summary>Ctrl+S, ツールバーの上書き保存押下時処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
@@ -692,7 +731,6 @@ namespace SynonyMe.ViewModel
             // 検索結果にハイライトをかける
             _model.ApplyHighlightToTarget(SearchWord);
         }
-
 
         /// <summary>検索結果へのジャンプ処理</summary>
         /// <param name="parameter"></param>

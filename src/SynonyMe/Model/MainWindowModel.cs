@@ -11,6 +11,8 @@ using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using SynonyMe.CommonLibrary.Log;
+using Microsoft.Win32;
+using SynonyMe.Model.Manager;
 
 namespace SynonyMe.Model
 {
@@ -21,8 +23,8 @@ namespace SynonyMe.Model
         private const string CLASS_NAME = "MainWindowModel";
 
         /// <summary>上書き保存実行時でも、強制的に「名前をつけて保存」にするフラグ</summary>
-        /// <remarks>ファイルの新規作成時は上書き保存でも名前をつけて保存させる必要があるため、フラグで管理する</remarks>
-        private bool _forceSaveAsFlag = false;
+        /// <remarks>起動直後は上書き保存でも名前をつけて保存させる必要があるため、フラグで管理する</remarks>
+        private bool _forceSaveAsFlag = true;
 
         /// <summary>ViewModel</summary>
         private ViewModel.MainWindowVM _viewModel = null;
@@ -41,7 +43,25 @@ namespace SynonyMe.Model
 
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
+        #region property
+
+        /// <summary>上書き保存実行時、名前をつけて保存を呼び出すフラグ</summary>
+        internal bool ForceSaveAsFlag
+        {
+            private get
+            {
+                return _forceSaveAsFlag;
+            }
+            set
+            {
+                _forceSaveAsFlag = value;
+            }
+        }
+
+
         #endregion
+
+        #endregion event
 
         internal event EventHandler UpdateSynonymEvent
         {
@@ -89,7 +109,9 @@ namespace SynonyMe.Model
             return _highlightManager.UpdateXshdFile(targets);
         }
 
-
+        /// <summary>指定された語句にハイライトを適用します</summary>
+        /// <param name="target">対象語句</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool ApplyHighlightToTarget(string target)
         {
             if (string.IsNullOrEmpty(target))
@@ -105,7 +127,6 @@ namespace SynonyMe.Model
 
             return ApplyHighlightToTargets(targets);
         }
-
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
@@ -219,6 +240,10 @@ namespace SynonyMe.Model
             }
 
             // AvalonEditの編集済みフラグをOffにする
+
+
+            _viewModel.EditedTextVisible = Visibility.Collapsed;
+
             return true;
         }
 
@@ -240,13 +265,14 @@ namespace SynonyMe.Model
             // ダイアログを開き、保存要求を出す
 
             // 失敗時はログを出す
-            return false;
+
 
             // AvalonEditの編集済みフラグをOffにする
+            _viewModel.EditedTextVisible = Visibility.Collapsed;
 
             // 名前をつけて保存フラグをOffにする
             _forceSaveAsFlag = false;
-            // return true;
+            return true;
         }
 
         /// <summary>類語ウィンドウを開く</summary>
@@ -573,6 +599,11 @@ namespace SynonyMe.Model
             return searchResultWordArray;
         }
 
+        internal void OpenSettingsWindow()
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>
         internal void OpenFile()
         {
@@ -588,7 +619,7 @@ namespace SynonyMe.Model
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
-        internal void CreateNewFile()
+        internal string CreateNewFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
 
@@ -599,7 +630,46 @@ namespace SynonyMe.Model
             // 保存時、強制的に名前をつけて保存にするフラグを立てる
             _forceSaveAsFlag = true;
 
-            throw new NotImplementedException();
+            // ファイル保存ダイアログを表示する
+            SaveFileDialog dialog = null;
+            if (DialogManager.OpenFileSaveDialog(out dialog) == false)
+            {
+                Logger.Info(CLASS_NAME, "CreateNewFile", "create new file canceled.");
+                return null;
+            }
+
+            if (dialog == null)
+            {
+                Logger.Fatal(CLASS_NAME, "CreateNewFile", "dialog is null!");
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(dialog.SafeFileName))
+            {
+                Logger.Fatal(CLASS_NAME, "CreateNewFile", "Filename is null or empty!");
+                return null;
+            }
+
+            // 書き込み処理を実施する
+            try
+            {
+                using (Stream stream = dialog.OpenFile())
+                {
+                    using (StreamWriter sw = new StreamWriter(stream))
+                    {
+                        // 作成後、保存しないと揮発してしまうので空文字でファイル保存しておく
+                        sw.Write("");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Fatal(CLASS_NAME, "CreateNewFile", e.Message);
+                return null;
+            }
+
+            Logger.Info(CLASS_NAME, "CreateNewFile", $"NewFile created. Filename:[{dialog.SafeFileName}]");
+            return dialog.FileName;
         }
 
         /// <summary>現在画面に表示されているテキストが編集済み(未保存)か否かを取得します</summary>
