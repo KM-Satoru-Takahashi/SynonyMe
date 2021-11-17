@@ -43,7 +43,12 @@
 
     <!--ショートカットキー設定-->
     <Window.InputBindings>
-        <KeyBinding Gesture="Ctrl+S" Command="{Binding Keyboard_Save}"/>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding Command_Save}"/>
+        <KeyBinding Gesture="Shift+Ctrl+S" Command="{Binding Command_SaveAs}"/>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding Command_CreateNewFile}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding Command_OpenFile}"/>
+        <KeyBinding Gesture="Alt+S" Command="{Binding Command_OpenSynonymWindow}"/>
+        <KeyBinding Gesture="Alt+O" Command="{Binding Command_OpenSettingsWindow}"/>
     </Window.InputBindings>
     
     <Grid>

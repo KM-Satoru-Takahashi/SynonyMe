@@ -58,6 +58,8 @@ namespace SynonyMe.Model
             }
         }
 
+        /// <summary>画面表示中テキストの絶対パス</summary>
+        internal string DisplayTextFilePath;
 
         #endregion
 
@@ -209,9 +211,9 @@ namespace SynonyMe.Model
         /// <param name="filePath">保存対象ファイルパス</param>
         /// <param name="displayText">保存したいテキスト情報</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool Save(string filePath, string displayText)
+        internal bool Save(string displayText)
         {
-            Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{filePath}]");
+            Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{(string.IsNullOrEmpty(DisplayTextFilePath) ? "CreateNewFile!" : DisplayTextFilePath)}]");
 
             // 名前をつけて保存を実行する
             if (_forceSaveAsFlag)
@@ -219,7 +221,7 @@ namespace SynonyMe.Model
                 return SaveAs(displayText);
             }
 
-            if (string.IsNullOrEmpty(filePath) ||
+            if (string.IsNullOrEmpty(DisplayTextFilePath) ||
                displayText == null) // displayTextは空文字の場合emptyはあり得る
             {
                 Logger.Fatal(CLASS_NAME, "Save", "filePath or displayText is null or empty!");
@@ -229,9 +231,9 @@ namespace SynonyMe.Model
             TextEditor editor = _viewModel.TextEditor;
             try
             {
-                editor.Load(filePath);
+                //editor.Load(filePath);
                 editor.Text = displayText;
-                editor.Save(filePath);
+                editor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
             {
@@ -251,8 +253,9 @@ namespace SynonyMe.Model
         internal bool SaveAs()
         {
             // AvalonEditから保存対象テキストの取得
+            string targetText = "";
 
-            return SaveAs("");
+            return SaveAs(targetText);
         }
 
         /// <summary>名前をつけて保存</summary>
@@ -263,12 +266,23 @@ namespace SynonyMe.Model
             Logger.Info(CLASS_NAME, "SaveAs", "start");
 
             // ダイアログを開き、保存要求を出す
+            string saveFilePath = string.Empty;
+            bool result = DialogManager.OpenSaveAsDialog(_viewModel.TextEditor.Text, out saveFilePath);
 
-            // 失敗時はログを出す
+            // 失敗時はログとエラーダイアログを出す
+            if (result == false)
+            {
+                Logger.Error(CLASS_NAME, "SaveAs", "SaveAs Failed!");
 
+                // todo error dialog
+            }
+
+
+            // 保持している、現在開いているファイル情報を更新する
 
             // AvalonEditの編集済みフラグをOffにする
-            _viewModel.EditedTextVisible = Visibility.Collapsed;
+            TextEditor editor = _viewModel.TextEditor;
+            editor.IsModified = false;
 
             // 名前をつけて保存フラグをOffにする
             _forceSaveAsFlag = false;
@@ -619,7 +633,7 @@ namespace SynonyMe.Model
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
-        internal string CreateNewFile()
+        internal bool CreateNewFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
 
@@ -631,50 +645,28 @@ namespace SynonyMe.Model
             _forceSaveAsFlag = true;
 
             // ファイル保存ダイアログを表示する
-            SaveFileDialog dialog = null;
-            if (DialogManager.OpenFileSaveDialog(out dialog) == false)
+            string saveFilePath = null;
+            if (DialogManager.OpenSaveAsDialog("", out saveFilePath) == false)
             {
-                Logger.Info(CLASS_NAME, "CreateNewFile", "create new file canceled.");
-                return null;
+                Logger.Info(CLASS_NAME, "CreateNewFile", "create new file failed.");
+                return false;
             }
 
-            if (dialog == null)
-            {
-                Logger.Fatal(CLASS_NAME, "CreateNewFile", "dialog is null!");
-                return null;
-            }
-
-            if (string.IsNullOrEmpty(dialog.SafeFileName))
+            if (string.IsNullOrEmpty(saveFilePath))
             {
                 Logger.Fatal(CLASS_NAME, "CreateNewFile", "Filename is null or empty!");
-                return null;
+                return false;
             }
 
-            // 書き込み処理を実施する
-            try
-            {
-                using (Stream stream = dialog.OpenFile())
-                {
-                    using (StreamWriter sw = new StreamWriter(stream))
-                    {
-                        // 作成後、保存しないと揮発してしまうので空文字でファイル保存しておく
-                        sw.Write("");
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Logger.Fatal(CLASS_NAME, "CreateNewFile", e.Message);
-                return null;
-            }
+            // 保存したファイルパスを保持する
 
-            Logger.Info(CLASS_NAME, "CreateNewFile", $"NewFile created. Filename:[{dialog.SafeFileName}]");
-            return dialog.FileName;
+
+            return true;
         }
 
         /// <summary>現在画面に表示されているテキストが編集済み(未保存)か否かを取得します</summary>
         /// <returns>true:編集済み, false:未編集、または保存済み</returns>
-        private bool IsCurrentTextModifiedOrUnsaved()
+        private bool IsCurrentTextModifiedOrNewFile()
         {
             return false;
         }

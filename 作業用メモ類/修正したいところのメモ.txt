@@ -26,7 +26,7 @@
 　起動時、古いログファイルを削除したい
 
 ・MainWindowVM
-　可能な限り処理をModel側に移譲
+　可能な限り処理やメンバ、プロパティをModel側に移譲
 
 ・MainWindow
 　文章の折り返しOn/Offできるように

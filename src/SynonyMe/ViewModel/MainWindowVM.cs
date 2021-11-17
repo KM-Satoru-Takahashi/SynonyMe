@@ -28,10 +28,6 @@ namespace SynonyMe.ViewModel
         /// <summary>Model</summary>
         private Model.MainWindowModel _model = null;
 
-        /// <summary>画面表示中テキストの絶対パス</summary>
-        /// 将来的にタブVMへ移管予定
-        private string _displayTextFilePath = null;
-
         /// <summary>開いているファイル情報</summary>
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
@@ -261,40 +257,35 @@ namespace SynonyMe.ViewModel
         /// <summary>新規作成ボタン</summary>
         public ICommand Command_CreateNewFile { get; private set; } = null;
 
-        public string ToolTip_CreateNewFile { get; } = "新規作成";
+        public string ToolTip_CreateNewFile { get; } = "新規作成\nCtrl+N";
 
         /// <summary>ファイル開くボタン</summary>
         public ICommand Command_OpenFile { get; private set; } = null;
 
-        public string ToolTip_OpenFile { get; } = "開く";
+        public string ToolTip_OpenFile { get; } = "開く\nCtrl+O";
 
         /// <summary>保存ボタン</summary>
         public ICommand Command_Save { get; private set; } = null;
 
-        public string ToolTip_Save { get; } = "上書き保存";
+        public string ToolTip_Save { get; } = "上書き保存\nCtrl+S";
 
         /// <summary>名前をつけて保存ボタン</summary>
         public ICommand Command_SaveAs { get; private set; } = null;
 
-        public string ToolTip_SaveAs { get; } = "名前をつけて保存";
+        public string ToolTip_SaveAs { get; } = "名前をつけて保存\nShift+Ctrl+S";
 
         /// <summary>類語コマンド</summary>
         public ICommand Command_OpenSynonymWindow { get; private set; } = null;
 
-        public string ToolTip_OpenSynonymWindow { get; } = "類語設定";
+        public string ToolTip_OpenSynonymWindow { get; } = "類語設定\nAlt+S";
 
         /// <summary>設定画面コマンド</summary>
         public ICommand Command_OpenSettingsWindow { get; private set; } = null;
 
-        public string ToolTip_OpenSettingsWindow { get; } = "設定";
+        public string ToolTip_OpenSettingsWindow { get; } = "設定\nAlt+O";
 
         #endregion
 
-        #region ショートカットキー
-
-        public ICommand Keyboard_Save { get; private set; } = null;
-
-        #endregion
 
         /// <summary>検索コマンド</summary>
         public ICommand Command_Search { get; private set; } = null;
@@ -386,12 +377,6 @@ namespace SynonyMe.ViewModel
             Command_SaveAs = new CommandBase(ExecuteSaveAs, null);
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
-
-            #endregion
-
-            #region shortcut key
-
-            Keyboard_Save = new CommandBase(ExecuteSave, null);
 
             #endregion
 
@@ -571,7 +556,7 @@ namespace SynonyMe.ViewModel
             }
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
-            _displayTextFilePath = _openingFiles[0];
+            _model.DisplayTextFilePath = _openingFiles[0];
             DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
 
             // ドロップ直後に「編集済み」が出るのを抑制する
@@ -614,14 +599,13 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            string filePath = _model.CreateNewFile();
-            if (string.IsNullOrEmpty(filePath))
+            if (_model.CreateNewFile() == false)
             {
-                Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "Created filename is null or empty!");
+                Logger.Error(CLASS_NAME, "ExecuteCreateNewFile", "Create new file failed!");
+                return;
             }
 
-            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", $"New file created. File path : [{filePath}]");
-            _displayTextFilePath = filePath;
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "end");
         }
 
         /// <summary>ツールバーの「開く」ボタン押下時処理</summary>
@@ -666,7 +650,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            _model.Save(_displayTextFilePath, DisplayTextDoc.Text);
+            _model.Save(DisplayTextDoc.Text);
         }
 
         /// <summary>類語ウィンドウを開く</summary>
