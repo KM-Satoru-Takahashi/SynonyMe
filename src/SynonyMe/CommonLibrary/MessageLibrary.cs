@@ -15,6 +15,8 @@ namespace SynonyMe.CommonLibrary
         /// <summary>類語検索ボタン文字列</summary>
         internal const string SearchSynonymButtonText = "類語検索";
 
+        /// <summary>検索ボタン表示文字列</summary>
+        internal const string SearchButtonText = "検索";
 
 
 
@@ -46,6 +48,13 @@ namespace SynonyMe.CommonLibrary
         #endregion
 
         #region label
+
+        /// <summary>ウィンドウタイトル</summary>
+        internal const string MainWindowTitle = "SynonyMe";
+
+        /// <summary>文字数表示の固定値「文字数」</summary>
+        internal const string WordCountText = "文字数：";
+
 
         #endregion
     }

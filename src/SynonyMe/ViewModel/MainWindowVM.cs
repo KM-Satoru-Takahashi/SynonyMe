@@ -18,6 +18,7 @@ using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using System.Windows.Media;
 using SynonyMe.CommonLibrary.Log;
+using SynonyMe.CommonLibrary;
 
 namespace SynonyMe.ViewModel
 {
@@ -67,12 +68,8 @@ namespace SynonyMe.ViewModel
 
         #region property
 
-        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス</summary>
-        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
-        internal TextEditor TextEditor { get; } = new TextEditor();
-
         /// <summary>ウィンドウタイトル</summary>
-        public string MainWindowTitle { get; } = "SynonyMe";
+        public string MainWindowTitle { get; } = CommonLibrary.MessageLibrary.MainWindowTitle;
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
         public int ToolbarHeight { get; } = 40;
@@ -81,7 +78,7 @@ namespace SynonyMe.ViewModel
         public int FooterHeight { get; } = 30;
 
         /// <summary>検索ボタン表示文字列</summary>
-        public string SearchButtonText { get; } = "検索";
+        public string SearchButtonText { get; } = MessageLibrary.SearchButtonText;
 
         /// <summary>類語検索ボタン表示文字列</summary>
         public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
@@ -103,8 +100,6 @@ namespace SynonyMe.ViewModel
 
         /// <summary>類語リストの使用箇所ヘッダ</summary>
         public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
-
-
 
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument DisplayTextDoc
@@ -159,7 +154,7 @@ namespace SynonyMe.ViewModel
         public ObservableCollection<DisplaySynonymSearchResult> DisplaySynonymSearchResults { get; set; } = new ObservableCollection<DisplaySynonymSearchResult>();
 
         /// <summary>文字数表示の固定値「文字数」</summary>
-        public string WordCountText { get; } = "文字数：";
+        public string WordCountText { get; } = MessageLibrary.WordCountText;
 
         /// <summary>文字数表示箇所</summary>
         public string WordCount
@@ -346,7 +341,7 @@ namespace SynonyMe.ViewModel
             Logger.Info(CLASS_NAME, "Initialize", "start");
 
             _model = new Model.MainWindowModel(this);
-            _displayTextDoc = TextEditor.Document;
+            _displayTextDoc = _model.TextEditor.Document;
 
             // コマンド初期化処理
             InitializeCommand();
@@ -361,8 +356,15 @@ namespace SynonyMe.ViewModel
             var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
             if (descripter != null)
             {
-                descripter.RemoveValueChanged(TextEditor, OnIsModifiedChanged);
-                descripter.AddValueChanged(TextEditor, OnIsModifiedChanged);
+                if (_model != null && _model.TextEditor != null)
+                {
+                    descripter.RemoveValueChanged(_model.TextEditor, OnIsModifiedChanged);
+                    descripter.AddValueChanged(_model.TextEditor, OnIsModifiedChanged);
+                }
+                else
+                {
+                    Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
+                }
             }
         }
 
@@ -565,7 +567,7 @@ namespace SynonyMe.ViewModel
             target.IsModified = false;
 
             // Ctrl + Sで名前をつけて保存にしなくて良くなる
-            _model.ForceSaveAsFlag = false;
+            _model.IsModifiedOrNewFile = false;
         }
 
         #endregion

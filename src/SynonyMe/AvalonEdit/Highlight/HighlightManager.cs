@@ -255,7 +255,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// ハイライト設定をリセット(破棄)します
         /// </summary>
         /// <returns>true:成功, false:失敗</returns>
-        private bool ResetHighlightInfo()
+        internal bool ResetHighlightInfo()
         {
             Logger.Info(CLASS_NAME, "ResetHighlightInfo", "start");
 

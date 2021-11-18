@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
 using SynonyMe.View;
@@ -11,8 +10,8 @@ using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using SynonyMe.CommonLibrary.Log;
-using Microsoft.Win32;
 using SynonyMe.Model.Manager;
+using System.Windows.Forms;
 
 namespace SynonyMe.Model
 {
@@ -22,12 +21,14 @@ namespace SynonyMe.Model
 
         private const string CLASS_NAME = "MainWindowModel";
 
-        /// <summary>上書き保存実行時でも、強制的に「名前をつけて保存」にするフラグ</summary>
-        /// <remarks>起動直後は上書き保存でも名前をつけて保存させる必要があるため、フラグで管理する</remarks>
-        private bool _forceSaveAsFlag = true;
-
         /// <summary>ViewModel</summary>
-        private ViewModel.MainWindowVM _viewModel = null;
+        private MainWindowVM _viewModel = null;
+
+        private FileAccessManager _fileAccessManager = null;
+
+
+        private DialogManager _dialogManager = null;
+
 
         /// <summary>本プロセスで処理対象となるファイル拡張子一覧</summary>
         /// <remarks>ここに含まれない拡張子のファイルは読み込み時に弾かれる</remarks>
@@ -45,18 +46,30 @@ namespace SynonyMe.Model
 
         #region property
 
-        /// <summary>上書き保存実行時、名前をつけて保存を呼び出すフラグ</summary>
-        internal bool ForceSaveAsFlag
+        /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
+        internal bool IsModifiedOrNewFile
         {
             private get
             {
-                return _forceSaveAsFlag;
+                if (TextEditor == null)
+                {
+                    return false;
+                }
+
+                return TextEditor.IsModified;
             }
             set
             {
-                _forceSaveAsFlag = value;
+                if (_viewModel != null && TextEditor != null)
+                {
+                    TextEditor.IsModified = value;
+                }
             }
         }
+
+        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス</summary>
+        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
+        internal TextEditor TextEditor { get; } = new TextEditor();
 
         /// <summary>画面表示中テキストの絶対パス</summary>
         internal string DisplayTextFilePath;
@@ -91,6 +104,8 @@ namespace SynonyMe.Model
 
             _viewModel = viewModel;
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
+            _fileAccessManager = new FileAccessManager();
+            _dialogManager = new DialogManager();
         }
 
 
@@ -216,7 +231,7 @@ namespace SynonyMe.Model
             Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{(string.IsNullOrEmpty(DisplayTextFilePath) ? "CreateNewFile!" : DisplayTextFilePath)}]");
 
             // 名前をつけて保存を実行する
-            if (_forceSaveAsFlag)
+            if (IsModifiedOrNewFile)
             {
                 return SaveAs(displayText);
             }
@@ -228,12 +243,16 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            TextEditor editor = _viewModel.TextEditor;
+            if(TextEditor==null)
+            {
+                Logger.Fatal(CLASS_NAME, "Save", "TextEditor is null!");
+                return false;
+            }
+
             try
             {
-                //editor.Load(filePath);
-                editor.Text = displayText;
-                editor.Save(DisplayTextFilePath);
+                TextEditor.Text = displayText;
+                TextEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
             {
@@ -242,20 +261,22 @@ namespace SynonyMe.Model
             }
 
             // AvalonEditの編集済みフラグをOffにする
-
-
-            _viewModel.EditedTextVisible = Visibility.Collapsed;
+            IsModifiedOrNewFile = false;
 
             return true;
         }
 
-
+        /// <summary>名前をつけて保存</summary>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool SaveAs()
         {
-            // AvalonEditから保存対象テキストの取得
-            string targetText = "";
+            if (TextEditor == null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "TextEditor is null!");
+                return false;
+            }
 
-            return SaveAs(targetText);
+            return SaveAs(TextEditor.Text);
         }
 
         /// <summary>名前をつけて保存</summary>
@@ -263,11 +284,23 @@ namespace SynonyMe.Model
         /// <returns></returns>
         private bool SaveAs(string displayTest)
         {
+            if(TextEditor==null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "TextEditor is null!");
+                return false;
+            }
+
             Logger.Info(CLASS_NAME, "SaveAs", "start");
 
             // ダイアログを開き、保存要求を出す
+            if(_dialogManager==null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "_dialogManager is null!");
+                return false;
+            }
+
             string saveFilePath = string.Empty;
-            bool result = DialogManager.OpenSaveAsDialog(_viewModel.TextEditor.Text, out saveFilePath);
+            bool result = _dialogManager.OpenSaveAsDialog(out saveFilePath);
 
             // 失敗時はログとエラーダイアログを出す
             if (result == false)
@@ -275,17 +308,30 @@ namespace SynonyMe.Model
                 Logger.Error(CLASS_NAME, "SaveAs", "SaveAs Failed!");
 
                 // todo error dialog
+                return false;
             }
 
+            // 成功時はファイルをnullで保存しておく
+            if(_fileAccessManager == null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "_fileAccessManager is null!");
+                return false;
+            }
+
+            if(_fileAccessManager.SaveFile(TextEditor.Text, saveFilePath) == false)
+            {
+                Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
+                return false;
+            }
 
             // 保持している、現在開いているファイル情報を更新する
+            DisplayTextFilePath = saveFilePath;
 
             // AvalonEditの編集済みフラグをOffにする
-            TextEditor editor = _viewModel.TextEditor;
-            editor.IsModified = false;
+            IsModifiedOrNewFile = false;
 
             // 名前をつけて保存フラグをOffにする
-            _forceSaveAsFlag = false;
+            IsModifiedOrNewFile = false;
             return true;
         }
 
@@ -342,12 +388,10 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            TextEditor textEditor = _viewModel.TextEditor;
             try
             {
-                textEditor.Load(filePath);
-                System.Windows.Media.Brush b = textEditor.Background;
-                textEditor.Background = System.Windows.Media.Brushes.Red;
+                TextEditor.Load(filePath);
+                TextEditor.Background = System.Windows.Media.Brushes.Red;
             }
             catch (Exception e)
             {
@@ -355,7 +399,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            text = textEditor.Text;
+            text = TextEditor.Text;
             return true;
         }
 
@@ -373,7 +417,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            DataObject dragOverFiles = (DataObject)dropInfo.Data;
+            System.Windows.DataObject dragOverFiles = (System.Windows.DataObject)dropInfo.Data;
             if (dragOverFiles == null)
             {
                 Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFiles are null!");
@@ -633,20 +677,41 @@ namespace SynonyMe.Model
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
+        /// <remarks>true:正常, false:異常</remarks>
         internal bool CreateNewFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
+            if (IsModifiedOrNewFile)
+            {
+                if(_dialogManager==null)
+                {
+                    Logger.Fatal(CLASS_NAME, "CreateNewFile", "_dialogManager is null!");
+                    return false;
+                }
 
-            // 保存されていなければ、Yes/Noダイアログを出して確認する
+                // 保存されていなければ、Yes/Noダイアログを出して確認する
+                DialogResult dialogResult = DialogResult.Cancel;
+                bool result = _dialogManager.OpenOkCancelDialog("現在編集中の文章を破棄しますか？", out dialogResult);
+                if (result == false)
+                {
+                    Logger.Fatal(CLASS_NAME, "CreateNewFile", $"Dialog error! dialogResult:[{dialogResult}]");
+                    return false;
+                }
+
+                if (dialogResult == DialogResult.Cancel)
+                {
+                    Logger.Info(CLASS_NAME, "CreateNewFile", "Canceled discard text and create new file");
+                    return true;
+                }
+            }
 
             // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
-
-            // 保存時、強制的に名前をつけて保存にするフラグを立てる
-            _forceSaveAsFlag = true;
+            TextEditor.Text = string.Empty;
+            _highlightManager.ResetHighlightInfo();
 
             // ファイル保存ダイアログを表示する
             string saveFilePath = null;
-            if (DialogManager.OpenSaveAsDialog("", out saveFilePath) == false)
+            if (_dialogManager.OpenSaveAsDialog(out saveFilePath) == false)
             {
                 Logger.Info(CLASS_NAME, "CreateNewFile", "create new file failed.");
                 return false;
@@ -658,21 +723,23 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            // 保存したファイルパスを保持する
+            // ファイルを保存する
+            if(_fileAccessManager==null)
+            {
+                Logger.Error(CLASS_NAME, "CreateNewFile", "_fileAccessManager is null!");
+                return false;
+            }
 
+            _fileAccessManager.SaveNewFile(saveFilePath);
+
+            // 保存したファイルパスを保持する
+            DisplayTextFilePath = saveFilePath;
+
+            // 編集済みフラグを下げる
+            IsModifiedOrNewFile = false;
 
             return true;
         }
-
-        /// <summary>現在画面に表示されているテキストが編集済み(未保存)か否かを取得します</summary>
-        /// <returns>true:編集済み, false:未編集、または保存済み</returns>
-        private bool IsCurrentTextModifiedOrNewFile()
-        {
-            return false;
-        }
-
-
-
 
         /// <summary>DBに登録されている全類語グループを取得する</summary>
         /// <returns>正常時：DBに登録されている全類語グループ、異常時:false</returns>
@@ -835,38 +902,20 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う    
-            TextEditor target = GetTextEditor();
+            if(TextEditor==null)
+            {
+                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "TextEditor is null!");
+            }
 
             // キャレット更新
-            target.CaretOffset = index;
-            target.TextArea.Caret.BringCaretToView();
+            TextEditor.CaretOffset = index;
+            TextEditor.TextArea.Caret.BringCaretToView();
 
             // BeginInvokeしないとFocusしてくれない
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { TextEditor.Focus(); }));
 
             return true;
         }
-
-        /// <summary>
-        /// Main画面に描画されているTextEditorを取得する
-        /// </summary>
-        /// <returns></returns>
-        private TextEditor GetTextEditor()
-        {
-            // ViewのAvalonEditにアクセスする            
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-
-            TextEditor target = mw.TextEditor;
-            if (target == null)
-            {
-                Logger.Fatal(CLASS_NAME, "GetTextEditor", "target is null!");
-                return null;
-            }
-
-            return target;
-        }
-
 
         #endregion
     }
