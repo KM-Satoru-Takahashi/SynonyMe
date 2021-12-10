@@ -554,12 +554,15 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            // todo:現在は強制的に破棄している
+            _openingFiles.Clear();
+
             // 将来的にはタブを分離させる必要があるので、そのための仮処置
             List<string> displayTargetFilePaths = _model.GetDisplayTextFilePath(dropInfo);
             foreach (string filePath in displayTargetFilePaths)
             {
                 _openingFiles.Add(_tabId, filePath);
-                ++_tabId;
+                //++_tabId;
             }
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
@@ -722,20 +725,33 @@ namespace SynonyMe.ViewModel
         {
             Logger.Info(CLASS_NAME, "ExecuteJumpToSearchResult", "start");
 
-            SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
+            SelectionChangedEventArgs args = parameter as SelectionChangedEventArgs;
+            if (args == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "args is null!");
+                return;
+            }
+
+            if (args.AddedItems == null || args.AddedItems.Count < 0)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "AddedItems is null or empty!");
+                return;
+            }
+
+            SearchResultEntity searchResultEntity = args.AddedItems[0] as SearchResultEntity;
             if (searchResultEntity == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "searchResultEntity is null!");
                 return;
             }
 
-            // キャレットの更新とFocusを行う            
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "_model is null");
                 return;
             }
 
+            // キャレットの更新とFocusを行う 
             if (_model.UpdateCaretOffset(searchResultEntity.Index) == false)
             {
                 Logger.Error(CLASS_NAME, "ExecuteJumpToSearchResult", "UpdateCaretOffset return false!");
@@ -792,15 +808,15 @@ namespace SynonyMe.ViewModel
             // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
             // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
 
-            if (_model == null || _model.DisplayTextDocument==null)
+            if (_model == null || _model.DisplayTextDocument == null)
             {
                 WordCount = null;
                 NumberOfLines = null;
             }
             else
             {
-                WordCount = _model.DisplayTextDocument.TextLength.ToString();
-                NumberOfLines = _model.DisplayTextDocument.LineCount.ToString();
+                WordCount = _model.TextEditor.Text.Length.ToString();
+                NumberOfLines = _model.TextEditor.LineCount.ToString();
             }
         }
 
@@ -862,8 +878,8 @@ namespace SynonyMe.ViewModel
             }
 
             // 表示するモノがないか、空テキストなら検索する意味がない
-            if (_model.DisplayTextDocument == null ||
-                string.IsNullOrEmpty(_model.DisplayTextDocument.Text))
+            if (_model.TextEditor == null ||
+                string.IsNullOrEmpty(_model.TextEditor.Text))
             {
                 Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;

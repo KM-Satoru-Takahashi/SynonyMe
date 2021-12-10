@@ -47,6 +47,8 @@ namespace SynonyMe.Model
 
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
+        #endregion
+
         #region property
 
         /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
@@ -72,9 +74,12 @@ namespace SynonyMe.Model
 
         /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
+        /// todo:MainWindowXamlと[TextEditor]はBindingされていない。[DisplayTextDocument]はBindingされている
+        /// MainWindow→ DisplayTextDocument ← TextEditorのDisplayTextDocument の状態
+        /// MainWindowとMainWindowModelのTextEditorをなんとかして合致させる
         internal TextEditor TextEditor { get; } = new TextEditor();
 
-        /// <summary>表示中のテキスト文書</summary>
+        /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
         internal TextDocument DisplayTextDocument
         {
@@ -100,7 +105,6 @@ namespace SynonyMe.Model
         /// <summary>画面表示中テキストの絶対パス</summary>
         internal string DisplayTextFilePath;
 
-        #endregion
 
         #endregion event
 
@@ -269,7 +273,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (DisplayTextDocument == null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "Save", "DisplayTextDocument is null!");
                 return false;
@@ -277,7 +281,7 @@ namespace SynonyMe.Model
 
             try
             {
-                DisplayTextDocument.Text = displayText;
+                TextEditor.Text = displayText;
                 TextEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
@@ -296,13 +300,13 @@ namespace SynonyMe.Model
         /// <returns>true:成功, false:失敗</returns>
         internal bool SaveAs()
         {
-            if (DisplayTextDocument == null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "SaveAs", "DisplayTextDocument is null!");
                 return false;
             }
 
-            return SaveAs(DisplayTextDocument.Text);
+            return SaveAs(TextEditor.Text);
         }
 
         /// <summary>名前をつけて保存</summary>
@@ -310,7 +314,7 @@ namespace SynonyMe.Model
         /// <returns></returns>
         private bool SaveAs(string displayTest)
         {
-            if (DisplayTextDocument == null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "SaveAs", "DisplayTextDocument is null!");
                 return false;
@@ -344,7 +348,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (_fileAccessManager.SaveFile(DisplayTextDocument.Text, saveFilePath) == false)
+            if (_fileAccessManager.SaveFile(TextEditor.Text, saveFilePath) == false)
             {
                 Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
                 return false;
@@ -562,7 +566,7 @@ namespace SynonyMe.Model
         /// <param name="openingFiles"></param>
         internal void SetTextDocuments(Dictionary<int, string> openingFiles)
         {
-            if (openingFiles == null || openingFiles.Any() == false)
+            if (openingFiles == null)
             {
                 Logger.Error(CLASS_NAME, "SetTextDocuments", "openingFiles are null or empty!");
                 return;
@@ -571,7 +575,7 @@ namespace SynonyMe.Model
             DisplayTextFilePath = openingFiles[0];
             string text;
             Load(DisplayTextFilePath, out text);
-            DisplayTextDocument.Text = text;
+            TextEditor.Text = text;
 
             // ドロップ直後に「編集済み」が出るのを抑制する
             TextEditor.IsModified = false;
@@ -733,13 +737,13 @@ namespace SynonyMe.Model
                 return;
             }
 
-            if (DisplayTextDocument == null)
+            if (TextEditor == null)
             {
                 Logger.Error(CLASS_NAME, "OpenFile", "DisplayTextDocument is null!");
                 return;
             }
 
-            DisplayTextDocument.Text = loadText;
+            TextEditor.Text = loadText;
 
             // 編集済みフラグを下げる
             IsModified = false;
@@ -962,9 +966,9 @@ namespace SynonyMe.Model
         /// <remarks>本当にAvalonEditのDisposeがこれだけで十分かは要検討</remarks>
         private void DisposeTextAndXshd()
         {
-            if (DisplayTextDocument != null)
+            if (TextEditor != null)
             {
-                DisplayTextDocument.Text = string.Empty;
+                TextEditor.Text = string.Empty;
             }
 
             if (_highlightManager != null)
@@ -986,18 +990,26 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (TextEditor == null)
+            MainWindow mw = WindowManager.GetMainWindow();
+            if (mw == null)
             {
-                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "TextEditor is null!");
+                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "mw is null!");
+                return false;
+            }
+
+            TextEditor te = mw.TextEditor;
+            if (te == null)
+            {
+                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "te is null!");
+                return false;
             }
 
             // キャレット更新
-            TextEditor.CaretOffset = index;
-            TextEditor.TextArea.Caret.BringCaretToView();
+            te.CaretOffset = index;
+            te.TextArea.Caret.BringCaretToView();
 
             // BeginInvokeしないとFocusしてくれない
-            // todo:なぜかこれで検索結果にFocusいかなくなったので、TextをTextEditorなのかDocumentなのかでかわってくる
-            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { TextEditor.Focus(); }));
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { te.Focus(); }));
 
             return true;
         }
