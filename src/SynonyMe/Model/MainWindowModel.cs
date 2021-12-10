@@ -25,11 +25,13 @@ namespace SynonyMe.Model
         /// <summary>ViewModel</summary>
         private MainWindowVM _viewModel = null;
 
-        private FileAccessManager _fileAccessManager = null;
+        private FileAccessor _fileAccessManager = null;
 
 
         private DialogManager _dialogManager = null;
 
+        /// <summary>上書き保存を強制的に名前をつけて保存にするフラグ</summary>
+        private bool _forceSaveAs = true;
 
         /// <summary>本プロセスで処理対象となるファイル拡張子一覧</summary>
         /// <remarks>ここに含まれない拡張子のファイルは読み込み時に弾かれる</remarks>
@@ -48,7 +50,7 @@ namespace SynonyMe.Model
         #region property
 
         /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
-        internal bool IsModifiedOrNewFile
+        internal bool IsModified
         {
             private get
             {
@@ -128,7 +130,7 @@ namespace SynonyMe.Model
 
             _viewModel = viewModel;
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
-            _fileAccessManager = new FileAccessManager();
+            _fileAccessManager = new FileAccessor();
             _dialogManager = new DialogManager();
         }
 
@@ -255,7 +257,7 @@ namespace SynonyMe.Model
             Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{(string.IsNullOrEmpty(DisplayTextFilePath) ? "CreateNewFile!" : DisplayTextFilePath)}]");
 
             // 名前をつけて保存を実行する
-            if (IsModifiedOrNewFile)
+            if (_forceSaveAs)
             {
                 return SaveAs(displayText);
             }
@@ -285,7 +287,7 @@ namespace SynonyMe.Model
             }
 
             // AvalonEditの編集済みフラグをOffにする
-            IsModifiedOrNewFile = false;
+            IsModified = false;
 
             return true;
         }
@@ -352,10 +354,10 @@ namespace SynonyMe.Model
             DisplayTextFilePath = saveFilePath;
 
             // AvalonEditの編集済みフラグをOffにする
-            IsModifiedOrNewFile = false;
+            IsModified = false;
 
             // 名前をつけて保存フラグをOffにする
-            IsModifiedOrNewFile = false;
+            _forceSaveAs = false;
             return true;
         }
 
@@ -556,6 +558,28 @@ namespace SynonyMe.Model
             return searchResultIndexWordPairs;
         }
 
+        /// <summary>依頼された全ファイルをTextEditorで管理させる</summary>
+        /// <param name="openingFiles"></param>
+        internal void SetTextDocuments(Dictionary<int, string> openingFiles)
+        {
+            if (openingFiles == null || openingFiles.Any() == false)
+            {
+                Logger.Error(CLASS_NAME, "SetTextDocuments", "openingFiles are null or empty!");
+                return;
+            }
+
+            DisplayTextFilePath = openingFiles[0];
+            string text;
+            Load(DisplayTextFilePath, out text);
+            DisplayTextDocument.Text = text;
+
+            // ドロップ直後に「編集済み」が出るのを抑制する
+            TextEditor.IsModified = false;
+
+            // Ctrl + Sで名前をつけて保存にしなくて良くする
+            _forceSaveAs = false;
+        }
+
         /// <summary>
         /// 対象文章内における検索対象語句の全インデックスを取得する
         /// </summary>
@@ -570,47 +594,7 @@ namespace SynonyMe.Model
                 return null;
             }
 
-            // 文書中で該当するインデックスを一旦入れておくリストを用意
-            List<int> searchResultIndexList = new List<int>();
-
-            // 1箇所目をまず探す
-            int foundIndex = targetText.IndexOf(searchWord);
-            if (foundIndex < 0)
-            {
-                // 検索したが何もない場合はエラーではないので空の配列を戻すようにする
-                return new int[0];
-            }
-
-            // 他の箇所を繰り返し探していく
-            int resultCount = 1;
-            while (0 <= foundIndex) // 該当がなくなると検索結果インデックスは-1が戻ってくる
-            {
-                // 検索結果は規定値まで
-                if (SEARCH_RESULT_DISPLAY_NUMBER < resultCount)
-                {
-                    break;
-                }
-
-                // 最初に[前回の検索結果インデックス]をリストに追加しておく
-                // 1箇所目も登録される
-                searchResultIndexList.Add(foundIndex);
-
-                // 次の検索位置は「前の検索位置」に「検索対象の語句の長さ」を足した地点
-                int nextIndex = foundIndex + searchWord.Length;
-                if (nextIndex < targetText.Length)
-                {
-                    foundIndex = targetText.IndexOf(searchWord, nextIndex);
-                }
-                else
-                {
-                    // 文章の長さを超えるなら、検索しない
-                    break;
-                }
-
-                ++resultCount;
-            }
-
-            return searchResultIndexList.ToArray();
+            return Searcher.GetSearcher.GetAllSearchResultIndex(searchWord, targetText, SEARCH_RESULT_DISPLAY_NUMBER);
         }
 
         /// <summary>先頭から順に対象語句を検索し、マージンを考慮した全検索結果を取得する</summary>
@@ -691,7 +675,7 @@ namespace SynonyMe.Model
         internal void OpenFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
-            if (IsModifiedOrNewFile)
+            if (IsModified)
             {
                 // 保存されていなければ、Ok/Cancelダイアログを出して確認する
                 if (_dialogManager == null)
@@ -758,7 +742,7 @@ namespace SynonyMe.Model
             DisplayTextDocument.Text = loadText;
 
             // 編集済みフラグを下げる
-            IsModifiedOrNewFile = false;
+            IsModified = false;
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
@@ -766,7 +750,7 @@ namespace SynonyMe.Model
         internal bool CreateNewFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
-            if (IsModifiedOrNewFile)
+            if (IsModified)
             {
                 if (_dialogManager == null)
                 {
@@ -821,7 +805,7 @@ namespace SynonyMe.Model
             DisplayTextFilePath = saveFilePath;
 
             // 編集済みフラグを下げる
-            IsModifiedOrNewFile = false;
+            IsModified = false;
 
             return true;
         }
@@ -1012,6 +996,7 @@ namespace SynonyMe.Model
             TextEditor.TextArea.Caret.BringCaretToView();
 
             // BeginInvokeしないとFocusしてくれない
+            // todo:なぜかこれで検索結果にFocusいかなくなったので、TextをTextEditorなのかDocumentなのかでかわってくる
             System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { TextEditor.Focus(); }));
 
             return true;

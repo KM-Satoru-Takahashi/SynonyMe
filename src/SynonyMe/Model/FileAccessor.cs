@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SynonyMe.Model.Manager
+namespace SynonyMe.Model
 {
     /// <summary>ファイル開閉や読み書きを担うクラス</summary>
-    internal class FileAccessManager
+    internal class FileAccessor
     {
         private const string CLASS_NAME = "FileAccessManager";
 

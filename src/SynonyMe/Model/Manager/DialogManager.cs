@@ -11,6 +11,7 @@ using System.Windows.Forms;
 namespace SynonyMe.Model.Manager
 {
     /// <summary>各種ダイアログの表示を管理します</summary>
+    /// todo:FileAccessManagerに必要な処理を委譲すること
     internal class DialogManager
     {
         private const string DIALOG_FILTER_TXTandALL = "テキスト ファイル(.txt)|*.txt|All Files (*.*)|*.*";

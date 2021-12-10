@@ -86,8 +86,9 @@
     <Compile Include="CommonLibrary\SystemUtility.cs" />
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\Manager\DialogManager.cs" />
-    <Compile Include="Model\Manager\FileAccessManager.cs" />
+    <Compile Include="Model\FileAccessor.cs" />
     <Compile Include="Model\Manager\SynonymManager.cs" />
+    <Compile Include="Model\Searcher.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />
     <Compile Include="ViewModel\ExpanderGridSplitterProperty.cs" />

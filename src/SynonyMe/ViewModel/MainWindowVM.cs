@@ -563,16 +563,9 @@ namespace SynonyMe.ViewModel
             }
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
-            _model.DisplayTextFilePath = _openingFiles[0];
-            DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
+            // 対象の全ファイルを開き、内部で保持する(現状、1つのファイルしか開けないが引数は複数に対応させるだけさせておく)
+            _model.SetTextDocuments(_openingFiles);
 
-            // ドロップ直後に「編集済み」が出るのを抑制する
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-            TextEditor target = mw.TextEditor;
-            target.IsModified = false;
-
-            // Ctrl + Sで名前をつけて保存にしなくて良くなる
-            _model.IsModifiedOrNewFile = false;
         }
 
         #endregion
