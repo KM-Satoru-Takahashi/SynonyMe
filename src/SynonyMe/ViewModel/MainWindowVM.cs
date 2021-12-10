@@ -55,9 +55,6 @@ namespace SynonyMe.ViewModel
         /// <summary>「編集済み」文字のVisibility</summary>
         private Visibility _editedTextVisible = Visibility.Hidden;
 
-        /// <summary>AvalonEditの文章管理インスタンス</summary>
-        private TextDocument _displayTextDoc = null;
-
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
 
@@ -106,11 +103,20 @@ namespace SynonyMe.ViewModel
         {
             get
             {
-                return _displayTextDoc;
+                if (_model != null)
+                {
+                    return _model.DisplayTextDocument;
+                }
+
+                // 異常系 Model側でログ出しているのでここではnullを返しておくだけでいい想定
+                return null;
             }
             set
             {
-                _displayTextDoc = value;
+                if (_model != null)
+                {
+                    _model.DisplayTextDocument = value;
+                }
                 OnPropertyChanged("DisplayTextDoc");
             }
         }
@@ -341,7 +347,6 @@ namespace SynonyMe.ViewModel
             Logger.Info(CLASS_NAME, "Initialize", "start");
 
             _model = new Model.MainWindowModel(this);
-            _displayTextDoc = _model.TextEditor.Document;
 
             // コマンド初期化処理
             InitializeCommand();
@@ -794,15 +799,15 @@ namespace SynonyMe.ViewModel
             // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
             // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
 
-            if (_displayTextDoc == null)
+            if (_model == null || _model.DisplayTextDocument==null)
             {
                 WordCount = null;
                 NumberOfLines = null;
             }
             else
             {
-                WordCount = _displayTextDoc.TextLength.ToString();
-                NumberOfLines = _displayTextDoc.LineCount.ToString();
+                WordCount = _model.DisplayTextDocument.TextLength.ToString();
+                NumberOfLines = _model.DisplayTextDocument.LineCount.ToString();
             }
         }
 
@@ -864,8 +869,8 @@ namespace SynonyMe.ViewModel
             }
 
             // 表示するモノがないか、空テキストなら検索する意味がない
-            if (_displayTextDoc == null ||
-                string.IsNullOrEmpty(_displayTextDoc.Text))
+            if (_model.DisplayTextDocument == null ||
+                string.IsNullOrEmpty(_model.DisplayTextDocument.Text))
             {
                 Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;
