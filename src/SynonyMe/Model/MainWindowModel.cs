@@ -243,7 +243,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if(TextEditor==null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "Save", "TextEditor is null!");
                 return false;
@@ -284,7 +284,7 @@ namespace SynonyMe.Model
         /// <returns></returns>
         private bool SaveAs(string displayTest)
         {
-            if(TextEditor==null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "SaveAs", "TextEditor is null!");
                 return false;
@@ -293,7 +293,7 @@ namespace SynonyMe.Model
             Logger.Info(CLASS_NAME, "SaveAs", "start");
 
             // ダイアログを開き、保存要求を出す
-            if(_dialogManager==null)
+            if (_dialogManager == null)
             {
                 Logger.Fatal(CLASS_NAME, "SaveAs", "_dialogManager is null!");
                 return false;
@@ -312,13 +312,13 @@ namespace SynonyMe.Model
             }
 
             // 成功時はファイルをnullで保存しておく
-            if(_fileAccessManager == null)
+            if (_fileAccessManager == null)
             {
                 Logger.Fatal(CLASS_NAME, "SaveAs", "_fileAccessManager is null!");
                 return false;
             }
 
-            if(_fileAccessManager.SaveFile(TextEditor.Text, saveFilePath) == false)
+            if (_fileAccessManager.SaveFile(TextEditor.Text, saveFilePath) == false)
             {
                 Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
                 return false;
@@ -657,6 +657,7 @@ namespace SynonyMe.Model
             return searchResultWordArray;
         }
 
+        /// <summary>設定ウィンドウを開く</summary>
         internal void OpenSettingsWindow()
         {
             throw new NotImplementedException();
@@ -666,14 +667,67 @@ namespace SynonyMe.Model
         internal void OpenFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
+            if (IsModifiedOrNewFile)
+            {
+                // 保存されていなければ、Ok/Cancelダイアログを出して確認する
+                if (_dialogManager == null)
+                {
+                    Logger.Fatal(CLASS_NAME, "OpenFile", "_dialogManager is null!");
+                    return;
+                }
 
-            // 保存されていなければ、Yes/Noダイアログを出して確認する
+                DialogResult dialogResult = DialogResult.Cancel;
+                bool result = _dialogManager.OpenOkCancelDialog("現在表示中の文章は保存されていません。\n編集を破棄し、新規にファイルを開いて良いですか？\n(※未保存のテキストは破棄されます！)", out dialogResult);
+                if (result == false)
+                {
+                    Logger.Fatal(CLASS_NAME, "OpenFile", $"Dialog error! dialogResult:[{dialogResult}]");
+                    return;
+                }
+
+                if (dialogResult == DialogResult.Cancel)
+                {
+                    Logger.Info(CLASS_NAME, "OpenFile", "Canceled discard text and open new file");
+                    return;
+                }
+            }
 
             // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
+            DisposeTextAndXshd();
+
+            if (_dialogManager == null)
+            {
+                Logger.Fatal(CLASS_NAME, "OpenFile", "_dialogManager is null!");
+                return;
+            }
 
             // ファイルを開く
+            string openFilePath;
+            if (_dialogManager.OpenFileOpenDialog(out openFilePath) == false)
+            {
+                Logger.Error(CLASS_NAME, "OpenFile", "OpenFileOpenDialog failed.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(openFilePath))
+            {
+                Logger.Fatal(CLASS_NAME, "OpenFile", "Filename is null or empty!");
+                return;
+            }
 
             // MainWindowのAvalonEditに適用する
+            // 保存したファイルパスを保持する
+            DisplayTextFilePath = openFilePath;
+
+            string loadText;
+            if (Load(openFilePath, out loadText) == false)
+            {
+                Logger.Error(CLASS_NAME, "OpenFile", $"Load error. File path:[{openFilePath}]");
+            }
+
+            _viewModel.DisplayTextDoc.Text = loadText;
+
+            // 編集済みフラグを下げる
+            IsModifiedOrNewFile = false;
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
@@ -683,7 +737,7 @@ namespace SynonyMe.Model
             // 現在表示中のテキストが編集済みか否かを判定する
             if (IsModifiedOrNewFile)
             {
-                if(_dialogManager==null)
+                if (_dialogManager == null)
                 {
                     Logger.Fatal(CLASS_NAME, "CreateNewFile", "_dialogManager is null!");
                     return false;
@@ -724,7 +778,7 @@ namespace SynonyMe.Model
             }
 
             // ファイルを保存する
-            if(_fileAccessManager==null)
+            if (_fileAccessManager == null)
             {
                 Logger.Error(CLASS_NAME, "CreateNewFile", "_fileAccessManager is null!");
                 return false;
@@ -889,6 +943,21 @@ namespace SynonyMe.Model
             return synonymSearchResults;
         }
 
+        /// <summary>表示中のテキストと、ハイライト表示情報を破棄します</summary>
+        /// <remarks>本当にAvalonEditのDisposeがこれだけで十分かは要検討</remarks>
+        private void DisposeTextAndXshd()
+        {
+            if (TextEditor != null)
+            {
+                TextEditor.Text = string.Empty;
+            }
+
+            if (_highlightManager != null)
+            {
+                _highlightManager.ResetHighlightInfo();
+            }
+        }
+
         /// <summary>
         /// キャレットの移動を行う
         /// </summary>
@@ -902,7 +971,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if(TextEditor==null)
+            if (TextEditor == null)
             {
                 Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "TextEditor is null!");
             }

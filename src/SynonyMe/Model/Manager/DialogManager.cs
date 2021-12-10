@@ -74,6 +74,32 @@ namespace SynonyMe.Model.Manager
             return true;
         }
 
+        /// <summary>ファイルを開くダイアログを表示します</summary>
+        /// <returns></returns>
+        internal bool OpenFileOpenDialog(out string openFilePath)
+        {
+            openFilePath = string.Empty;
 
+            Microsoft.Win32.OpenFileDialog dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = DIALOG_FILTER_TXTandALL,
+                FilterIndex = 1,
+                InitialDirectory = @"C:\",
+                Title = "開く",
+                FileName = ""
+            };
+
+            bool? dialogResult = dialog.ShowDialog();
+            if (dialogResult == null || dialogResult != true)
+            {
+                // 失敗時処理
+                Logger.Info(CLASS_NAME, "OpenFileOpenDialog", $"open canceled. result:[{dialogResult}]");
+                return false;
+            }
+
+            openFilePath = dialog.FileName;
+
+            return true;
+        }
     }
 }
