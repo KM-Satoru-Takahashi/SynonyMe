@@ -13,9 +13,22 @@
 
     <Window.Resources>
         <!--保存/Saveアイコン-->
-        <Image x:Key="SaveIcon" Source="../Resources/save.png"/>
+        <Image x:Key="SaveIcon" Source="../Resources/Save_16x.png"/>
+
+        <!--名前をつけて保存-->
+        <Image x:Key="SaveAsIcon" Source="../Resources/SaveAs_16x.png"/>
+
         <!--類語ウィンドウアイコン-->
-        <Image x:Key="SynonymIcon" Source="../Resources/synonym.png"/>
+        <Image x:Key="SynonymIcon" Source="../Resources/EditString_16x.png"/>
+
+        <!--新規作成アイコン-->
+        <Image x:Key="NewFile" Source="../Resources/NewFile_16x.png"/>
+
+        <!--開くアイコン-->
+        <Image x:Key="OpenFile" Source="../Resources/FolderOpened_16x.png"/>
+
+        <!--設定アイコン-->
+        <Image x:Key="SettingsIcon" Source="../Resources/Settings_16x.png"/>
 
         <!--標準検索結果のListViewでHeaderを非表示にする-->
         <Style x:Key="HeaderHiddenStyle" TargetType="{x:Type  GridViewColumnHeader}">
@@ -27,6 +40,16 @@
     <Window.DataContext>
         <vm:MainWindowVM/>
     </Window.DataContext>
+
+    <!--ショートカットキー設定-->
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding Command_Save}"/>
+        <KeyBinding Gesture="Shift+Ctrl+S" Command="{Binding Command_SaveAs}"/>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding Command_CreateNewFile}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding Command_OpenFile}"/>
+        <KeyBinding Gesture="Alt+S" Command="{Binding Command_OpenSynonymWindow}"/>
+        <KeyBinding Gesture="Alt+O" Command="{Binding Command_OpenSettingsWindow}"/>
+    </Window.InputBindings>
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -44,12 +67,31 @@
         <!--ツールバー表示-->
         <ToolBarTray Grid.Row="0" Grid.Column="0">
             <ToolBar>
-                <!--保存/Saveアイコン-->
-                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}">
-                </Button>
+                <!--新規作成-->
+                <Button Content="{StaticResource NewFile}" Command="{Binding Command_CreateNewFile}"
+                        ToolTip="{Binding ToolTip_CreateNewFile}"/>
+
+                <!--開く-->
+                <Button Content="{StaticResource OpenFile}" Command="{Binding Command_OpenFile}"
+                        ToolTip="{Binding ToolTip_OpenFile}"/>
+
+                <!--上書き保存/Saveアイコン-->
+                <Button Content="{StaticResource SaveIcon}" Command="{Binding Command_Save}"
+                        ToolTip="{Binding ToolTip_Save}"/>
+
+                <!--名前をつけて保存-->
+                <Button Content="{StaticResource SaveAsIcon}" Command="{Binding Command_SaveAs}"
+                        ToolTip="{Binding ToolTip_SaveAs}"/>
+
                 <!--類語追加アイコン-->
-                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}">
-                </Button>
+                <Button Content="{StaticResource SynonymIcon}" Command="{Binding Command_OpenSynonymWindow}"
+                        ToolTip="{Binding ToolTip_OpenSynonymWindow}"/>
+
+                <!--設定アイコン-->
+                <Button Content="{StaticResource SettingsIcon}" Command="{Binding Command_OpenSettingsWindow}"
+                        ToolTip="{Binding ToolTip_OpenSettingsWindow}"/>
+
+                <!--新規作成、開く、上書き保存、名前をつけて保存、類語Window、Option、-->
             </ToolBar>
         </ToolBarTray>
 
@@ -125,20 +167,19 @@
                     <!--検索結果-->
                     <ListView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" ItemsSource="{Binding SearchResult}"
                           Visibility="{Binding SearchResultVisibility}" SelectionMode="Single">
+                        <!--選択時にキャレットの更新をかける-->
+                        <bh:Interaction.Triggers>
+                            <bh:EventTrigger EventName="SelectionChanged">
+                                <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+                            </bh:EventTrigger>
+                        </bh:Interaction.Triggers>
                         <ListView.View>
                             <!--ヘッダは不要なので非表示のスタイルを適用する-->
                             <GridView ColumnHeaderContainerStyle="{StaticResource HeaderHiddenStyle}">
                                 <GridViewColumn>
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DisplayWord}">                                            
-                                            <!--選択時にキャレットの処理をかける-->
-                                            <bh:Interaction.Triggers>
-                                               <bh:EventTrigger EventName="PreviewMouseDown">
-                                                  <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
-                                               </bh:EventTrigger>
-                                            </bh:Interaction.Triggers>
-                                            </TextBlock>
+                                            <TextBlock Text="{Binding DisplayWord}"/>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
@@ -192,12 +233,10 @@
                     dd:DragDrop.IsDropTarget="True"
                     dd:DragDrop.DropHandler="{Binding}"                    
                     Document="{Binding Path=DisplayTextDoc}"
-                    Background="{Binding AvalonEditBackGround}"> <!--BackGroundは文字色を設定するために必要-->
-                    <!-- 添付ビヘイビアの使用は一旦停止
-                    <bh:Interaction.Behaviors>
-                        <vm:AvalonEditBehavior AvalonEditorText="{Binding DisplayText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    </bh:Interaction.Behaviors>
-                    -->
+                    Background="{Binding AvalonEditBackGround}"
+                    Focusable="True">
+                    <!--BackGroundは文字色を設定するために必要-->
+
                     <!--文書更新時に文字数等の更新処理をかける-->
                     <bh:Interaction.Triggers>
                         <bh:EventTrigger EventName="TextChanged">

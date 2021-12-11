@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Collections.ObjectModel;
 using System.IO;
 using SynonyMe.View;
@@ -11,6 +10,9 @@ using SynonyMe.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using ICSharpCode.AvalonEdit;
 using SynonyMe.CommonLibrary.Log;
+using SynonyMe.Model.Manager;
+using System.Windows.Forms;
+using ICSharpCode.AvalonEdit.Document;
 
 namespace SynonyMe.Model
 {
@@ -21,7 +23,10 @@ namespace SynonyMe.Model
         private const string CLASS_NAME = "MainWindowModel";
 
         /// <summary>ViewModel</summary>
-        private ViewModel.MainWindowVM _viewModel = null;
+        private MainWindowVM _viewModel = null;
+
+        /// <summary>上書き保存を強制的に名前をつけて保存にするフラグ</summary>
+        private bool _forceSaveAs = true;
 
         /// <summary>本プロセスで処理対象となるファイル拡張子一覧</summary>
         /// <remarks>ここに含まれない拡張子のファイルは読み込み時に弾かれる</remarks>
@@ -38,6 +43,64 @@ namespace SynonyMe.Model
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
         #endregion
+
+        #region property
+
+        /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
+        internal bool IsModified
+        {
+            private get
+            {
+                if (TextEditor == null)
+                {
+                    return false;
+                }
+
+                return TextEditor.IsModified;
+            }
+            set
+            {
+                if (_viewModel != null && TextEditor != null)
+                {
+                    TextEditor.IsModified = value;
+                }
+            }
+        }
+
+        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
+        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
+        /// todo:MainWindowXamlと[TextEditor]はBindingされていない。[DisplayTextDocument]はBindingされている
+        /// MainWindow→ DisplayTextDocument ← TextEditorのDisplayTextDocument の状態
+        /// MainWindowとMainWindowModelのTextEditorをなんとかして合致させる
+        internal TextEditor TextEditor { get; } = new TextEditor();
+
+        /// <summary>表示中のテキスト文書 </summary>
+        /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
+        internal TextDocument DisplayTextDocument
+        {
+            get
+            {
+                if (TextEditor != null)
+                {
+                    return TextEditor.Document;
+                }
+
+                Logger.Fatal(CLASS_NAME, "DisplayTextDocument", "TextEditor is null!");
+                return null;
+            }
+            set
+            {
+                if (TextEditor != null)
+                {
+                    TextEditor.Document = value;
+                }
+            }
+        }
+
+        /// <summary>画面表示中テキストの絶対パス</summary>
+        internal string DisplayTextFilePath;
+
+        #endregion event
 
         internal event EventHandler UpdateSynonymEvent
         {
@@ -67,7 +130,9 @@ namespace SynonyMe.Model
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
         }
 
-
+        /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
+        /// <param name="targets">対象語句</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool ApplyHighlightToTargets(string[] targets)
         {
             if (targets == null || targets.Any() == false)
@@ -85,7 +150,9 @@ namespace SynonyMe.Model
             return _highlightManager.UpdateXshdFile(targets);
         }
 
-
+        /// <summary>指定された語句にハイライトを適用します</summary>
+        /// <param name="target">対象語句</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool ApplyHighlightToTarget(string target)
         {
             if (string.IsNullOrEmpty(target))
@@ -101,7 +168,6 @@ namespace SynonyMe.Model
 
             return ApplyHighlightToTargets(targets);
         }
-
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
@@ -184,21 +250,33 @@ namespace SynonyMe.Model
         /// <param name="filePath">保存対象ファイルパス</param>
         /// <param name="displayText">保存したいテキスト情報</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool Save(string filePath, string displayText)
+        internal bool Save(string displayText)
         {
-            if (string.IsNullOrEmpty(filePath) ||
+            Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{(string.IsNullOrEmpty(DisplayTextFilePath) ? "CreateNewFile!" : DisplayTextFilePath)}]");
+
+            // 名前をつけて保存を実行する
+            if (_forceSaveAs)
+            {
+                return SaveAs(displayText);
+            }
+
+            if (string.IsNullOrEmpty(DisplayTextFilePath) ||
                displayText == null) // displayTextは空文字の場合emptyはあり得る
             {
                 Logger.Fatal(CLASS_NAME, "Save", "filePath or displayText is null or empty!");
                 return false;
             }
 
-            TextEditor editor = _viewModel.TextEditor;
+            if (DisplayTextDocument == null)
+            {
+                Logger.Fatal(CLASS_NAME, "Save", "DisplayTextDocument is null!");
+                return false;
+            }
+
             try
             {
-                editor.Load(filePath);
-                editor.Text = displayText;
-                editor.Save(filePath);
+                DisplayTextDocument.Text = displayText;
+                TextEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
             {
@@ -206,6 +284,64 @@ namespace SynonyMe.Model
                 return false;
             }
 
+            // AvalonEditの編集済みフラグをOffにする
+            IsModified = false;
+
+            return true;
+        }
+
+        /// <summary>名前をつけて保存</summary>
+        /// <returns>true:成功, false:失敗</returns>
+        internal bool SaveAs()
+        {
+            if (TextEditor == null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "DisplayTextDocument is null!");
+                return false;
+            }
+
+            return SaveAs(TextEditor.Text);
+        }
+
+        /// <summary>名前をつけて保存</summary>
+        /// <param name="displayTest">保存対象テキスト</param>
+        /// <returns></returns>
+        private bool SaveAs(string displayTest)
+        {
+            if (TextEditor == null)
+            {
+                Logger.Fatal(CLASS_NAME, "SaveAs", "DisplayTextDocument is null!");
+                return false;
+            }
+
+            Logger.Info(CLASS_NAME, "SaveAs", "start");
+
+            string saveFilePath = string.Empty;
+            bool result = DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath);
+
+            // 失敗時はログとエラーダイアログを出す
+            if (result == false)
+            {
+                Logger.Error(CLASS_NAME, "SaveAs", "SaveAs Failed!");
+
+                // todo error dialog
+                return false;
+            }
+
+            if (FileAccessor.GetFileAccessor.SaveFile(DisplayTextDocument.Text, saveFilePath) == false)
+            {
+                Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
+                return false;
+            }
+
+            // 保持している、現在開いているファイル情報を更新する
+            DisplayTextFilePath = saveFilePath;
+
+            // AvalonEditの編集済みフラグをOffにする
+            IsModified = false;
+
+            // 名前をつけて保存フラグをOffにする
+            _forceSaveAs = false;
             return true;
         }
 
@@ -262,12 +398,10 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            TextEditor textEditor = _viewModel.TextEditor;
             try
             {
-                textEditor.Load(filePath);
-                System.Windows.Media.Brush b = textEditor.Background;
-                textEditor.Background = System.Windows.Media.Brushes.Red;
+                TextEditor.Load(filePath);
+                TextEditor.Background = System.Windows.Media.Brushes.Red;
             }
             catch (Exception e)
             {
@@ -275,7 +409,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            text = textEditor.Text;
+            text = DisplayTextDocument.Text;
             return true;
         }
 
@@ -293,7 +427,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            DataObject dragOverFiles = (DataObject)dropInfo.Data;
+            System.Windows.DataObject dragOverFiles = (System.Windows.DataObject)dropInfo.Data;
             if (dragOverFiles == null)
             {
                 Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFiles are null!");
@@ -350,194 +484,136 @@ namespace SynonyMe.Model
         /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
         internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText, int margin)
         {
-            Logger.Info(CLASS_NAME, "SearchAllWordsInText", $"start. searchWord:[{searchWord}], margin:[{margin}]");
-
-            // check args
-            if (string.IsNullOrEmpty(searchWord))
-            {
-                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchWord is null or empty!");
-                return null;
-            }
-            else if (string.IsNullOrEmpty(targetText))
-            {
-                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "targetText is null or empty!");
-                return null;
-            }
-            else if (margin < 0 /*最大値は現状未定、最小値も設定ファイルや定数で外出しする予定だが、現状ハードコーティングとする*/)
-            {
-                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", $"margin is incorrect! value:[{margin}]");
-                return null;
-            }
-
-            // 検索対象語句のインデックスを取得する
-            int[] searchResultIndexArray = GetAllSearchResultIndex(searchWord, targetText);
-            if (searchResultIndexArray == null)
-            {
-                // nullは異常な場合
-                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchResultIndexArray is null!");
-                return null;
-            }
-            else if (searchResultIndexArray.Any() == false)
-            {
-                // 検索したが結果が無い場合はEmptyを返す
-                Logger.Info(CLASS_NAME, "SearchAllWordsInText", "No search result.");
-                return new Dictionary<int, string>();
-            }
-            int searchResultCount = searchResultIndexArray.Count();
-
-            string[] searchResultWordArray = GetAllSearchResultWords(searchResultIndexArray, searchWord, targetText, margin);
-            if (searchResultWordArray == null)
-            {
-                Logger.Fatal(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is null!");
-                return null;
-            }
-            else if (searchResultWordArray.Any() == false)
-            {
-                // 検索したが結果が無い場合はEmptyを返す
-                Logger.Error(CLASS_NAME, "SearchAllWordsInText", "searchResultWordsArray is empty!");
-                return new Dictionary<int, string>();
-            }
-
-            // 最終的にDictionaryで返せばよくない？
-            Dictionary<int/*index*/, string/*result*/> searchResultIndexWordPairs = new Dictionary<int, string>();
-            for (int i = 0; i < searchResultCount; ++i)
-            {
-                searchResultIndexWordPairs.Add(searchResultIndexArray[i], searchResultWordArray[i]);
-            }
-
-            return searchResultIndexWordPairs;
+            return Searcher.GetSearcher.SearchAllWordsInText(searchWord, targetText, margin, SEARCH_RESULT_DISPLAY_NUMBER);
         }
 
-        /// <summary>
-        /// 対象文章内における検索対象語句の全インデックスを取得する
-        /// </summary>
-        /// <param name="searchWord"></param>
-        /// <param name="targetText"></param>
-        /// <returns></returns>
-        private int[] GetAllSearchResultIndex(string searchWord, string targetText)
+        /// <summary>設定ウィンドウを開く</summary>
+        internal void OpenSettingsWindow()
         {
-            if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
-            {
-                Logger.Fatal(CLASS_NAME, "GetAllSearchResultIndex", "args is null or empty!");
-                return null;
-            }
-
-            // 文書中で該当するインデックスを一旦入れておくリストを用意
-            List<int> searchResultIndexList = new List<int>();
-
-            // 1箇所目をまず探す
-            int foundIndex = targetText.IndexOf(searchWord);
-            if (foundIndex < 0)
-            {
-                // 検索したが何もない場合はエラーではないので空の配列を戻すようにする
-                return new int[0];
-            }
-
-            // 他の箇所を繰り返し探していく
-            int resultCount = 1;
-            while (0 <= foundIndex) // 該当がなくなると検索結果インデックスは-1が戻ってくる
-            {
-                // 検索結果は規定値まで
-                if (SEARCH_RESULT_DISPLAY_NUMBER < resultCount)
-                {
-                    break;
-                }
-
-                // 最初に[前回の検索結果インデックス]をリストに追加しておく
-                // 1箇所目も登録される
-                searchResultIndexList.Add(foundIndex);
-
-                // 次の検索位置は「前の検索位置」に「検索対象の語句の長さ」を足した地点
-                int nextIndex = foundIndex + searchWord.Length;
-                if (nextIndex < targetText.Length)
-                {
-                    foundIndex = targetText.IndexOf(searchWord, nextIndex);
-                }
-                else
-                {
-                    // 文章の長さを超えるなら、検索しない
-                    break;
-                }
-
-                ++resultCount;
-            }
-
-            return searchResultIndexList.ToArray();
+            throw new NotImplementedException();
         }
 
-        /// <summary>先頭から順に対象語句を検索し、マージンを考慮した全検索結果を取得する</summary>
-        /// <param name="allIndexArray"></param>
-        /// <param name="searchWord"></param>
-        /// <param name="targetText"></param>
-        /// <returns></returns>
-        private string[] GetAllSearchResultWords(int[] allIndexArray, string searchWord, string targetText, int margin)
+        /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>
+        internal void OpenFile()
         {
-            #region check args
-
-            if (allIndexArray == null || allIndexArray.Any() == false)
+            // 現在表示中のテキストが編集済みか否かを判定する
+            if (IsModified)
             {
-                return null;
-            }
-            else if (string.IsNullOrEmpty(searchWord) || string.IsNullOrEmpty(targetText))
-            {
-                return null;
-            }
-            else if (margin < 0)
-            {
-                return null;
-            }
-
-            #endregion
-
-            // 実際にテキストから、Viewに表示対象となる語句領域を切り取っていく
-            // インデックス分だけ必ずあるはず
-            int searchResultCount = allIndexArray.Count();
-            string[] searchResultWordArray = new string[searchResultCount];
-            for (int targetIndex = 0; targetIndex < searchResultCount; ++targetIndex)
-            {
-                // 手前側マージン
-                int frontMargin = allIndexArray[targetIndex] - margin;
-                // 後ろ側マージン→インデックス＋検索対象語句＋マージン
-                int behindMargin = allIndexArray[targetIndex] + searchWord.Length + margin;
-
-                // 後ろのマージンがなくても、最後の検索とは限らないので、foreachは続けること
-                // 例：「あああああああ」で「あ」だけを検索した場合
-                if (frontMargin < 0 && targetText.Length < behindMargin + 1) // LengthとIndexを比較するのでIndexに+1しておく
+                // 保存されていなければ、Ok/Cancelダイアログを出して確認する
+                DialogResult dialogResult = DialogResult.Cancel;
+                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在表示中の文章は保存されていません。\n編集を破棄し、新規にファイルを開いて良いですか？\n(※未保存のテキストは破棄されます！)", out dialogResult);
+                if (result == false)
                 {
-                    // 手前に規定値分のマージンがなく、後ろにも規定値分のマージンがない場合
-                    // 「文字列の最初～文字列の最後」までを切り取る→検索対象の文字列をそのまま入れ込む
-                    searchResultWordArray[targetIndex] = targetText;
+                    Logger.Fatal(CLASS_NAME, "OpenFile", $"Dialog error! dialogResult:[{dialogResult}]");
+                    return;
                 }
-                else if (frontMargin < 0)
-                {
-                    // 手前に規定値分のマージンがなく、後ろには規定値分のマージンがある場合
-                    // 「文字列の最初～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    searchResultWordArray[targetIndex] = targetText.Substring(0, searchWord.Length + margin); // substringの第2引数は切り取る文字数
-                }
-                else if (targetText.Length < behindMargin + 1)
-                {
-                    // 手前に規定値分のマージンがあり、後ろには規定値分のマージンがない場合
-                    // 「手前のマージン～文字列の最後」までを切り取る
-                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin);
 
-                }
-                else
+                if (dialogResult == DialogResult.Cancel)
                 {
-                    // 手前に規定値分のマージンがあり、後ろにも規定値分のマージンがある場合
-                    // 「手前のマージン～インデックス＋検索対象語句＋後ろのマージン」だけ切り取る
-                    // marginを2倍しておかないと手前のmargin分しか切り取れない
-                    searchResultWordArray[targetIndex] = targetText.Substring(frontMargin, searchWord.Length + 2 * margin);
+                    Logger.Info(CLASS_NAME, "OpenFile", "Canceled discard text and open new file");
+                    return;
                 }
             }
 
-            return searchResultWordArray;
+            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
+            DisposeTextAndXshd();
+
+            // ファイルを開く
+            string openFilePath;
+            if (DialogManager.GetDialogManager.OpenFileOpenDialog(out openFilePath) == false)
+            {
+                Logger.Error(CLASS_NAME, "OpenFile", "OpenFileOpenDialog failed.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(openFilePath))
+            {
+                Logger.Fatal(CLASS_NAME, "OpenFile", "Filename is null or empty!");
+                return;
+            }
+
+            // MainWindowのAvalonEditに適用する
+            // 保存したファイルパスを保持する
+            DisplayTextFilePath = openFilePath;
+
+            string loadText;
+            if (Load(openFilePath, out loadText) == false)
+            {
+                Logger.Error(CLASS_NAME, "OpenFile", $"Load error. File path:[{openFilePath}]");
+                return;
+            }
+
+            if (DisplayTextDocument == null)
+            {
+                Logger.Error(CLASS_NAME, "OpenFile", "DisplayTextDocument is null!");
+                return;
+            }
+
+            DisplayTextDocument.Text = loadText;
+
+            // 編集済みフラグを下げる
+            IsModified = false;
+            _forceSaveAs = false;
+        }
+
+        /// <summary>テキストファイルを新規作成します</summary>
+        /// <remarks>true:正常, false:異常</remarks>
+        internal bool CreateNewFile()
+        {
+            // 現在表示中のテキストが編集済みか否かを判定する
+            if (IsModified)
+            {
+                // 保存されていなければ、Yes/Noダイアログを出して確認する
+                DialogResult dialogResult = DialogResult.Cancel;
+                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在編集中の文章を破棄しますか？", out dialogResult);
+                if (result == false)
+                {
+                    Logger.Fatal(CLASS_NAME, "CreateNewFile", $"Dialog error! dialogResult:[{dialogResult}]");
+                    return false;
+                }
+
+                if (dialogResult == DialogResult.Cancel)
+                {
+                    Logger.Info(CLASS_NAME, "CreateNewFile", "Canceled discard text and create new file");
+                    return true;
+                }
+            }
+
+            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
+            TextEditor.DisplayTextDocument = string.Empty;
+            _highlightManager.ResetHighlightInfo();
+
+            // ファイル保存ダイアログを表示する
+            string saveFilePath = null;
+            if (DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath) == false)
+            {
+                Logger.Info(CLASS_NAME, "CreateNewFile", "create new file failed.");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(saveFilePath))
+            {
+                Logger.Fatal(CLASS_NAME, "CreateNewFile", "Filename is null or empty!");
+                return false;
+            }
+
+            // ファイルを保存する
+            FileAccessor.GetFileAccessor.SaveNewFile(saveFilePath);
+
+            // 保存したファイルパスを保持する
+            DisplayTextFilePath = saveFilePath;
+
+            // 編集済みフラグを下げる
+            IsModified = false;
+
+            return true;
         }
 
         /// <summary>DBに登録されている全類語グループを取得する</summary>
-        /// <returns></returns>
+        /// <returns>正常時：DBに登録されている全類語グループ、異常時:false</returns>
         internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
         {
-            return Manager.SynonymManager.GetAllSynonymGroup();
+            return SynonymManager.GetAllSynonymGroup();
         }
 
         /// <summary>類語グループIDに紐付く類語一覧を取得する</summary>
@@ -554,75 +630,13 @@ namespace SynonyMe.Model
         /// <returns>結果配列</returns>
         internal MainWindowVM.DisplaySynonymSearchResult[] SynonymSearch(MainWindowVM.DisplaySynonymWord[] targetSynonyms, string targetText)
         {
-            #region check args
-
-            if (targetSynonyms == null || targetSynonyms.Any() == false)
+            if (_viewModel == null)
             {
-                Logger.Fatal(CLASS_NAME, "SynonymSearch", "targetSynonyms are null");
+                Logger.Fatal(CLASS_NAME, "SynonymSearch", "_viewModel is null");
                 return null;
             }
 
-            if (string.IsNullOrEmpty(targetText))
-            {
-                Logger.Fatal(CLASS_NAME, "SynonymSearch", "targetText is null");
-                return null;
-            }
-
-            #endregion
-
-            Logger.Info(CLASS_NAME, "SynonymSearch", $"start. targetSynonyms count is {targetSynonyms.Count()}");
-
-            // 類語の全検索結果を取得
-            List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
-                = GetAllSynonymSearchResult(targetSynonyms, targetText);
-
-            // Index順にSortして配列化する。昇順であることを保証したいが、動作が不安定になる場合は
-            // 将来的にSortedDictionaryとOrderdDictionaryの使用を考える
-            MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResultArray
-                = unsortedSynonymSearchResults.OrderBy(result => result.Index).ToArray();
-
-            // 参照型を値渡しして、resultのRepeatCountとUsingCountを取得してreturnする
-            // 参照型の参照渡しをするとインスタンスごと書き換えられるリスクがあるので許容しない
-            AdjustRepeatCountAndUsingCount(sortedSynonymSearchResultArray);
-            return sortedSynonymSearchResultArray;
-        }
-
-        /// <summary>渡された類語検索結果に基づいて、内部のRepeatCountとUsingCountを計算する</summary>
-        /// <param name="sortedSynonymSearchResult">indexで昇順ソート済みの類語検索結果配列</param>
-        /// <remarks>引数の連続した2要素を参照するため、ソート済みでないと結果がおかしくなる</remarks>
-        private void AdjustRepeatCountAndUsingCount(MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResult)
-        {
-            // 初回はRepeatCountもUsingCountも0確定のため、繰り返しのindexは1から開始する
-            for (int index = 1; index < sortedSynonymSearchResult.Count(); ++index)
-            {
-                // アクセス負荷軽減のため、一旦ローカルに取り出す
-                MainWindowVM.DisplaySynonymSearchResult indexEntity = sortedSynonymSearchResult[index];
-
-                // 直前に存在しているか否か（RepeatCount）
-                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = sortedSynonymSearchResult[index - 1];
-                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
-                {
-                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
-                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
-                    ++indexEntity.RepeatCount;
-                }
-                else
-                {
-                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を0とする
-                    indexEntity.RepeatCount = 0;
-                }
-
-                // これまでに何回ヒットしているか（UsingCount）
-                // これまでに何個同じSynonymWordが存在しているかと同義になる
-                int usingCount = sortedSynonymSearchResult.Count(
-                    entity => entity != null &&                             // nullチェック
-                              entity.Index < indexEntity.Index &&           // 現在の要素以前
-                              entity.SynonymWord == indexEntity.SynonymWord // 現在の類語と同じである
-                    );
-                indexEntity.UsingCount = usingCount;
-            }
-
-            return;
+            return Searcher.GetSearcher.SynonymSearch(targetSynonyms, targetText, _viewModel.SEARCHRESULT_MARGIN, SEARCH_RESULT_DISPLAY_NUMBER);
         }
 
         /// <summary>渡された全類語を対象の文章内から検索する</summary>
@@ -631,54 +645,28 @@ namespace SynonyMe.Model
         /// <returns>正常時：検索結果、異常時：null</returns>
         private List<MainWindowVM.DisplaySynonymSearchResult> GetAllSynonymSearchResult(MainWindowVM.DisplaySynonymWord[] targetSynonymWords, string targetText)
         {
-            // 結果返却用のListを用意
-            List<MainWindowVM.DisplaySynonymSearchResult> synonymSearchResults
-                = new List<MainWindowVM.DisplaySynonymSearchResult>();
-
-            foreach (MainWindowVM.DisplaySynonymWord target in targetSynonymWords)
+            if (_viewModel == null)
             {
-                if (target == null)
-                {
-                    Logger.Error(CLASS_NAME, "GetAllSynonymSearchResult", "target is null!");
-                    continue;
-                }
-
-                int[] allIndexinText = GetAllSearchResultIndex(target.SynonymWord, targetText);
-                if (allIndexinText == null || allIndexinText.Any() == false)
-                {
-                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "allIndexInText is null or empty!");
-                    return null;
-                }
-
-                // todo:marginはハードコーディングになっているので、設定ファイルに外だしなどする
-                string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, _viewModel.SEARCHRESULT_MARGIN);
-                if (allResultinText == null || allResultinText.Any() == false)
-                {
-                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "allResultinText is null or empty!");
-                    return null;
-                }
-
-                // alIndexとallResultは先頭から順に対応しているはずなので、それをペアにしてDicに入れ込んでいく
-                // 個数が異なったら何かがおかしい
-                if (allIndexinText.Count() != allResultinText.Count())
-                {
-                    Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", $"index and result is incorrect. index:[{allIndexinText.Count()}], result[{allResultinText.Count()}]");
-                    return null;
-                }
-
-                for (int i = 0; i < allResultinText.Count(); ++i)
-                {
-                    synonymSearchResults.Add(
-                        new MainWindowVM.DisplaySynonymSearchResult()
-                        {
-                            SynonymWord = target.SynonymWord,
-                            UsingSection = allResultinText[i],
-                            Index = allIndexinText[i]
-                        }
-                        );
-                }
+                Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "_viewModel is null!");
+                return null;
             }
-            return synonymSearchResults;
+
+            return Searcher.GetSearcher.GetAllSynonymSearchResult(targetSynonymWords, targetText, _viewModel.SEARCHRESULT_MARGIN, SEARCH_RESULT_DISPLAY_NUMBER);
+        }
+
+        /// <summary>表示中のテキストと、ハイライト表示情報を破棄します</summary>
+        /// <remarks>本当にAvalonEditのDisposeがこれだけで十分かは要検討</remarks>
+        private void DisposeTextAndXshd()
+        {
+            if (DisplayTextDocument != null)
+            {
+                DisplayTextDocument.Text = string.Empty;
+            }
+
+            if (_highlightManager != null)
+            {
+                _highlightManager.ResetHighlightInfo();
+            }
         }
 
         /// <summary>
@@ -694,38 +682,51 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            // ViewのAvalonEditにアクセスして、キャレットの更新とFocusを行う    
-            TextEditor target = GetTextEditor();
+            MainWindow mw = WindowManager.GetMainWindow();
+            if (mw == null)
+            {
+                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "mw is null!");
+                return false;
+            }
 
-            // キャレット更新
-            target.CaretOffset = index;
-            target.TextArea.Caret.BringCaretToView();
+            TextEditor te = mw.TextEditor;
+            if (te == null)
+            {
+                Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "te is null!");
+                return false;
+            }
+
+            // キャレット更新のためにMainWindowと紐付いているTextEditorを取得する必要がある
+            te.CaretOffset = index;
+            te.TextArea.Caret.BringCaretToView();
 
             // BeginInvokeしないとFocusしてくれない
-            Application.Current.Dispatcher.BeginInvoke(new Action(() => { target.Focus(); }));
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => { te.Focus(); }));
 
             return true;
         }
 
-        /// <summary>
-        /// Main画面に描画されているTextEditorを取得する
-        /// </summary>
-        /// <returns></returns>
-        private TextEditor GetTextEditor()
+        /// <summary>依頼された全ファイルをTextEditorで管理させる</summary>
+        /// <param name="openingFiles"></param>
+        internal void SetTextDocuments(Dictionary<int, string> openingFiles)
         {
-            // ViewのAvalonEditにアクセスする            
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-
-            TextEditor target = mw.TextEditor;
-            if (target == null)
+            if (openingFiles == null)
             {
-                Logger.Fatal(CLASS_NAME, "GetTextEditor", "target is null!");
-                return null;
+                Logger.Error(CLASS_NAME, "SetTextDocuments", "openingFiles are null or empty!");
+                return;
             }
 
-            return target;
-        }
+            DisplayTextFilePath = openingFiles[0];
+            string text;
+            Load(DisplayTextFilePath, out text);
+            DisplayTextDocument.Text = text;
 
+            // ドロップ直後に「編集済み」が出るのを抑制する
+            TextEditor.IsModified = false;
+
+            // Ctrl + Sで名前をつけて保存にしなくて良くする
+            _forceSaveAs = false;
+        }
 
         #endregion
     }

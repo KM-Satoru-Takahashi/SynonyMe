@@ -2,13 +2,9 @@
   <Color name="keyword0" foreground="#FF000000" background="#FFFF69B4" />
   <Color name="keyword1" foreground="#FF000000" background="#FF00FFFF" />
   <Color name="keyword2" foreground="#FF000000" background="#FFFFFF00" />
-  <Color name="keyword3" foreground="#FF000000" background="#FF00FF00" />
-  <Color name="keyword4" foreground="#FF000000" background="#FFEE82EE" />
   <RuleSet>
     <Rule color="keyword0">a</Rule>
     <Rule color="keyword1">k</Rule>
-    <Rule color="keyword2">a</Rule>
-    <Rule color="keyword3">k</Rule>
-    <Rule color="keyword4">ff</Rule>
+    <Rule color="keyword2">ff</Rule>
   </RuleSet>
 </SyntaxDefinition>

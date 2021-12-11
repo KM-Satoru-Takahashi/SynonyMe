@@ -18,6 +18,7 @@ using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 using System.Windows.Media;
 using SynonyMe.CommonLibrary.Log;
+using SynonyMe.CommonLibrary;
 
 namespace SynonyMe.ViewModel
 {
@@ -27,10 +28,6 @@ namespace SynonyMe.ViewModel
 
         /// <summary>Model</summary>
         private Model.MainWindowModel _model = null;
-
-        /// <summary>画面表示中テキストの絶対パス</summary>
-        /// 将来的にタブVMへ移管予定
-        private string _displayTextFilePath = null;
 
         /// <summary>開いているファイル情報</summary>
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
@@ -58,9 +55,6 @@ namespace SynonyMe.ViewModel
         /// <summary>「編集済み」文字のVisibility</summary>
         private Visibility _editedTextVisible = Visibility.Hidden;
 
-        /// <summary>AvalonEditの文章管理インスタンス</summary>
-        private TextDocument _displayTextDoc = null;
-
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
 
@@ -71,12 +65,8 @@ namespace SynonyMe.ViewModel
 
         #region property
 
-        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス</summary>
-        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
-        internal TextEditor TextEditor { get; } = new TextEditor();
-
         /// <summary>ウィンドウタイトル</summary>
-        public string MainWindowTitle { get; } = "SynonyMe";
+        public string MainWindowTitle { get; } = CommonLibrary.MessageLibrary.MainWindowTitle;
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
         public int ToolbarHeight { get; } = 40;
@@ -85,7 +75,7 @@ namespace SynonyMe.ViewModel
         public int FooterHeight { get; } = 30;
 
         /// <summary>検索ボタン表示文字列</summary>
-        public string SearchButtonText { get; } = "検索";
+        public string SearchButtonText { get; } = MessageLibrary.SearchButtonText;
 
         /// <summary>類語検索ボタン表示文字列</summary>
         public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
@@ -108,18 +98,25 @@ namespace SynonyMe.ViewModel
         /// <summary>類語リストの使用箇所ヘッダ</summary>
         public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
 
-
-
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument DisplayTextDoc
         {
             get
             {
-                return _displayTextDoc;
+                if (_model != null)
+                {
+                    return _model.DisplayTextDocument;
+                }
+
+                // 異常系 Model側でログ出しているのでここではnullを返しておくだけでいい想定
+                return null;
             }
             set
             {
-                _displayTextDoc = value;
+                if (_model != null)
+                {
+                    _model.DisplayTextDocument = value;
+                }
                 OnPropertyChanged("DisplayTextDoc");
             }
         }
@@ -163,7 +160,7 @@ namespace SynonyMe.ViewModel
         public ObservableCollection<DisplaySynonymSearchResult> DisplaySynonymSearchResults { get; set; } = new ObservableCollection<DisplaySynonymSearchResult>();
 
         /// <summary>文字数表示の固定値「文字数」</summary>
-        public string WordCountText { get; } = "文字数：";
+        public string WordCountText { get; } = MessageLibrary.WordCountText;
 
         /// <summary>文字数表示箇所</summary>
         public string WordCount
@@ -216,7 +213,7 @@ namespace SynonyMe.ViewModel
             {
                 return _editedTextVisible;
             }
-            private set
+            set
             {
                 if (_editedTextVisible == value)
                 {
@@ -256,11 +253,40 @@ namespace SynonyMe.ViewModel
 
         #region command
 
+        #region toolbar
+
+        /// <summary>新規作成ボタン</summary>
+        public ICommand Command_CreateNewFile { get; private set; } = null;
+
+        public string ToolTip_CreateNewFile { get; } = "新規作成\nCtrl+N";
+
+        /// <summary>ファイル開くボタン</summary>
+        public ICommand Command_OpenFile { get; private set; } = null;
+
+        public string ToolTip_OpenFile { get; } = "開く\nCtrl+O";
+
         /// <summary>保存ボタン</summary>
         public ICommand Command_Save { get; private set; } = null;
 
+        public string ToolTip_Save { get; } = "上書き保存\nCtrl+S";
+
+        /// <summary>名前をつけて保存ボタン</summary>
+        public ICommand Command_SaveAs { get; private set; } = null;
+
+        public string ToolTip_SaveAs { get; } = "名前をつけて保存\nShift+Ctrl+S";
+
         /// <summary>類語コマンド</summary>
         public ICommand Command_OpenSynonymWindow { get; private set; } = null;
+
+        public string ToolTip_OpenSynonymWindow { get; } = "類語設定\nAlt+S";
+
+        /// <summary>設定画面コマンド</summary>
+        public ICommand Command_OpenSettingsWindow { get; private set; } = null;
+
+        public string ToolTip_OpenSettingsWindow { get; } = "設定\nAlt+O";
+
+        #endregion
+
 
         /// <summary>検索コマンド</summary>
         public ICommand Command_Search { get; private set; } = null;
@@ -321,7 +347,6 @@ namespace SynonyMe.ViewModel
             Logger.Info(CLASS_NAME, "Initialize", "start");
 
             _model = new Model.MainWindowModel(this);
-            _displayTextDoc = TextEditor.Document;
 
             // コマンド初期化処理
             InitializeCommand();
@@ -336,16 +361,32 @@ namespace SynonyMe.ViewModel
             var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
             if (descripter != null)
             {
-                descripter.RemoveValueChanged(TextEditor, OnIsModifiedChanged);
-                descripter.AddValueChanged(TextEditor, OnIsModifiedChanged);
+                if (_model != null && _model.TextEditor != null)
+                {
+                    descripter.RemoveValueChanged(_model.TextEditor, OnIsModifiedChanged);
+                    descripter.AddValueChanged(_model.TextEditor, OnIsModifiedChanged);
+                }
+                else
+                {
+                    Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
+                }
             }
         }
 
         /// <summary>各種コマンドを初期化します</summary>
         private void InitializeCommand()
         {
+            #region toolbar
+
+            Command_CreateNewFile = new CommandBase(ExecuteCreateNewFile, null);
+            Command_OpenSettingsWindow = new CommandBase(ExecuteOpenSettingsWindow, null);
+            Command_OpenFile = new CommandBase(ExecuteOpenFile, null);
+            Command_SaveAs = new CommandBase(ExecuteSaveAs, null);
             Command_Save = new CommandBase(ExecuteSave, null);
             Command_OpenSynonymWindow = new CommandBase(ExecuteOpenSynonymWindow, null);
+
+            #endregion
+
             Command_Search = new CommandBase(ExecuteSearch, null);
             Command_JumpToSearchResult = new CommandBase(ExecuteJumpToSearchResult, null);
             Command_JumpToSynonymSearchResult = new CommandBase(ExecuteJumpToSynonymSearchResult, null);
@@ -513,29 +554,94 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            // todo:現在は強制的に破棄している
+            _openingFiles.Clear();
+
             // 将来的にはタブを分離させる必要があるので、そのための仮処置
             List<string> displayTargetFilePaths = _model.GetDisplayTextFilePath(dropInfo);
             foreach (string filePath in displayTargetFilePaths)
             {
                 _openingFiles.Add(_tabId, filePath);
-                ++_tabId;
+                //++_tabId;
             }
 
             // 現状、表示可能テキストは1つだけなので、0番目を使用する
-            _displayTextFilePath = _openingFiles[0];
-            DisplayTextDoc.Text = _model.GetDisplayText(dropInfo)[0];
+            // 対象の全ファイルを開き、内部で保持する(現状、1つのファイルしか開けないが引数は複数に対応させるだけさせておく)
+            _model.SetTextDocuments(_openingFiles);
 
-            // ドロップ直後に「編集済み」が出るのを抑制する
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
-            TextEditor target = mw.TextEditor;
-            target.IsModified = false;
         }
 
         #endregion
 
         #region Execute method
 
-        /// <summary>編集中のテキスト保存処理</summary>
+        /// <summary>設定ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteOpenSettingsWindow(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteOpenSettingsWindow", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenSettingsWindow", "_model is null");
+                return;
+            }
+
+            _model.OpenSettingsWindow();
+        }
+
+        /// <summary>ツールバーの新規作成ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteCreateNewFile(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "_model is null");
+                return;
+            }
+
+            if (_model.CreateNewFile() == false)
+            {
+                Logger.Error(CLASS_NAME, "ExecuteCreateNewFile", "Create new file failed!");
+                return;
+            }
+
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "end");
+        }
+
+        /// <summary>ツールバーの「開く」ボタン押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteOpenFile(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteOpenFile", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteOpenFile", "_model is null");
+                return;
+            }
+
+            _model.OpenFile();
+        }
+
+        /// <summary>ツールバーの「名前をつけて保存」押下時処理</summary>
+        /// <param name="parameter"></param>
+        private void ExecuteSaveAs(object parameter)
+        {
+            Logger.Info(CLASS_NAME, "ExecuteSaveAs", "start");
+
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteSaveAs", "_model is null");
+                return;
+            }
+
+            _model.SaveAs();
+        }
+
+        /// <summary>Ctrl+S, ツールバーの上書き保存押下時処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
@@ -547,7 +653,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            _model.Save(_displayTextFilePath, DisplayTextDoc.Text);
+            _model.Save(DisplayTextDoc.Text);
         }
 
         /// <summary>類語ウィンドウを開く</summary>
@@ -613,27 +719,39 @@ namespace SynonyMe.ViewModel
             _model.ApplyHighlightToTarget(SearchWord);
         }
 
-
         /// <summary>検索結果へのジャンプ処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteJumpToSearchResult(object parameter)
         {
             Logger.Info(CLASS_NAME, "ExecuteJumpToSearchResult", "start");
 
-            SearchResultEntity searchResultEntity = parameter as SearchResultEntity;
+            SelectionChangedEventArgs args = parameter as SelectionChangedEventArgs;
+            if (args == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "args is null!");
+                return;
+            }
+
+            if (args.AddedItems == null || args.AddedItems.Count < 0)
+            {
+                Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "AddedItems is null or empty!");
+                return;
+            }
+
+            SearchResultEntity searchResultEntity = args.AddedItems[0] as SearchResultEntity;
             if (searchResultEntity == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "searchResultEntity is null!");
                 return;
             }
 
-            // キャレットの更新とFocusを行う            
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "_model is null");
                 return;
             }
 
+            // キャレットの更新とFocusを行う 
             if (_model.UpdateCaretOffset(searchResultEntity.Index) == false)
             {
                 Logger.Error(CLASS_NAME, "ExecuteJumpToSearchResult", "UpdateCaretOffset return false!");
@@ -690,15 +808,15 @@ namespace SynonyMe.ViewModel
             // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
             // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
 
-            if (_displayTextDoc == null)
+            if (_model == null || _model.DisplayTextDocument == null)
             {
                 WordCount = null;
                 NumberOfLines = null;
             }
             else
             {
-                WordCount = _displayTextDoc.TextLength.ToString();
-                NumberOfLines = _displayTextDoc.LineCount.ToString();
+                WordCount = _model.DisplayTextDocument.Text.Length.ToString();
+                NumberOfLines = _model.DisplayTextDocument.LineCount.ToString();
             }
         }
 
@@ -760,8 +878,8 @@ namespace SynonyMe.ViewModel
             }
 
             // 表示するモノがないか、空テキストなら検索する意味がない
-            if (_displayTextDoc == null ||
-                string.IsNullOrEmpty(_displayTextDoc.Text))
+            if (_model.TextEditor == null ||
+                string.IsNullOrEmpty(_model.TextEditor.Text))
             {
                 Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;
