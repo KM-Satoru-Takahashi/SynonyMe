@@ -25,11 +25,6 @@ namespace SynonyMe.Model
         /// <summary>ViewModel</summary>
         private MainWindowVM _viewModel = null;
 
-        private FileAccessor _fileAccessManager = null;
-
-
-        private DialogManager _dialogManager = null;
-
         /// <summary>上書き保存を強制的に名前をつけて保存にするフラグ</summary>
         private bool _forceSaveAs = true;
 
@@ -105,7 +100,6 @@ namespace SynonyMe.Model
         /// <summary>画面表示中テキストの絶対パス</summary>
         internal string DisplayTextFilePath;
 
-
         #endregion event
 
         internal event EventHandler UpdateSynonymEvent
@@ -134,11 +128,11 @@ namespace SynonyMe.Model
 
             _viewModel = viewModel;
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
-            _fileAccessManager = new FileAccessor();
-            _dialogManager = new DialogManager();
         }
 
-
+        /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
+        /// <param name="targets">対象語句</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool ApplyHighlightToTargets(string[] targets)
         {
             if (targets == null || targets.Any() == false)
@@ -273,7 +267,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (TextEditor == null)
+            if (DisplayTextDocument == null)
             {
                 Logger.Fatal(CLASS_NAME, "Save", "DisplayTextDocument is null!");
                 return false;
@@ -281,7 +275,7 @@ namespace SynonyMe.Model
 
             try
             {
-                TextEditor.Text = displayText;
+                DisplayTextDocument.Text = displayText;
                 TextEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
@@ -322,15 +316,8 @@ namespace SynonyMe.Model
 
             Logger.Info(CLASS_NAME, "SaveAs", "start");
 
-            // ダイアログを開き、保存要求を出す
-            if (_dialogManager == null)
-            {
-                Logger.Fatal(CLASS_NAME, "SaveAs", "_dialogManager is null!");
-                return false;
-            }
-
             string saveFilePath = string.Empty;
-            bool result = _dialogManager.OpenSaveAsDialog(out saveFilePath);
+            bool result = DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath);
 
             // 失敗時はログとエラーダイアログを出す
             if (result == false)
@@ -341,14 +328,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            // 成功時はファイルをnullで保存しておく
-            if (_fileAccessManager == null)
-            {
-                Logger.Fatal(CLASS_NAME, "SaveAs", "_fileAccessManager is null!");
-                return false;
-            }
-
-            if (_fileAccessManager.SaveFile(TextEditor.Text, saveFilePath) == false)
+            if (FileAccessor.GetFileAccessor.SaveFile(DisplayTextDocument.Text, saveFilePath) == false)
             {
                 Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
                 return false;
@@ -429,7 +409,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            text = TextEditor.Text;
+            text = DisplayTextDocument.Text;
             return true;
         }
 
@@ -520,14 +500,8 @@ namespace SynonyMe.Model
             if (IsModified)
             {
                 // 保存されていなければ、Ok/Cancelダイアログを出して確認する
-                if (_dialogManager == null)
-                {
-                    Logger.Fatal(CLASS_NAME, "OpenFile", "_dialogManager is null!");
-                    return;
-                }
-
                 DialogResult dialogResult = DialogResult.Cancel;
-                bool result = _dialogManager.OpenOkCancelDialog("現在表示中の文章は保存されていません。\n編集を破棄し、新規にファイルを開いて良いですか？\n(※未保存のテキストは破棄されます！)", out dialogResult);
+                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在表示中の文章は保存されていません。\n編集を破棄し、新規にファイルを開いて良いですか？\n(※未保存のテキストは破棄されます！)", out dialogResult);
                 if (result == false)
                 {
                     Logger.Fatal(CLASS_NAME, "OpenFile", $"Dialog error! dialogResult:[{dialogResult}]");
@@ -544,15 +518,9 @@ namespace SynonyMe.Model
             // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
             DisposeTextAndXshd();
 
-            if (_dialogManager == null)
-            {
-                Logger.Fatal(CLASS_NAME, "OpenFile", "_dialogManager is null!");
-                return;
-            }
-
             // ファイルを開く
             string openFilePath;
-            if (_dialogManager.OpenFileOpenDialog(out openFilePath) == false)
+            if (DialogManager.GetDialogManager.OpenFileOpenDialog(out openFilePath) == false)
             {
                 Logger.Error(CLASS_NAME, "OpenFile", "OpenFileOpenDialog failed.");
                 return;
@@ -575,16 +543,17 @@ namespace SynonyMe.Model
                 return;
             }
 
-            if (TextEditor == null)
+            if (DisplayTextDocument == null)
             {
                 Logger.Error(CLASS_NAME, "OpenFile", "DisplayTextDocument is null!");
                 return;
             }
 
-            TextEditor.Text = loadText;
+            DisplayTextDocument.Text = loadText;
 
             // 編集済みフラグを下げる
             IsModified = false;
+            _forceSaveAs = false;
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
@@ -594,15 +563,9 @@ namespace SynonyMe.Model
             // 現在表示中のテキストが編集済みか否かを判定する
             if (IsModified)
             {
-                if (_dialogManager == null)
-                {
-                    Logger.Fatal(CLASS_NAME, "CreateNewFile", "_dialogManager is null!");
-                    return false;
-                }
-
                 // 保存されていなければ、Yes/Noダイアログを出して確認する
                 DialogResult dialogResult = DialogResult.Cancel;
-                bool result = _dialogManager.OpenOkCancelDialog("現在編集中の文章を破棄しますか？", out dialogResult);
+                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在編集中の文章を破棄しますか？", out dialogResult);
                 if (result == false)
                 {
                     Logger.Fatal(CLASS_NAME, "CreateNewFile", $"Dialog error! dialogResult:[{dialogResult}]");
@@ -617,12 +580,12 @@ namespace SynonyMe.Model
             }
 
             // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
-            TextEditor.Text = string.Empty;
+            TextEditor.DisplayTextDocument = string.Empty;
             _highlightManager.ResetHighlightInfo();
 
             // ファイル保存ダイアログを表示する
             string saveFilePath = null;
-            if (_dialogManager.OpenSaveAsDialog(out saveFilePath) == false)
+            if (DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath) == false)
             {
                 Logger.Info(CLASS_NAME, "CreateNewFile", "create new file failed.");
                 return false;
@@ -635,13 +598,7 @@ namespace SynonyMe.Model
             }
 
             // ファイルを保存する
-            if (_fileAccessManager == null)
-            {
-                Logger.Error(CLASS_NAME, "CreateNewFile", "_fileAccessManager is null!");
-                return false;
-            }
-
-            _fileAccessManager.SaveNewFile(saveFilePath);
+            FileAccessor.GetFileAccessor.SaveNewFile(saveFilePath);
 
             // 保存したファイルパスを保持する
             DisplayTextFilePath = saveFilePath;
@@ -656,7 +613,7 @@ namespace SynonyMe.Model
         /// <returns>正常時：DBに登録されている全類語グループ、異常時:false</returns>
         internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
         {
-            return Manager.SynonymManager.GetAllSynonymGroup();
+            return SynonymManager.GetAllSynonymGroup();
         }
 
         /// <summary>類語グループIDに紐付く類語一覧を取得する</summary>
@@ -701,9 +658,9 @@ namespace SynonyMe.Model
         /// <remarks>本当にAvalonEditのDisposeがこれだけで十分かは要検討</remarks>
         private void DisposeTextAndXshd()
         {
-            if (TextEditor != null)
+            if (DisplayTextDocument != null)
             {
-                TextEditor.Text = string.Empty;
+                DisplayTextDocument.Text = string.Empty;
             }
 
             if (_highlightManager != null)
@@ -762,7 +719,7 @@ namespace SynonyMe.Model
             DisplayTextFilePath = openingFiles[0];
             string text;
             Load(DisplayTextFilePath, out text);
-            TextEditor.Text = text;
+            DisplayTextDocument.Text = text;
 
             // ドロップ直後に「編集済み」が出るのを抑制する
             TextEditor.IsModified = false;

@@ -20,6 +20,21 @@ namespace SynonyMe.Model.Manager
 
         private const string Caption_OkCancelMessageBox = "確認";
 
+        private static DialogManager _dialogManager = new DialogManager();
+
+        /// <summary>ダイアログ表示管理クラス</summary>
+        internal static DialogManager GetDialogManager
+        {
+            get
+            {
+                return _dialogManager;
+            }
+        }
+
+        /// <summary>シングルトン担保</summary>
+        private DialogManager()
+        { }
+
         /// <summary>OK Cancelダイアログを表示して確認をとります</summary>
         /// <param name="displayMessage">表示メッセージ</param>
         /// <param name="result">押下結果</param>

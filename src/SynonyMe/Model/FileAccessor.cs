@@ -13,6 +13,19 @@ namespace SynonyMe.Model
     {
         private const string CLASS_NAME = "FileAccessManager";
 
+        private static FileAccessor _fileAccessor = new FileAccessor();
+        internal static FileAccessor GetFileAccessor
+        {
+            get
+            {
+                return _fileAccessor;
+            }
+        }
+
+        /// <summary>シングルトン担保</summary>
+        private FileAccessor()
+        { }
+
         /// <summary>新規作成したファイルを空文字で保存する</summary>
         /// <param name="targetFilePath"></param>
         /// <returns></returns>

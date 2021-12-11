@@ -815,8 +815,8 @@ namespace SynonyMe.ViewModel
             }
             else
             {
-                WordCount = _model.TextEditor.Text.Length.ToString();
-                NumberOfLines = _model.TextEditor.LineCount.ToString();
+                WordCount = _model.DisplayTextDocument.Text.Length.ToString();
+                NumberOfLines = _model.DisplayTextDocument.LineCount.ToString();
             }
         }
 

@@ -14,6 +14,8 @@ namespace SynonyMe.Model
         private const string CLASS_NAME = "Searcher";
 
         private static Searcher _searcher = new Searcher();
+
+        /// <summary>検索処理実現クラス</summary>
         internal static Searcher GetSearcher
         {
             get
@@ -22,9 +24,9 @@ namespace SynonyMe.Model
             }
         }
 
+        /// <summary>シングルトン担保</summary>
         private Searcher()
-        {
-        }
+        { }
 
         /// <summary>
         /// 検索結果の全Indexを取得する
