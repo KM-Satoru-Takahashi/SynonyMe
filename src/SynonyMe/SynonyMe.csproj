@@ -89,10 +89,15 @@
     <Compile Include="Model\FileAccessor.cs" />
     <Compile Include="Model\Manager\SynonymManager.cs" />
     <Compile Include="Model\Searcher.cs" />
+    <Compile Include="Model\SettingWindowModel.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />
     <Compile Include="ViewModel\ExpanderGridSplitterProperty.cs" />
+    <Compile Include="ViewModel\SettingWindowVM.cs" />
     <Compile Include="ViewModel\SynonymWindowVM.cs" />
+    <Compile Include="View\SettingWindow.xaml.cs">
+      <DependentUpon>SettingWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\SynonymWindow.xaml.cs">
       <DependentUpon>SynonymWindow.xaml</DependentUpon>
     </Compile>
@@ -113,6 +118,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\SettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\SynonymWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

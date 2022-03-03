@@ -580,7 +580,7 @@ namespace SynonyMe.Model
             }
 
             // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
-            TextEditor.DisplayTextDocument = string.Empty;
+            DisplayTextDocument.Text = string.Empty;
             _highlightManager.ResetHighlightInfo();
 
             // ファイル保存ダイアログを表示する

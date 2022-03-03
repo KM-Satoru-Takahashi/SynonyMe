@@ -28,6 +28,8 @@ namespace SynonyMe.ViewModel
         /// <summary>BoolToVisibleコンバータ</summary>
         private static BooleanToVisibilityConverter BoolToVisibleConverter { get; } = new BooleanToVisibilityConverter();
 
+        private static bool _isFirst = true;
+
         #region DependencyProperties
 
         /// <summary>ExpanderのGridSnapMode取得</summary>
@@ -169,6 +171,29 @@ namespace SynonyMe.ViewModel
                 return;
             }
             expander.SetValue(LastGridLengthProperty, gridLength);
+        }
+
+        /// <summary>
+        /// 初めてExpanderを開く際の横幅を指定する
+        /// </summary>
+        /// <param name="expander"></param>
+        private static void SetFirstGridLength(Expander expander)
+        {
+            if (expander == null)
+            {
+                return;
+            }
+
+            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+            if (mw == null)
+            {
+                return;
+            }
+
+            // メインウィンドウの1/3を与えれば良い想定だが、将来的に変更しても良い
+            double subAreaLength = mw.ActualWidth / 3;
+            expander.SetValue(LastGridLengthProperty, new GridLength(subAreaLength));
+            _isFirst = false;
         }
 
         /// <summary>直前のGridサイズ(Expanderサイズ)を記憶しておくための添付プロパティ定義</summary>
@@ -316,6 +341,7 @@ namespace SynonyMe.ViewModel
             {
                 return;
             }
+
             expander.Expanded -= Expanded_Horizontal;
             expander.Collapsed -= Collapsed_Horizontal;
 
@@ -333,7 +359,18 @@ namespace SynonyMe.ViewModel
             int gridColumn = Grid.GetColumn(expander);
             ColumnDefinition columnDefinition = targetGrid.ColumnDefinitions[gridColumn];
             SetTargetColumnDefinition(expander, columnDefinition);
-            SetLastGridLength(expander, columnDefinition.Width);
+
+            // 初回にExpanderを開く際、開かれたGridのActualWidthをとれずに検索テキストボックスの幅が微小になってしまう
+            // そのため、exeを立ち上げて最初にExpanderを開く際のみMainWindowの比で強引に値を入れてやる
+            // Expanderを開く前はExpander側の幅を調節できないため、数値がおかしくなる心配はないと想定される
+            if (_isFirst)
+            {
+                SetFirstGridLength(expander);
+            }
+            else
+            {
+                SetLastGridLength(expander, columnDefinition.Width);
+            }
 
             GridSplitter gridSplitter = null;
             if (mode == GridSnapMode.Auto)
