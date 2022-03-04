@@ -4,9 +4,64 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SynonyMe.View"
+        xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         mc:Ignorable="d"
         Title="SettingWindow" Height="450" Width="800">
+
+    <Window.DataContext>
+        <vm:SettingWindowVM/>
+    </Window.DataContext>
+
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <!--上部余白-->
+            <RowDefinition Height="20"/>
+            <!--メイン領域-->
+            <RowDefinition Height="*"/>
+            <!--ボタンとメイン領域間の余白-->
+            <RowDefinition Height="10"/>
+            <!--ボタン高さ-->
+            <RowDefinition Height="40"/>
+            <!--下部余白-->
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <!--左側余白-->
+            <ColumnDefinition Width="20"/>
+            <!--メイン部分は可変幅-->
+            <ColumnDefinition Width="*"/>
+            <!--OKボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--ボタン間余白-->
+            <ColumnDefinition Width="20"/>
+            <!--Cancelボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--ボタン間余白-->
+            <ColumnDefinition Width="20"/>
+            <!--適用ボタン用の幅-->
+            <ColumnDefinition Width="70"/>
+            <!--右側余白-->
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+
+        <TabControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="6">
+            <TabItem Header="001">
+                <TextBlock Text="Content001"/>
+            </TabItem>
+            <TabItem Header="002">
+                <TextBlock Text="Content002"/>
+            </TabItem>
+        </TabControl>
+
+        <!--OKボタン-->
+        <Button Grid.Column="2" Grid.Row="3" Content="OK"/>
+
+        <!--キャンセルボタン-->
+        <Button Grid.Column="4" Grid.Row="3" Content="Cancel"/>
+
+        <!--適用ボタン-->
+        <Button Grid.Column="6" Grid.Row="3" Content="Apply"/>
+
     </Grid>
 </Window>

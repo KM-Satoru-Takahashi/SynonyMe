@@ -6,7 +6,19 @@ using System.Threading.Tasks;
 
 namespace SynonyMe.ViewModel
 {
-   public class SettingWindowVM:ViewModelBase
+    public class SettingWindowVM : ViewModelBase
     {
+        #region property
+
+        #region bindings
+
+        public string WindowTitle { get; private set; }
+
+
+
+        #endregion
+
+        #endregion
+
     }
 }

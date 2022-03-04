@@ -18,6 +18,8 @@
 
 ・MainWindowModel
 　類語検索まわりのリファクタ
+　ダイアログやファイル読み書きを全部関連ManagerやAccessorに移譲させる
+
 
 ・MainWindow
 　類語検索結果に、何がどの色かを紐付けたい
@@ -49,4 +51,6 @@
 ・設定ウィンドウ
 　・setting案に沿って
 　・タブ作りが優先？
+
+・Define整理
 

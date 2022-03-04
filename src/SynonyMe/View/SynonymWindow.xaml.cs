@@ -23,23 +23,13 @@ namespace SynonyMe.View
     {
         #region タイトルバーに表示される最大化・最小化・閉じるボタンの非表示化
 
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
         protected override void OnSourceInitialized(EventArgs e)
         {
-            // 固定値の定義
-            const int GWL_STYLE = -16;
-            const int WS_SYSMENU = 0x80000;
-
             base.OnSourceInitialized(e);
             IntPtr handle = new WindowInteropHelper(this).Handle;
-            int style = GetWindowLong(handle, GWL_STYLE);
-            style &= (~WS_SYSMENU);
-            SetWindowLong(handle, GWL_STYLE, style);
+            int style = Model.Manager.WindowManager.GetWindowLong(handle, CommonLibrary.Define.GWL_STYLE);
+            style &= (~CommonLibrary.Define.WS_SYSMENU);
+            Model.Manager.WindowManager.SetWindowLong(handle, CommonLibrary.Define.GWL_STYLE, style);
         }
 
         #endregion

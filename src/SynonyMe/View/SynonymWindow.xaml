@@ -59,7 +59,7 @@
             <RowDefinition Height="*"/>
             <!--類語グループリスト終わり-->
             <!--2:下部ボタン間の余白-->
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="10"/>
             <!--3:登録ボタン高さ-->
             <RowDefinition Height="40"/>
             <!--4:下部ボタンへの余白-->

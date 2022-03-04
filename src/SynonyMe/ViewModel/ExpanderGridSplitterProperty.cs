@@ -176,7 +176,8 @@ namespace SynonyMe.ViewModel
         /// <summary>
         /// 初めてExpanderを開く際の横幅を指定する
         /// </summary>
-        /// <param name="expander"></param>
+        /// <param name="expander">対象Expander</param>
+        /// <remarks>現状横開きExpanderにしか対応していないので要注意</remarks>
         private static void SetFirstGridLength(Expander expander)
         {
             if (expander == null)
@@ -190,8 +191,8 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // メインウィンドウの1/3を与えれば良い想定だが、将来的に変更しても良い
-            double subAreaLength = mw.ActualWidth / 3;
+            // メインウィンドウの1/4を与えれば良い想定だが、将来的に変更しても良い
+            double subAreaLength = mw.ActualWidth / 4;
             expander.SetValue(LastGridLengthProperty, new GridLength(subAreaLength));
             _isFirst = false;
         }

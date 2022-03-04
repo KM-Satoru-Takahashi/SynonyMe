@@ -7,7 +7,7 @@ using SynonyMe.CommonLibrary;
 using SynonyMe.View;
 using System.Windows;
 using SynonyMe.CommonLibrary.Log;
-
+using System.Runtime.InteropServices;
 
 namespace SynonyMe.Model.Manager
 {
@@ -39,11 +39,29 @@ namespace SynonyMe.Model.Manager
                     CreateSynonymWindow();
                     break;
 
+                case Define.SubWindowName.SettingWindow:
+                    CreateSettingWindow();
+                    break;
+
                 default:
                     // 想定していないSubWindow名が来ることはあり得ず、対処不能
                     Logger.Fatal(CLASS_NAME, "OpenSubWindow", $"SubWindowName is incorrect! subWindowName:[{subWindowName}]");
                     break;
             }
+        }
+
+        private static void CreateSettingWindow()
+        {
+            if (_displaySubWindowList.Any(w => w.SubWindowName == Define.SubWindowName.SettingWindow))
+            {
+                // 既に開かれているなら何もせず戻る
+                return;
+            }
+
+            SettingWindow settingWindow = new SettingWindow();
+            _displaySubWindowList.Add(new SubWindowData(settingWindow, Define.SubWindowName.SettingWindow));
+
+            settingWindow.ShowDialog();
         }
 
         /// <summary>類語登録ウィンドウを開く</summary>
@@ -108,6 +126,16 @@ namespace SynonyMe.Model.Manager
 
             return mw;
         }
+
+        #endregion
+
+        #region import method
+
+        [DllImport("user32.dll")]
+        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
 
         #endregion
 

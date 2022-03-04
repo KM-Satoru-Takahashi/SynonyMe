@@ -47,7 +47,16 @@ namespace SynonyMe.CommonLibrary
         internal enum SubWindowName
         {
             /// <summary>類語登録・編集・削除ウィンドウ</summary>
-            SynonymWindow
+            SynonymWindow,
+
+            /// <summary>設定ウィンドウ</summary>
+            SettingWindow
         }
+
+        /// <summary>GetWindowLongで使用するAppのインスタンスのハンドル値</summary>
+        internal const int GWL_STYLE = -16;
+
+        /// <summary>タイトルバーにコントロールがあるWindow</summary>
+        internal const int WS_SYSMENU = 0x80000;
     }
 }

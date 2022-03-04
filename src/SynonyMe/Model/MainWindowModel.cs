@@ -490,7 +490,7 @@ namespace SynonyMe.Model
         /// <summary>設定ウィンドウを開く</summary>
         internal void OpenSettingsWindow()
         {
-            throw new NotImplementedException();
+            Manager.WindowManager.OpenSubWindow(CommonLibrary.Define.SubWindowName.SettingWindow);
         }
 
         /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>

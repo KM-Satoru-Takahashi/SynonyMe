@@ -170,7 +170,10 @@
                         <!--選択時にキャレットの更新をかける-->
                         <bh:Interaction.Triggers>
                             <bh:EventTrigger EventName="SelectionChanged">
+                                <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True"/>
+                                <!-- CommandParameterを渡そうとしてもうまくとれておらず、PassEventArgsToCommandプロパティをtrueにするだけで必要な引数を渡せているので、現状コメントアウトしておく
                                 <bh:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListView}}, Path=DataContext.Command_JumpToSearchResult}" PassEventArgsToCommand="True" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"/>
+                                -->
                             </bh:EventTrigger>
                         </bh:Interaction.Triggers>
                         <ListView.View>
