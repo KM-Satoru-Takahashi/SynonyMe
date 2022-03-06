@@ -92,7 +92,11 @@
     <Compile Include="Model\SettingWindowModel.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />
+    <Compile Include="Settings\AdvancedSetting.cs" />
+    <Compile Include="Settings\SearchAndSynonymSetting.cs" />
+    <Compile Include="Settings\TextSetting.cs" />
     <Compile Include="ViewModel\ExpanderGridSplitterProperty.cs" />
+    <Compile Include="ViewModel\KeyInputOnlyTextboxBehavior.cs" />
     <Compile Include="ViewModel\SettingWindowVM.cs" />
     <Compile Include="ViewModel\SynonymWindowVM.cs" />
     <Compile Include="View\SettingWindow.xaml.cs">

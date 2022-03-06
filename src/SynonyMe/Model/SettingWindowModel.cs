@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace SynonyMe.Model
 {
-    class SettingWindowModel
+    /// <summary>設定ウィンドウの内部処理を担います</summary>
+    internal class SettingWindowModel
     {
+        private ViewModel.SettingWindowVM _viewModel = null;
+
+        internal SettingWindowModel(ViewModel.SettingWindowVM vm)
+        {
+            _viewModel = vm;
+        }
     }
 }

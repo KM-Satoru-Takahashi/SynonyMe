@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AdvancedSetting>
+  <LogLevel>INFO</LogLevel>
+  <SpeedUpSearch>false</SpeedUpSearch>
+  <LogRetentionDays>30</LogRetentionDays>
+  <SynonymSearchResultDisplayCount>200</SynonymSearchResultDisplayCount>
+  <TargetFileExtensionList>
+    <Target>txt</Target>
+  </TargetFileExtensionList>
+</AdvancedSetting>

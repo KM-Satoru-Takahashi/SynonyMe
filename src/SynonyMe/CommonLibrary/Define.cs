@@ -16,6 +16,15 @@ namespace SynonyMe.CommonLibrary
         White = 1
     }
 
+    public enum LogLevel
+    {
+        DEBUG = 1,
+        INFO = 2,
+        WARN = 3,
+        ERROR = 4,
+        FATAL = 5
+    }
+
     /// <summary>固定値やenum設定クラス</summary>
     internal static class Define
     {
@@ -40,8 +49,15 @@ namespace SynonyMe.CommonLibrary
         /// <summary>テキストハイライト用の設定ファイル名</summary>
         internal const string XSHD_FILENAME = "work.xshd";
 
+
+        internal const string SETTING_FILENAME_ADVANCED = "AdvancedSetting.xml";
+
         /// <summary>このexe名</summary>
         internal const string SYNONYME_EXENAME = "SynonyMe.exe";
+
+        /// <summary>0～9の半角数値のみを許可する正規表現</summary>
+        /// <remarks>OK：123, 9, 0098 NG:１２, 1a, 3.5, -92</remarks>
+        internal const string REGEX_NUMBER_ONLY = @"^[0-9]+$";
 
         /// <summary>各種サブウィンドウ名</summary>
         internal enum SubWindowName

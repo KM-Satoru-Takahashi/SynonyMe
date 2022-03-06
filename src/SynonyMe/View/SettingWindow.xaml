@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:SynonyMe.View"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         mc:Ignorable="d"
@@ -31,6 +32,10 @@
             <ColumnDefinition Width="20"/>
             <!--メイン部分は可変幅-->
             <ColumnDefinition Width="*"/>
+            <!--デフォルトに戻すボタン-->
+            <ColumnDefinition Width="70"/>
+            <!--広めの余白にする-->
+            <ColumnDefinition Width="40"/>
             <!--OKボタン用の幅-->
             <ColumnDefinition Width="70"/>
             <!--ボタン間余白-->
@@ -45,23 +50,114 @@
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
 
-        <TabControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="6">
+        <TabControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="8">
             <TabItem Header="001">
                 <TextBlock Text="Content001"/>
             </TabItem>
             <TabItem Header="002">
                 <TextBlock Text="Content002"/>
             </TabItem>
+            <TabItem Header="003">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <!--上部余白-->
+                        <RowDefinition Height="10"/>
+                        <!--ログ出力レベル-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--高速化設定-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--ログ保持期間-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--検索結果表示数-->
+                        <RowDefinition Height="50"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--対象拡張子-->
+                        <RowDefinition Height="50"/>
+                        <!--下部余白-->
+                        <RowDefinition Height="10"/>
+                    </Grid.RowDefinitions>
+
+                    <!--ログ出力レベル-->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <TextBlock Text="OutputLogLevel" Margin="4,0,5,0"/>
+                        <TextBlock Text="{Binding LogOutputLevel}" Margin="15,0,5,0"/>
+                        <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="5" SmallChange="1"
+                                TickPlacement="BottomRight" Margin="5,0,5,0" Value="{Binding LogOutputLevel}" AutoToolTipPlacement="TopLeft"/>
+                        <TextBlock Text="DEBUG" Visibility="{Binding DebugVisible}" Margin="15,0,5,0"/>
+                        <TextBlock Text="INFO" Visibility="{Binding InfoVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="WARN" Visibility="{Binding WarnVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="ERROR" Visibility="{Binding ErrorVisible}" Margin="5,0,5,0"/>
+                        <TextBlock Text="FATAL" Visibility="{Binding FatalVisible}" Margin="5,0,5,0"/>
+                    </StackPanel>
+
+                    <!--検索高速化設定-->
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="検索・類語検索高速化" Margin="4,0,5,0"/>
+                        <CheckBox IsChecked="{Binding UseFastSearch}" Margin="15,0,5,0"/>
+                    </StackPanel>
+
+                    <!--ログ保持期間-->
+                    <!--日数の表示でガタガタずれるのを抑止するため、Gridで場所を整える-->
+                    <Grid Grid.Row="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="125" />
+                            <ColumnDefinition Width="125"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="ログ保持期間(日)" Margin="4,0,5,0"/>
+                            <TextBlock Text="{Binding LogRetentionDaysString}" Margin="15,0,0,0" Visibility="Visible"/>
+                        </StackPanel>
+                        <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="30" SmallChange="1"
+                                TickPlacement="BottomRight" Margin="0,5,0,0" Value="{Binding LogRetentionDays}" AutoToolTipPlacement="TopLeft"
+                                Ticks="1,7,15,30" Grid.Column="1" VerticalAlignment="Center"/>
+                        <Button Content="AllDelete" HorizontalAlignment="Right" Margin="55,0,5,0" Grid.Column="2" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!--検索・類語検索結果表示数-->
+                    <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="検索・類語検索結果表示数" Margin="4,0,5,0"/>
+                        <!--入力値のチェックはVMで行い、入力手段のチェックはWPF/Behaviorで行う-->
+                        <!--IMEを無効にする-->
+                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="15,0,5,0" Width="50"
+                                 InputMethod.IsInputMethodEnabled="False">
+                            <!--ペースト不可-->
+                            <bh:Interaction.Behaviors>
+                                <vm:KeyInputOnlyTextboxBehavior/>
+                            </bh:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <!--読込対象拡張子-->
+                    <StackPanel Grid.Row="9" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="読込対象拡張子" Margin="4,0,5,0"/>
+                        <TextBlock Text=".txt" Margin="15,0,5,0"/>
+                        <CheckBox Margin="5,0,5,0" IsChecked="{Binding IsTxtTarget}"/>
+                        <TextBlock Text=".doc" Margin="15,0,5,0"/>
+                        <CheckBox Margin="5,0,5,0" IsEnabled="False"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
 
+        <!--デフォルトに戻すボタン-->
+        <Button Grid.Column="2" Grid.Row="3" Content="Default"/>
+
         <!--OKボタン-->
-        <Button Grid.Column="2" Grid.Row="3" Content="OK"/>
+        <Button Grid.Column="4" Grid.Row="3" Content="OK"/>
 
         <!--キャンセルボタン-->
-        <Button Grid.Column="4" Grid.Row="3" Content="Cancel"/>
+        <Button Grid.Column="6" Grid.Row="3" Content="Cancel"/>
 
         <!--適用ボタン-->
-        <Button Grid.Column="6" Grid.Row="3" Content="Apply"/>
+        <Button Grid.Column="8" Grid.Row="3" Content="Apply"/>
 
     </Grid>
 </Window>
