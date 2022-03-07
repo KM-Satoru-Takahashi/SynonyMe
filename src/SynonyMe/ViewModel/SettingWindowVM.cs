@@ -40,7 +40,7 @@ namespace SynonyMe.ViewModel
 
 
 
-        #region Tab_AdvancedSetting
+        #region Tab_AdvancedSettings
 
         private double _logOutputLevel = 1; //todo:将来的にModel側で管理させること
         public double LogOutputLevel
@@ -54,7 +54,7 @@ namespace SynonyMe.ViewModel
                 if (_logOutputLevel != value)
                 {
                     _logOutputLevel = value;
-                    UpdateLogLevelVisible();
+                    UpdateLogLevelVisible(ConvertDoubleToLogLevel(_logOutputLevel));
                     OnPropertyChanged("LogOutputLevel");
                 }
             }
@@ -242,7 +242,7 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                if(_isTxtTarget!=value)
+                if (_isTxtTarget != value)
                 {
                     _isTxtTarget = value;
                     OnPropertyChanged("IsTxtTarget");
@@ -250,6 +250,197 @@ namespace SynonyMe.ViewModel
             }
         }
 
+
+        #endregion
+
+        #region Tab_TextSettings
+
+        private bool _wrappingText = false;
+        public bool WrappingText
+        {
+            get
+            {
+                return _wrappingText;
+            }
+            set
+            {
+                if (_wrappingText != value)
+                {
+                    _wrappingText = value;
+                    OnPropertyChanged("WrappingText");
+                }
+            }
+        }
+
+        private bool _showingLineCount = false;
+        public bool ShowingLineCount
+        {
+            get
+            {
+                return _showingLineCount;
+            }
+            set
+            {
+                if (_showingLineCount != value)
+                {
+                    _showingLineCount = value;
+                    OnPropertyChanged("ShowingLineCount");
+                }
+            }
+        }
+
+        private bool _showingLineNumber = false;
+        public bool ShowingLineNumber
+        {
+            get
+            {
+                return _showingLineNumber;
+            }
+            set
+            {
+                if (_showingLineNumber != value)
+                {
+                    _showingLineNumber = value;
+                    OnPropertyChanged("ShowingLineNumber");
+                }
+            }
+        }
+
+        private bool _showingWordCount = false;
+        public bool ShowingWordCount
+        {
+            get
+            {
+                return _showingWordCount;
+            }
+            set
+            {
+                if (_showingWordCount != value)
+                {
+                    _showingWordCount = value;
+                    OnPropertyChanged("ShowingWordCount");
+                }
+            }
+        }
+
+        private bool _showingNewLine = false;
+        public bool ShowingNewLine
+        {
+            get
+            {
+                return _showingNewLine;
+            }
+            set
+            {
+                if (_showingNewLine != value)
+                {
+                    _showingNewLine = value;
+                    OnPropertyChanged("ShowingNewLine");
+                }
+            }
+        }
+
+        private bool _showingTab = false;
+        public bool ShowingTab
+        {
+            get
+            {
+                return _showingTab;
+            }
+            set
+            {
+                if (_showingTab != value)
+                {
+                    _showingTab = value;
+                    OnPropertyChanged("ShowingTab");
+                }
+            }
+        }
+
+        private bool _showingSpace = false;
+        public bool ShowingSpace
+        {
+            get
+            {
+                return _showingSpace;
+            }
+            set
+            {
+                if (_showingSpace != value)
+                {
+                    _showingSpace = value;
+                    OnPropertyChanged("ShowingSpace");
+                }
+            }
+        }
+
+        private string _fontSize = "0.0";
+        public string FontSize
+        {
+            get
+            {
+                return _fontSize;
+            }
+            set
+            {
+                if (_fontSize != value)
+                {
+                    _fontSize = value;
+                    OnPropertyChanged("FontSize");
+                }
+            }
+        }
+
+        private string _fontColor = "Black";
+        public string FontColor
+        {
+            get
+            {
+                return _fontColor;
+            }
+            set
+            {
+                if (_fontColor != value)
+                {
+                    _fontColor = value;
+                    OnPropertyChanged("FontColor");
+                }
+            }
+        }
+
+        private string _japaneseFontName = "Meiryo";
+        public string JapaneseFontName
+        {
+            get
+            {
+                return _japaneseFontName;
+            }
+            set
+            {
+                if (_japaneseFontName != value)
+                {
+                    _japaneseFontName = value;
+                    OnPropertyChanged("JapaneseFontName");
+                }
+            }
+        }
+
+        private string _englishFontName = "Consolas";
+        public string EnglishFontName
+        {
+            get
+            {
+                return _englishFontName;
+            }
+            set
+            {
+                if (_englishFontName != value)
+                {
+                    _englishFontName = value;
+                    OnPropertyChanged("EnglishFontName");
+                }
+            }
+        }
 
         #endregion
 
@@ -300,12 +491,44 @@ namespace SynonyMe.ViewModel
         private void ExecuteApply(object parameter)
         {
 
+
+            #region AdvancedSetting
+
+            int resultDisplayCount = 0;
+            if (int.TryParse(SearchResultDisplayCount, out resultDisplayCount) == false)
+            {
+                resultDisplayCount = 100;//todo 規定値
+            }
+
+            Settings.AdvancedSetting advancedSetting = new Settings.AdvancedSetting
+            {
+                LogLevel = ConvertDoubleToLogLevel(LogOutputLevel),
+                SpeedUpSearch = UseFastSearch,
+                LogRetentionDays = Convert.ToInt32(LogRetentionDays),
+                SynonymSearchResultDisplayCount = resultDisplayCount,
+                TargetFileExtensionList = GetTargetExtensionsList()
+            };
+
+            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_ADVANCED, advancedSetting, typeof(Settings.AdvancedSetting));
+
+            #endregion
         }
 
 
         private void ExecuteResetToDefault(object parameter)
         {
+            if (parameter == null)
+            {
+                return;
+            }
 
+            if (Enum.IsDefined(typeof(CommonLibrary.SettingResetKind), parameter))
+            {
+                var a = (CommonLibrary.SettingResetKind)Enum.ToObject(typeof(CommonLibrary.SettingResetKind), parameter);
+                //todo:下流処理→Model
+            }
+
+            // todo:タブ毎に分かれた処理にすること
         }
 
         /// <summary>設定ウィンドウを閉じます</summary>
@@ -314,19 +537,36 @@ namespace SynonyMe.ViewModel
             Model.Manager.WindowManager.CloseSubWindow(CommonLibrary.Define.SubWindowName.SettingWindow);
         }
 
-        /// <summary>ログ出力レベル表記をスライダーバードラッグにあわせて更新します</summary>
-        private void UpdateLogLevelVisible()
+        private List<string> GetTargetExtensionsList()
         {
-            int intLogLevel = Convert.ToInt32(LogOutputLevel);
-            if (Enum.IsDefined(typeof(CommonLibrary.LogLevel), intLogLevel))
+            List<string> targets = new List<string>();
+
+            if (IsTxtTarget)
             {
-                UpdateLogLevelVisibleInernal((CommonLibrary.LogLevel)Enum.ToObject(typeof(CommonLibrary.LogLevel), intLogLevel));
+                targets.Add("txt");//todo:固定値化
             }
+
+            return targets;
         }
 
-        /// <summary>ログ出力レベル表記を更新する内部処理</summary>
+        private CommonLibrary.LogLevel ConvertDoubleToLogLevel(double logLevel)
+        {
+            int intLogLevel = Convert.ToInt32(logLevel);
+
+            if (Enum.IsDefined(typeof(CommonLibrary.LogLevel), intLogLevel))
+            {
+                return (CommonLibrary.LogLevel)Enum.ToObject(typeof(CommonLibrary.LogLevel), intLogLevel);
+            }
+
+            // 変換不可な値だった場合、規定値を返すようにする
+            // todo:error log
+            return CommonLibrary.LogLevel.INFO;
+        }
+
+
+        /// <summary>ログ出力レベル表記をスライダーバードラッグにあわせて更新します</summary>
         /// <param name="logLevel"></param>
-        private void UpdateLogLevelVisibleInernal(CommonLibrary.LogLevel logLevel)
+        private void UpdateLogLevelVisible(CommonLibrary.LogLevel logLevel)
         {
             switch (logLevel)
             {

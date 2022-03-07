@@ -25,6 +25,14 @@ namespace SynonyMe.CommonLibrary
         FATAL = 5
     }
 
+    public enum SettingResetKind
+    {
+        TextSetting,
+        SearchAndSynonymSetting,
+        AdvancedSetting,
+        AllReset
+    }
+
     /// <summary>固定値やenum設定クラス</summary>
     internal static class Define
     {

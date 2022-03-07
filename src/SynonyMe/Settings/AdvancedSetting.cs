@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace SynonyMe.Settings
 {
+    [Serializable]
     public class AdvancedSetting
     {
         public LogLevel LogLevel { get; set; }
@@ -21,8 +22,6 @@ namespace SynonyMe.Settings
 
         public AdvancedSetting()
         {
-
-
         }
     }
 }

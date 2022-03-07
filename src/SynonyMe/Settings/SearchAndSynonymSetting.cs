@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace SynonyMe.Settings
 {
-    class SearchAndSynonymSetting
+    [Serializable]
+   public class SearchAndSynonymSetting
     {
+
     }
 }

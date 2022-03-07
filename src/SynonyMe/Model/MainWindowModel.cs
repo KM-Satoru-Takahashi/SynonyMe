@@ -55,7 +55,6 @@ namespace SynonyMe.Model
                 {
                     return false;
                 }
-
                 return TextEditor.IsModified;
             }
             set
@@ -72,8 +71,20 @@ namespace SynonyMe.Model
         /// todo:MainWindowXamlと[TextEditor]はBindingされていない。[DisplayTextDocument]はBindingされている
         /// MainWindow→ DisplayTextDocument ← TextEditorのDisplayTextDocument の状態
         /// MainWindowとMainWindowModelのTextEditorをなんとかして合致させる
+        /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
+        /// Options.ShowEndOfLine, ShowSpaces, ShowTabs, ShowBoxForControlCharacters
         internal TextEditor TextEditor { get; } = new TextEditor();
-
+        //internal TextEditor TextEditor　このやりかただめだった
+        //{
+        //    get
+        //    {
+        //        if(Manager.WindowManager.GetMainWindow().TextEditor==null)
+        //        {
+        //            Manager.WindowManager.GetMainWindow().TextEditor = new TextEditor();
+        //        }
+        //        return WindowManager.GetMainWindow().TextEditor;
+        //    }
+        //}
         /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
         internal TextDocument DisplayTextDocument

@@ -6,6 +6,7 @@
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:SynonyMe.View"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
+        xmlns:lib="clr-namespace:SynonyMe.CommonLibrary"
         mc:Ignorable="d"
         Title="SettingWindow" Height="450" Width="800">
 
@@ -55,7 +56,106 @@
                 <TextBlock Text="Content001"/>
             </TabItem>
             <TabItem Header="002">
-                <TextBlock Text="Content002"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <!--左側余白-->
+                        <ColumnDefinition Width="10"/>
+                        <!--項目見出し列1-->
+                        <ColumnDefinition Width="2*"/>
+                        <!--項目内容列1-->
+                        <ColumnDefinition Width="*"/>
+                        <!--余白-->
+                        <ColumnDefinition Width="5"/>
+                        <!--項目見出し列2-->
+                        <ColumnDefinition Width="2*"/>
+                        <!--項目内容列2-->
+                        <ColumnDefinition Width="*"/>
+                        <!--右側余白-->
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <!--上部余白-->
+                        <RowDefinition Height="10"/>
+                        <!--文字列を折り返す-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--行数を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--行番号を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--文字数を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--編集記号を表示する-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォントサイズ-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォント名称(日)-->
+                        <RowDefinition Height="25"/>
+                        <!--余白-->
+                        <RowDefinition Height="5"/>
+                        <!--フォント名称(英)-->
+                        <RowDefinition Height="25"/>
+                        <!--デフォルトに戻すボタンとの余白は多めにとる-->
+                        <RowDefinition Height="15"/>
+                        <!--デフォルトに戻すボタン-->
+                        <RowDefinition Height="25"/>
+                    </Grid.RowDefinitions>
+
+                    <!--文字列を折り返す-->
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="文字列を折り返す" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="1" Grid.Column="2" IsChecked="{Binding WrappingText}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--行数を表示する-->
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="行数を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="3" Grid.Column="2" IsChecked="{Binding ShowingLineCount}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--行番号を表示する-->
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="行番号を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="5" Grid.Column="2" IsChecked="{Binding ShowingLineNumber}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--文字数を表示する-->
+                    <TextBlock Grid.Row="7" Grid.Column="1" Text="文字数を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="7" Grid.Column="2" IsChecked="{Binding ShowingWordCount}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <!--改行記号を表示する-->
+                    <TextBlock Grid.Row="9" Grid.Column="1" Text="改行記号を表示する" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                    <CheckBox Grid.Row="9" Grid.Column="2" IsChecked="{Binding ShowingNewLine}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="11" Grid.Column="1" Text="タブを表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="11" Grid.Column="2" IsChecked="{Binding ShowingTab}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="13" Grid.Column="1" Text="半角空白を表示する" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <CheckBox Grid.Row="13" Grid.Column="2" IsChecked="{Binding ShowingSpace}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <!--左側の残りは予約領域として残しておく-->
+
+                    <TextBlock Grid.Row="1" Grid.Column="4" Text="フォントサイズ" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding FontSize}" Width="40" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+
+                    <TextBlock Grid.Row="3" Grid.Column="4" Text="フォントカラー" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <!--todo:カラーピッカー実装-->
+
+                    <TextBlock Grid.Row="5" Grid.Column="4" Text="フォント名称(日)" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <!--todo:プルダウンメニュー実装-->
+
+                    <TextBlock Grid.Row="7" Grid.Column="4" Text="フォント名称(英) ※日本語フォントが優先されます" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <!--todo:プルダウンメニュー実装-->
+
+                    <!--todo:ボタンサイズを他タブと合わせて適切に-->
+                    <Button Grid.Row="17" Width="70" Height="30" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Left"
+                            Content="デフォルト" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.TextSetting}"/>
+
+                </Grid>
             </TabItem>
             <TabItem Header="003">
                 <Grid>
@@ -86,7 +186,7 @@
 
                     <!--ログ出力レベル-->
                     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <TextBlock Text="OutputLogLevel" Margin="4,0,5,0"/>
+                        <TextBlock Text="OutputLogLevel" Margin="10,0,5,0"/>
                         <TextBlock Text="{Binding LogOutputLevel}" Margin="15,0,5,0"/>
                         <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="5" SmallChange="1"
                                 TickPlacement="BottomRight" Margin="5,0,5,0" Value="{Binding LogOutputLevel}" AutoToolTipPlacement="TopLeft"/>
@@ -99,7 +199,7 @@
 
                     <!--検索高速化設定-->
                     <StackPanel Grid.Row="3" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="検索・類語検索高速化" Margin="4,0,5,0"/>
+                        <TextBlock Text="検索・類語検索高速化" Margin="10,0,5,0"/>
                         <CheckBox IsChecked="{Binding UseFastSearch}" Margin="15,0,5,0"/>
                     </StackPanel>
 
@@ -112,7 +212,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="ログ保持期間(日)" Margin="4,0,5,0"/>
+                            <TextBlock Text="ログ保持期間(日)" Margin="10,0,5,0"/>
                             <TextBlock Text="{Binding LogRetentionDaysString}" Margin="15,0,0,0" Visibility="Visible"/>
                         </StackPanel>
                         <Slider IsSnapToTickEnabled="True" Orientation="Horizontal" Width="100" Minimum="1" Maximum="30" SmallChange="1"
@@ -123,7 +223,7 @@
 
                     <!--検索・類語検索結果表示数-->
                     <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="検索・類語検索結果表示数" Margin="4,0,5,0"/>
+                        <TextBlock Text="検索・類語検索結果表示数" Margin="10,0,5,0"/>
                         <!--入力値のチェックはVMで行い、入力手段のチェックはWPF/Behaviorで行う-->
                         <!--IMEを無効にする-->
                         <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="15,0,5,0" Width="50"
@@ -137,18 +237,24 @@
 
                     <!--読込対象拡張子-->
                     <StackPanel Grid.Row="9" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="読込対象拡張子" Margin="4,0,5,0"/>
+                        <TextBlock Text="読込対象拡張子" Margin="10,0,5,0"/>
                         <TextBlock Text=".txt" Margin="15,0,5,0"/>
                         <CheckBox Margin="5,0,5,0" IsChecked="{Binding IsTxtTarget}"/>
                         <TextBlock Text=".doc" Margin="15,0,5,0"/>
                         <CheckBox Margin="5,0,5,0" IsEnabled="False"/>
                     </StackPanel>
+
+                    <!--デフォルトボタン-->
+                    <!--todo:ボタンサイズ-->
+                    <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30" 
+                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.AdvancedSetting}"/>
                 </Grid>
             </TabItem>
         </TabControl>
 
-        <!--デフォルトに戻すボタン-->
-        <Button Grid.Column="2" Grid.Row="3" Content="Default"/>
+        <!--AllResetボタン-->
+        <Button Grid.Column="2" Grid.Row="3" Content="AllReset" Command="{Binding Command_ResetToDefault}"
+                CommandParameter="{x:Static lib:SettingResetKind.AllReset}"/>
 
         <!--OKボタン-->
         <Button Grid.Column="4" Grid.Row="3" Content="OK"/>
@@ -157,7 +263,7 @@
         <Button Grid.Column="6" Grid.Row="3" Content="Cancel"/>
 
         <!--適用ボタン-->
-        <Button Grid.Column="8" Grid.Row="3" Content="Apply"/>
+        <Button Grid.Column="8" Grid.Row="3" Content="Apply" Command="{Binding Command_Apply}"/>
 
     </Grid>
 </Window>

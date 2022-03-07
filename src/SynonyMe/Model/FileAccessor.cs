@@ -75,7 +75,11 @@ namespace SynonyMe.Model
             return true;
         }
 
-
+        /// <summary>対象の設定ファイルを保存します</summary>
+        /// <param name="fileName">保存対象ファイル名（パスではない）</param>
+        /// <param name="target">対象オブジェクト</param>
+        /// <param name="targetType">保存対象ファイル種類</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool SaveSettingFile(string fileName, object target, Type targetType)
         {
             if (string.IsNullOrEmpty(fileName))
@@ -93,13 +97,24 @@ namespace SynonyMe.Model
             XmlWriterSettings settings = new XmlWriterSettings
             {
                 // xml宣言の省略はさせない
-                OmitXmlDeclaration = false
+                OmitXmlDeclaration = false,
+                // xml出力時のインデント設定
+                Encoding = System.Text.Encoding.UTF8,
+                Indent = true,
+                IndentChars = "  "
             };
 
-            using (var writer = XmlWriter.Create(fileName, settings))
+            using (var writer = XmlWriter.Create(GetSettingFilePath(fileName), settings))
             {
                 XmlSerializer serializer = new XmlSerializer(targetType);
-                serializer.Serialize(writer, target);
+                try
+                {
+                    serializer.Serialize(writer, target);
+                }
+                catch
+                {
+                    //todo:error log
+                }
             }
 
             return false;
