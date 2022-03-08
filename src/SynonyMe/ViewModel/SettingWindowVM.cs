@@ -5,14 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace SynonyMe.ViewModel
 {
     public class SettingWindowVM : ViewModelBase
     {
+        #region field
+
+        private const string CLASS_NAME = "SettingWindowVM";
+
+
+        #endregion
+
         #region property
 
         #region bindings
+
+        #region command
 
         /// <summary>ウィンドウタイトル</summary>
         public string WindowTitle { get; private set; }
@@ -39,6 +49,9 @@ namespace SynonyMe.ViewModel
         public ICommand Command_ResetToDefault { get; private set; }
 
 
+        public ICommand Command_DeleteAllSynonyms { get; private set; }
+
+        #endregion
 
         #region Tab_AdvancedSettings
 
@@ -391,8 +404,9 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        private string _fontColor = "Black";
-        public string FontColor
+        //todo:このあたりすべて：設定ファイルからの読み込み
+        private Color _fontColor = new Color();
+        public Color FontColor
         {
             get
             {
@@ -444,6 +458,225 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
+        #region Tab_SearchAndSynonymSettings
+
+        private Color _searchResultBackGround = new Color();
+        public Color SearchResultBackGround
+        {
+            get
+            {
+                return _searchResultBackGround;
+            }
+            set
+            {
+                _searchResultBackGround = value;
+                OnPropertyChanged("SearchResultBackGround");
+            }
+        }
+
+        private Color _searchResultFontColor = new Color();
+        public Color SearchResultFontColor
+        {
+            get
+            {
+                return _searchResultFontColor;
+            }
+            set
+            {
+                _searchResultFontColor = value;
+                OnPropertyChanged("SearchResultFontColor");
+            }
+        }
+
+        private Color _synonymSearchResultColor1 = new Color();
+        public Color SynonymSearchResultColor1
+        {
+            get
+            {
+                return _synonymSearchResultColor1;
+            }
+            set
+            {
+                _synonymSearchResultColor1 = value;
+                OnPropertyChanged("SynonymSearchResultColor1");
+            }
+        }
+
+        private Color _synonymSearchResultColor2 = new Color();
+        public Color SynonymSearchResultColor2
+        {
+            get
+            {
+                return _synonymSearchResultColor2;
+            }
+            set
+            {
+                _synonymSearchResultColor2 = value;
+                OnPropertyChanged("SynonymSearchResultColor2");
+            }
+        }
+
+        private Color _synonymSearchResultColor3 = new Color();
+        public Color SynonymSearchResultColor3
+        {
+            get
+            {
+                return _synonymSearchResultColor3;
+            }
+            set
+            {
+                _synonymSearchResultColor3 = value;
+                OnPropertyChanged("SynonymSearchResultColor3");
+            }
+        }
+
+
+        private Color _synonymSearchResultColor4 = new Color();
+        public Color SynonymSearchResultColor4
+        {
+            get
+            {
+                return _synonymSearchResultColor4;
+            }
+            set
+            {
+                _synonymSearchResultColor4 = value;
+                OnPropertyChanged("SynonymSearchResultColor4");
+            }
+        }
+
+
+        private Color _synonymSearchResultColor5 = new Color();
+        public Color SynonymSearchResultColor5
+        {
+            get
+            {
+                return _synonymSearchResultColor5;
+            }
+            set
+            {
+                _synonymSearchResultColor5 = value;
+                OnPropertyChanged("SynonymSearchResultColor5");
+            }
+        }
+
+        private Color _synonymSearchResultColor6 = new Color();
+        public Color SynonymSearchResultColor6
+        {
+            get
+            {
+                return _synonymSearchResultColor6;
+            }
+            set
+            {
+                _synonymSearchResultColor6 = value;
+                OnPropertyChanged("SynonymSearchResultColor6");
+            }
+        }
+
+        private Color _synonymSearchResultColor7 = new Color();
+        public Color SynonymSearchResultColor7
+        {
+            get
+            {
+                return _synonymSearchResultColor7;
+            }
+            set
+            {
+                _synonymSearchResultColor7 = value;
+                OnPropertyChanged("SynonymSearchResultColor7");
+            }
+        }
+
+
+        private Color _synonymSearchResultColor8 = new Color();
+        public Color SynonymSearchResultColor8
+        {
+            get
+            {
+                return _synonymSearchResultColor8;
+            }
+            set
+            {
+                _synonymSearchResultColor8 = value;
+                OnPropertyChanged("SynonymSearchResultColor8");
+            }
+        }
+
+
+        private Color _synonymSearchResultColor9 = new Color();
+        public Color SynonymSearchResultColor9
+        {
+            get
+            {
+                return _synonymSearchResultColor9;
+            }
+            set
+            {
+                _synonymSearchResultColor9 = value;
+                OnPropertyChanged("SynonymSearchResultColor9");
+            }
+        }
+
+        private Color _synonymSearchResultColor10 = new Color();
+        public Color SynonymSearchResultColor10
+        {
+            get
+            {
+                return _synonymSearchResultColor10;
+            }
+            set
+            {
+                _synonymSearchResultColor10 = value;
+                OnPropertyChanged("SynonymSearchResultColor10");
+            }
+        }
+
+        private Color _synonymSearchResultFontColor = new Color();
+        public Color SynonymSearchResultFontColor
+        {
+            get
+            {
+                return _synonymSearchResultFontColor;
+            }
+            set
+            {
+                _synonymSearchResultFontColor = value;
+                OnPropertyChanged("SynonymSearchResultFontColor");
+            }
+        }
+
+        private string _searchResultMargin = null;
+        public string SearchResultMargin
+        {
+            get
+            {
+                return _searchResultMargin;
+            }
+            set
+            {
+                _searchResultMargin = value;
+                OnPropertyChanged("SearchResultMargin");
+            }
+        }
+
+        private string _searchResultCount = null;
+        public string SearchResultCount
+        {
+            get
+            {
+                return _searchResultCount;
+            }
+            set
+            {
+                _searchResultCount = value;
+                OnPropertyChanged("SearchResultCount");
+            }
+        }
+
+
+        #endregion
+
 
         #endregion
 
@@ -491,6 +724,26 @@ namespace SynonyMe.ViewModel
         private void ExecuteApply(object parameter)
         {
 
+            #region GeneralSetting
+
+            Settings.GeneralSetting generalSetting = new Settings.GeneralSetting
+            {
+                WrappingText = this.WrappingText,
+                ShowingLineCount = this.ShowingLineCount,
+                ShowingLineNumber = this.ShowingLineNumber,
+                ShowingWordCount = this.ShowingWordCount,
+                ShowingNewLine = this.ShowingNewLine,
+                ShowingTab = this.ShowingTab,
+                ShowingSpace = this.ShowingSpace,
+                FontSize = this.FontSize,
+                FontColor = this.FontColor.ToString(),
+                MainFontName = this.JapaneseFontName,
+                SubFontName = this.EnglishFontName
+            };
+
+            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(Settings.GeneralSetting));
+
+            #endregion
 
             #region AdvancedSetting
 
@@ -526,6 +779,12 @@ namespace SynonyMe.ViewModel
             {
                 var a = (CommonLibrary.SettingResetKind)Enum.ToObject(typeof(CommonLibrary.SettingResetKind), parameter);
                 //todo:下流処理→Model
+            }
+            else
+            {
+                // 現状、想定していない
+                CommonLibrary.Log.Logger.Error(CLASS_NAME, "ExecuteResetToDefault", "parameter is null!");
+                return;
             }
 
             // todo:タブ毎に分かれた処理にすること
@@ -605,7 +864,8 @@ namespace SynonyMe.ViewModel
                     ErrorVisible = Visibility.Hidden;
                     FatalVisible = Visibility.Visible;
                     break;
-                default:
+                default: // 想定していないが、とりあえず全部表示させておく？
+                    //todo:ErrorLog
                     DebugVisible = Visibility.Visible;
                     InfoVisible = Visibility.Visible;
                     WarnVisible = Visibility.Visible;
@@ -613,6 +873,32 @@ namespace SynonyMe.ViewModel
                     FatalVisible = Visibility.Visible;
                     break;
             }
+        }
+
+        private void Test_FontGet()
+        {
+            //todo:起動時に一度呼ぶだけで良いので、設定ファイルの読み込み箇所とかに移動させるべき
+            // 日本語フォントを日本語で表示したいので、現在動いている環境の言語を取得する
+            //todo:WinwowのLanguageに、このlanguageを指定する必要がある
+            System.Windows.Markup.XmlLanguage language = System.Windows.Markup.XmlLanguage.GetLanguage
+                (System.Threading.Thread.CurrentThread.CurrentCulture.Name);
+
+            // 使える全言語を取得
+            var fonts = System.Windows.Media.Fonts.SystemFontFamilies.Select
+                 (i => new FontInfo() { FontFamily = i, FontName = i.Source });
+
+            // このままだと日本語で表示してくれないので、日本語のものはこちらで取得して入れ込み、表示してやる
+            fonts.Select(i => i.FontName = i.FontFamily.FamilyNames
+                 .FirstOrDefault(j => j.Key == language).Value ?? i.FontFamily.Source).ToArray();
+
+            //return fonts;
+
+        }
+
+        private class FontInfo
+        {
+            internal System.Windows.Media.FontFamily FontFamily { get; set; }
+            internal string FontName { get; set; }
         }
 
         #endregion

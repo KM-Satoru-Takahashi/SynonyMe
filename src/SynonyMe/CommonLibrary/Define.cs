@@ -27,7 +27,7 @@ namespace SynonyMe.CommonLibrary
 
     public enum SettingResetKind
     {
-        TextSetting,
+        GeneralSetting,
         SearchAndSynonymSetting,
         AdvancedSetting,
         AllReset
@@ -59,6 +59,12 @@ namespace SynonyMe.CommonLibrary
 
 
         internal const string SETTING_FILENAME_ADVANCED = "AdvancedSetting.xml";
+
+        internal const string SETTING_FILENAME_GENERAL = "GeneralSetting.xml";
+
+        internal const string SETTING_FILENAME_SEARCH = "SearchAndSynonymSetting";
+
+        internal const string FONTCOLOR_AUTO = "Auto";
 
         /// <summary>このexe名</summary>
         internal const string SYNONYME_EXENAME = "SynonyMe.exe";

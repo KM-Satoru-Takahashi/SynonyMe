@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SynonyMe.Settings
 {
     [Serializable]
-    public class TextSetting
+    public class GeneralSetting
     {
         public bool WrappingText { get; set; }
 
@@ -27,8 +27,8 @@ namespace SynonyMe.Settings
 
         public string FontColor { get; set; }
 
-        public string JapaneseFontName { get; set; }
+        public string MainFontName { get; set; }
 
-        public string EnglishFontName { get; set; }
+        public string SubFontName { get; set; }
     }
 }

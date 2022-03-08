@@ -232,10 +232,10 @@
 
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
-                <ae:TextEditor Grid.Row="1" x:Name="TextEditor"
+                <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
                     dd:DragDrop.IsDropTarget="True"
                     dd:DragDrop.DropHandler="{Binding}"                    
-                    Document="{Binding Path=DisplayTextDoc}"
+                    Document="{Binding Path=TextDocument}"
                     Background="{Binding AvalonEditBackGround}"
                     Focusable="True" ShowLineNumbers="True" >
                     <!--todo:showLineNumbersのバインディング、LineNumbersForgroundの設定-->

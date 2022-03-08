@@ -314,12 +314,17 @@ namespace SynonyMe.AvalonEdit.Highlight
                 {
                     // Name = "keywordColor", // 別に名前は何でもいい
                     Foreground = info.ForeGround,
-                    Background = info.BackGrouond
+                    Background = info.BackGrouond,
+                    // 検索結果表示を太字にする
+                    //todo:設定で持たせるべきかもしれない
+                    FontWeight = System.Windows.FontWeights.Bold,
+                    //FontStyle = System.Windows.FontStyles.Italic これは斜体になる
                 };
 
                 string colorName = "keyword";
 
                 // 文字毎に異なる背景色を設定したいため、ここでColorおよびColorRefのNameを紐付ける必要がある
+                // 大量にあることを想定し、StringBuilderで結合する
                 StringBuilder sb = new StringBuilder(colorName);
                 sb.Append(i.ToString());
 

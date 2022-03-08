@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<GeneralSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <WrappingText>false</WrappingText>
+  <ShowingLineCount>false</ShowingLineCount>
+  <ShowingLineNumber>false</ShowingLineNumber>
+  <ShowingWordCount>false</ShowingWordCount>
+  <ShowingNewLine>false</ShowingNewLine>
+  <ShowingTab>false</ShowingTab>
+  <ShowingSpace>false</ShowingSpace>
+  <FontSize>0.0</FontSize>
+  <FontColor>#FFFF0000</FontColor>
+  <MainFontName>Meiryo</MainFontName>
+  <SubFontName>Consolas</SubFontName>
+</GeneralSetting>

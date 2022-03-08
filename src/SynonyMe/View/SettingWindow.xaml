@@ -4,11 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:bh="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:SynonyMe.View"
         xmlns:vm="clr-namespace:SynonyMe.ViewModel"
         xmlns:lib="clr-namespace:SynonyMe.CommonLibrary"
         mc:Ignorable="d"
         Title="SettingWindow" Height="450" Width="800">
+    <!--Todo:Window.Languageのバインディング-->
 
     <Window.DataContext>
         <vm:SettingWindowVM/>
@@ -52,10 +54,7 @@
         </Grid.ColumnDefinitions>
 
         <TabControl Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="8">
-            <TabItem Header="001">
-                <TextBlock Text="Content001"/>
-            </TabItem>
-            <TabItem Header="002">
+            <TabItem Header="一般設定">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <!--左側余白-->
@@ -143,21 +142,210 @@
                     <TextBox Grid.Row="1" Grid.Column="5" Text="{Binding FontSize}" Width="40" VerticalAlignment="Center" HorizontalAlignment="Left"/>
 
                     <TextBlock Grid.Row="3" Grid.Column="4" Text="フォントカラー" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                    <!--todo:カラーピッカー実装-->
+                    <xctk:ColorPicker Grid.Row="3" Grid.Column="5" SelectedColor="{Binding FontColor}"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
 
-                    <TextBlock Grid.Row="5" Grid.Column="4" Text="フォント名称(日)" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="5" Grid.Column="4" Text="フォント名称(主)" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     <!--todo:プルダウンメニュー実装-->
 
-                    <TextBlock Grid.Row="7" Grid.Column="4" Text="フォント名称(英) ※日本語フォントが優先されます" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Row="7" Grid.Column="4" Text="フォント名称(副) ※[主]で表示できない場合" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     <!--todo:プルダウンメニュー実装-->
 
                     <!--todo:ボタンサイズを他タブと合わせて適切に-->
-                    <Button Grid.Row="17" Width="70" Height="30" Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Left"
-                            Content="デフォルト" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.TextSetting}"/>
+                    <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
+                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.GeneralSetting}"/>
 
                 </Grid>
             </TabItem>
-            <TabItem Header="003">
+            <TabItem Header="検索・類語検索設定">
+                <!--設定で検索結果と類語検索結果の斜体表示-->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <!--左側余白-->
+                        <ColumnDefinition Width="10"/>
+                        <!--メインペイン-->
+                        <ColumnDefinition Width="*"/>
+                        <!--右側余白-->
+                        <ColumnDefinition Width="10"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <!--上側余白-->
+                        <RowDefinition Height="10"/>
+                        <!--検索結果見出し-->
+                        <RowDefinition Height="25"/>
+                        <!--検索結果設定行2つ-->
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--類語検索結果見出し-->
+                        <RowDefinition Height="20"/>
+                        <!--類語検索結果設定行3つ-->
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--マージン文字数-->
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--検索結果表示数-->
+                        <RowDefinition Height="25"/>
+                        <!--項目間余白-->
+                        <RowDefinition Height="5"/>
+                        <!--左側に類語全削除ボタン、右側に項目リセットボタン-->
+                        <RowDefinition Height="25"/>
+                        <!--下側余白-->
+                        <RowDefinition Height="10"/>
+                    </Grid.RowDefinitions>
+
+                    <!--検索結果設定-->
+                    <TextBlock Text="検索結果" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <xctk:ColorPicker Margin="40,0,0,0" SelectedColor="{Binding SearchResultBackGround}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center"  Margin="5,0,0,0"/>
+                        <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SearchResultFontColor}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                    </StackPanel>
+
+                    <!--類語検索結果結果設定-->
+                    <TextBlock Text="検索結果" Grid.Column="1" Grid.Row="5" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Grid.Row="6" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色1" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor1}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                        <TextBlock Text="背景色2" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor2}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色3" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor3}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色4" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor4}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <!--todo:背景色10と縦を合わせるためにわざと半角空白入れているが、ウィンドウサイズ変えたらどうかな？-->
+                        <TextBlock Text="背景色5  " VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor5}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Grid.Row="7" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="背景色6" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor6}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                        <TextBlock Text="背景色7" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor7}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色8" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor8}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色9" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor9}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                        <TextBlock Text="背景色10" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="10,0,0,0" SelectedColor="{Binding SynonymSearchResultColor10}" Width="50"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Grid.Row="8" VerticalAlignment="Center" Orientation="Horizontal">
+                        <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                        <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center"  Margin="5,0,0,0"/>
+                        <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
+                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <!--↓のBindingTodo-->
+                        <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SynonymSearchResultFontColor}" Width="100"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="10">
+                        <TextBlock Text="検索結果の前後文字数" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <!--todo:Binding-->
+                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
+                                 InputMethod.IsInputMethodEnabled="False">
+                            <!--ペースト不可-->
+                            <bh:Interaction.Behaviors>
+                                <vm:KeyInputOnlyTextboxBehavior/>
+                            </bh:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="12">
+                        <TextBlock Text="検索結果の最大表示数" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        <!--todo:Binding-->
+                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
+                                 InputMethod.IsInputMethodEnabled="False">
+                            <!--ペースト不可-->
+                            <bh:Interaction.Behaviors>
+                                <vm:KeyInputOnlyTextboxBehavior/>
+                            </bh:Interaction.Behaviors>
+                        </TextBox>
+                    </StackPanel>
+
+                    <!--各種ボタン-->
+                    <Grid Grid.Column="1" Grid.Row="14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="SynonymAllDelete"
+                                Command="{Binding Command_DeleteAllSynonyms}"/>
+                        <Button Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Content="Default"
+                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.SearchAndSynonymSetting}"/>
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="高度な設定">
                 <Grid>
                     <Grid.RowDefinitions>
                         <!--上部余白-->
@@ -207,7 +395,7 @@
                     <!--日数の表示でガタガタずれるのを抑止するため、Gridで場所を整える-->
                     <Grid Grid.Row="5">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="125" />
+                            <ColumnDefinition Width="140" />
                             <ColumnDefinition Width="125"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
@@ -222,6 +410,7 @@
                     </Grid>
 
                     <!--検索・類語検索結果表示数-->
+                    <!--todo:これは検索・類語検索設定にいれるべきでは？-->
                     <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="検索・類語検索結果表示数" Margin="10,0,5,0"/>
                         <!--入力値のチェックはVMで行い、入力手段のチェックはWPF/Behaviorで行う-->
@@ -246,7 +435,7 @@
 
                     <!--デフォルトボタン-->
                     <!--todo:ボタンサイズ-->
-                    <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30" 
+                    <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30"  Margin="0,0,10,0"
                             Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.AdvancedSetting}"/>
                 </Grid>
             </TabItem>

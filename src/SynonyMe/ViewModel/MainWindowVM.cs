@@ -99,13 +99,13 @@ namespace SynonyMe.ViewModel
         public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
 
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
-        public TextDocument DisplayTextDoc
+        public TextDocument TextDocument
         {
             get
             {
                 if (_model != null)
                 {
-                    return _model.DisplayTextDocument;
+                    return _model.TextDocument;
                 }
 
                 // 異常系 Model側でログ出しているのでここではnullを返しておくだけでいい想定
@@ -115,9 +115,30 @@ namespace SynonyMe.ViewModel
             {
                 if (_model != null)
                 {
-                    _model.DisplayTextDocument = value;
+                    _model.TextDocument = value;
                 }
                 OnPropertyChanged("DisplayTextDoc");
+            }
+        }
+
+        public bool IsModified
+        {
+            get
+            {
+                return _model.IsModified;
+            }
+            set
+            {
+                _model.IsModified = value;
+                if(_model.IsModified)
+                {
+                    EditedTextVisible = Visibility.Visible;
+                }
+                else
+                {
+                    EditedTextVisible = Visibility.Hidden;
+                }
+                OnPropertyChanged("IsModified");
             }
         }
 
@@ -358,19 +379,19 @@ namespace SynonyMe.ViewModel
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
             // DependencyPropertyDescriptorは強参照のため、参照を解除できず、繰り返し行うとメモリリークにつながる
             // 現状、Initializeは起動時にしか呼ばれず、動的にメインの文章表示領域が削除・再表示されることは現状ないので、一旦この実装で機能を満たす
-            var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
-            if (descripter != null)
-            {
-                if (_model != null && _model.TextEditor != null)
-                {
-                    descripter.RemoveValueChanged(_model.TextEditor, OnIsModifiedChanged);
-                    descripter.AddValueChanged(_model.TextEditor, OnIsModifiedChanged);
-                }
-                else
-                {
-                    Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
-                }
-            }
+            //var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
+            //if (descripter != null)
+            //{
+            //    if (_model != null && _model.TextDocument != null)
+            //    {
+            //        descripter.RemoveValueChanged(_model.TextDocument, OnIsModifiedChanged);
+            //        descripter.AddValueChanged(_model.TextDocument, OnIsModifiedChanged);
+            //    }
+            //    else
+            //    {
+            //        Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
+            //    }
+            //}
         }
 
         /// <summary>各種コマンドを初期化します</summary>
@@ -653,7 +674,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            _model.Save(DisplayTextDoc.Text);
+            _model.Save(TextDocument.Text);
         }
 
         /// <summary>類語ウィンドウを開く</summary>
@@ -690,7 +711,7 @@ namespace SynonyMe.ViewModel
             }
 
             // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
-            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, DisplayTextDoc.Text, SEARCHRESULT_MARGIN);
+            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, TextDocument.Text, SEARCHRESULT_MARGIN);
             if (UpdateSearchResultVisiblity(indexWordPairs) == false)
             {
                 Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
@@ -808,15 +829,19 @@ namespace SynonyMe.ViewModel
             // 文書更新時に都度呼び出されるので、異常系以外でログは出さない
             // Logger.InfoLog(CLASS_NAME, "ExecuteUpdateTextInfo", "start");
 
-            if (_model == null || _model.DisplayTextDocument == null)
+            if (_model == null || _model.TextDocument == null)
             {
                 WordCount = null;
                 NumberOfLines = null;
             }
             else
             {
-                WordCount = _model.DisplayTextDocument.Text.Length.ToString();
-                NumberOfLines = _model.DisplayTextDocument.LineCount.ToString();
+                //todo:設定に合わせて計算する
+                NumberOfLines = _model.TextDocument.LineCount.ToString();
+                //todo:計算式が汚い……
+                //何もしないと改行がCR+LFで2文字カウントされてしまう。また、1行目に改行コードは存在しない
+                //なので、行数の2倍を文字数から引き、1行目の行数分だけ帳尻を合わせてやれば、改行を除いた文字数になる
+                WordCount = (2+_model.TextDocument.Text.Length -2*_model.TextDocument.LineCount).ToString();
             }
         }
 
@@ -878,8 +903,8 @@ namespace SynonyMe.ViewModel
             }
 
             // 表示するモノがないか、空テキストなら検索する意味がない
-            if (_model.TextEditor == null ||
-                string.IsNullOrEmpty(_model.TextEditor.Text))
+            if (_model.TextDocument == null ||
+                string.IsNullOrEmpty(_model.TextDocument.Text))
             {
                 Logger.Error(CLASS_NAME, "ExecuteSynonymSearch", "target text is null or empty!");
                 return;
@@ -890,7 +915,7 @@ namespace SynonyMe.ViewModel
             DisplaySynonymWords.CopyTo(synonymWords, 0);
 
             // 類語検索はmodelに依頼
-            DisplaySynonymSearchResult[] synonymSearchResults = _model.SynonymSearch(synonymWords, DisplayTextDoc.Text);
+            DisplaySynonymSearchResult[] synonymSearchResults = _model.SynonymSearch(synonymWords, TextDocument.Text);
 
             // 現状、特に表示しているモノとの整合性は考えずに更新する
             // メモリの負荷が大きくなってきたら、別途検討することにする
