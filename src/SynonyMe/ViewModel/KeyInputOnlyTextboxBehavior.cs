@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace SynonyMe.ViewModel
 {
-    /// <summary>設定ウィンドウ等で、数値のみをテキストボックスに入力させる場合に使用する</summary>
+    /// <summary>設定ウィンドウ等で、テキストボックスにキータッチのみで入力させる場合に使用する（ペースト等を許容しない）</summary>
     public class KeyInputOnlyTextboxBehavior : Behavior<TextBox>
     {
         // 直前にペーストを行ったか

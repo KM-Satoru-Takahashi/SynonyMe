@@ -304,6 +304,12 @@ namespace SynonyMe.Model.Manager
             return true;
         }
 
+        internal static bool DeleteAllSynonymGroupsAndWords()
+        {
+            //todo:実装 TRUNCATE TABLEでいけるらしい
+            return true;
+        }
+
         /// <summary>類語グループの更新を行う</summary>
         /// <param name="updateSql"></param>
         /// <returns></returns>

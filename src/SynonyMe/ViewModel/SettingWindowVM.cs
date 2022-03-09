@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using SynonyMe.Settings;
+using SynonyMe.CommonLibrary;
+using SynonyMe.Model;
+using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.ViewModel
 {
@@ -15,6 +19,13 @@ namespace SynonyMe.ViewModel
 
         private const string CLASS_NAME = "SettingWindowVM";
 
+        private GeneralSetting _generalSetting = null;
+
+        private SearchAndSynonymSetting _searchAndSynonymSetting = null;
+
+        private AdvancedSetting _advancedSetting = null;
+
+        private Model.SettingWindowModel _model = null;
 
         #endregion
 
@@ -238,7 +249,7 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
-        #region Tab_TextSettings
+        #region Tab_GeneralSettings
 
         private bool _wrappingText = false;
         public bool WrappingText
@@ -394,36 +405,36 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        private string _japaneseFontName = "Meiryo";
-        public string JapaneseFontName
+        private string _mainFontName = "Meiryo";
+        public string MainFontName
         {
             get
             {
-                return _japaneseFontName;
+                return _mainFontName;
             }
             set
             {
-                if (_japaneseFontName != value)
+                if (_mainFontName != value)
                 {
-                    _japaneseFontName = value;
-                    OnPropertyChanged("JapaneseFontName");
+                    _mainFontName = value;
+                    OnPropertyChanged("MainFontName");
                 }
             }
         }
 
-        private string _englishFontName = "Consolas";
-        public string EnglishFontName
+        private string _subFontName = "Consolas";
+        public string SubFontName
         {
             get
             {
-                return _englishFontName;
+                return _subFontName;
             }
             set
             {
-                if (_englishFontName != value)
+                if (_subFontName != value)
                 {
-                    _englishFontName = value;
-                    OnPropertyChanged("EnglishFontName");
+                    _subFontName = value;
+                    OnPropertyChanged("SubFontName");
                 }
             }
         }
@@ -639,7 +650,7 @@ namespace SynonyMe.ViewModel
                 {
                     return;
                 }
-                if (System.Text.RegularExpressions.Regex.IsMatch(value, CommonLibrary.Define.REGEX_NUMBER_ONLY) == false)
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, Define.REGEX_NUMBER_ONLY) == false)
                 {
                     return;
                 }
@@ -662,7 +673,7 @@ namespace SynonyMe.ViewModel
                 {
                     return;
                 }
-                if (System.Text.RegularExpressions.Regex.IsMatch(value, CommonLibrary.Define.REGEX_NUMBER_ONLY) == false)
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, Define.REGEX_NUMBER_ONLY) == false)
                 {
                     return;
                 }
@@ -693,15 +704,197 @@ namespace SynonyMe.ViewModel
         /// <summary>初期化処理</summary>
         private void Initialize()
         {
+            _model = new SettingWindowModel(this);
+
             Command_Ok = new CommandBase(ExecuteOk, null);
             Command_Cancel = new CommandBase(ExecuteCancel, null);
             Command_Apply = new CommandBase(ExecuteApply, null);
             Command_ResetToDefault = new CommandBase(ExecuteResetToDefault, null);
 
+            LoadSettings();
 
-            //todo:設定ファイル読み込み
-            //Model.FileAccessor.GetFileAccessor.LoadSettingFile();
+            ApplyAllSettings();
         }
+
+        /// <summary>全設定ファイルを読み込みます</summary>
+        private void LoadSettings()
+        {
+            _generalSetting = FileAccessor.GetFileAccessor.LoadSettingFile<GeneralSetting>(Define.SETTING_FILENAME_GENERAL);
+            if (_generalSetting == null)
+            {
+                Logger.Error(CLASS_NAME, "LoadSettings", $"Load GeneralSetting.xml failed. Filename:[{Define.SETTING_FILENAME_GENERAL}]");
+                _generalSetting = new GeneralSetting()
+                {
+                    FontColor = "#FF000000", // 黒
+                    FontSize = 12,
+                    MainFontName = "Meiryo",
+                    SubFontName = "Consolas",
+                    WrappingText = false,
+                    ShowingLineCount = true,
+                    ShowingLineNumber = true,
+                    ShowingNewLine = false,
+                    ShowingSpace = false,
+                    ShowingTab = false,
+                    ShowingWordCount = true
+                };
+            }
+
+            _searchAndSynonymSetting = FileAccessor.GetFileAccessor.LoadSettingFile<SearchAndSynonymSetting>(Define.SETTING_FILENAME_SEARCH);
+            if (_searchAndSynonymSetting == null)
+            {
+                Logger.Error(CLASS_NAME, "LoadSettings", $"Load SearchAndSynonymSetting.xml failed. FileName:[{Define.SETTING_FILENAME_SEARCH}]");
+                string black = "#FF000000";
+                string transparent = "#00FFFFFF";
+
+                _searchAndSynonymSetting = new SearchAndSynonymSetting()
+                {
+                    SearchResultBackGroundColor = transparent, // 透明
+                    SearchResultDisplayCount = 100,
+                    SearchResultFontColor = black, // 黒
+                    SearchResultMargin = 10,
+                    SynonymSearchFontColor = black,
+                    SynonymSearchResultColor1 = transparent, // 異常なので透明にしておく、todo:規定値どうするか
+                    SynonymSearchResultColor2 = transparent,
+                    SynonymSearchResultColor3 = transparent,
+                    SynonymSearchResultColor4 = transparent,
+                    SynonymSearchResultColor5 = transparent,
+                    SynonymSearchResultColor6 = transparent,
+                    SynonymSearchResultColor7 = transparent,
+                    SynonymSearchResultColor8 = transparent,
+                    SynonymSearchResultColor9 = transparent,
+                    SynonymSearchResultColor10 = transparent
+                };
+            }
+
+            _advancedSetting = FileAccessor.GetFileAccessor.LoadSettingFile<AdvancedSetting>(Define.SETTING_FILENAME_ADVANCED);
+            if (_advancedSetting == null)
+            {
+                Logger.Error(CLASS_NAME, "LoadSettings", $"Load AdvancedSetting failed. FileName:[{Define.SETTING_FILENAME_ADVANCED}]");
+                _advancedSetting = new AdvancedSetting()
+                {
+                    LogRetentionDays = 30,
+                    LogLevel = LogLevel.INFO,
+                    SpeedUpSearch = false,
+                    TargetFileExtensionList = new List<string>() //todo:初期値はこれで良いか？
+                    {
+                        "txt"
+                    }
+                };
+            }
+        }
+
+        /// <summary>全設定を更新・適用します</summary>
+        private void ApplyAllSettings()
+        {
+            // LoadSettingsで必ず値を代入しているはずなので、nullチェックだけして異常ならreturnしてしまう
+            // この時点でexe動作の正常性を担保できていない(内部処理でnewしているのにnullっているため)
+            if (_generalSetting == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ApplySettings", "_generalSetting is null!");
+                return;
+            }
+
+            WrappingText = _generalSetting.WrappingText;
+            ShowingLineCount = _generalSetting.ShowingLineCount;
+            ShowingLineNumber = _generalSetting.ShowingLineNumber;
+            ShowingWordCount = _generalSetting.ShowingWordCount;
+            ShowingNewLine = _generalSetting.ShowingNewLine;
+            ShowingTab = _generalSetting.ShowingTab;
+            ShowingSpace = _generalSetting.ShowingSpace;
+            FontColor = ConvertStringToColor(_generalSetting.FontColor);
+            MainFontName = _generalSetting.MainFontName;
+            SubFontName = _generalSetting.SubFontName;
+
+            if (_searchAndSynonymSetting == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ApplySettings", "_searchAndSynonymSetting is null!");
+                return;
+            }
+
+            SearchResultBackGround = ConvertStringToColor(_searchAndSynonymSetting.SearchResultBackGroundColor);
+            SearchResultFontColor = ConvertStringToColor(_searchAndSynonymSetting.SearchResultFontColor);
+            SynonymSearchResultColor1 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor1);
+            SynonymSearchResultColor2 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor2);
+            SynonymSearchResultColor3 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor3);
+            SynonymSearchResultColor4 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor4);
+            SynonymSearchResultColor5 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor5);
+            SynonymSearchResultColor6 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor6);
+            SynonymSearchResultColor7 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor7);
+            SynonymSearchResultColor8 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor8);
+            SynonymSearchResultColor9 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor9);
+            SynonymSearchResultColor10 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor10);
+            SynonymSearchResultFontColor = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchFontColor);
+            SearchResultMargin = _searchAndSynonymSetting.SearchResultMargin.ToString();
+            SearchResultDisplayCount = _searchAndSynonymSetting.SearchResultDisplayCount.ToString();
+
+            if (_advancedSetting == null)
+            {
+                Logger.Fatal(CLASS_NAME, "ApplySettings", "_advancedSetting is null!");
+                return;
+            }
+
+            LogOutputLevel = (double)_advancedSetting.LogLevel; //todo:安全なキャスト
+            LogRetentionDays = _advancedSetting.LogRetentionDays;
+            UseFastSearch = _advancedSetting.SpeedUpSearch;
+            if (_advancedSetting.TargetFileExtensionList.Contains("txt")) //todo:リスト検索方法
+            {
+                IsTxtTarget = true;
+            }
+
+            //todo:プロパティに値割り当て
+        }
+
+        /// <summary>#AARRGGBB形式の文字列をColor構造体に変換します</summary>
+        /// <param name="source">#AARRGGBBであること</param>
+        /// <returns>文字列異常は透明(#00FFFFFF),変換失敗は対応チャネルをFF</returns>
+        private Color ConvertStringToColor(string source)
+        {
+            // [#AARRGGBB]文字列形式であるかを確認
+            if (string.IsNullOrEmpty(source) ||
+               source.Length != "#AARRGGBB".Length)
+            {
+                Logger.Error(CLASS_NAME, "ConvertStringToColor", $"source is incorrect! value[{source}]");
+                // 背景色をとりあえず透明で返しておくことにする
+                return Colors.Transparent;
+            }
+
+            string stringAValue = source.Substring(1, 2);
+            string stringRValue = source.Substring(3, 2);
+            string stringGValue = source.Substring(5, 2);
+            string stringBValue = source.Substring(7, 2);
+
+            byte byteAValue, byteRValue, byteGValue, byteBValue;
+
+            if (byte.TryParse(stringAValue, System.Globalization.NumberStyles.HexNumber, null, out byteAValue) == false)
+            {
+                Logger.Error(CLASS_NAME, "ConvertStringToColor", $"AValue is invalid.[{stringAValue}]");
+                byteAValue = 255;
+            }
+            if (byte.TryParse(stringRValue, System.Globalization.NumberStyles.HexNumber, null, out byteRValue) == false)
+            {
+                Logger.Error(CLASS_NAME, "ConvertStringToColor", $"RValue is invalid.[{stringRValue}]");
+                byteRValue = 255;
+            }
+            if (byte.TryParse(stringGValue, System.Globalization.NumberStyles.HexNumber, null, out byteGValue) == false)
+            {
+                Logger.Error(CLASS_NAME, "ConvertStringToColor", $"GValue is invalid.[{stringGValue}]");
+                byteGValue = 255;
+            }
+            if (byte.TryParse(stringBValue, System.Globalization.NumberStyles.HexNumber, null, out byteBValue) == false)
+            {
+                Logger.Error(CLASS_NAME, "ConvertStringToColor", $"GValue is invalid.[{stringBValue}]");
+                byteBValue = 255;
+            }
+
+            return new Color()
+            {
+                A = byteAValue,
+                R = byteRValue,
+                G = byteGValue,
+                B = byteBValue
+            };
+        }
+
 
         /// <summary>OKボタン押下時処理</summary>
         /// <param name="parameter"></param>
@@ -723,10 +916,16 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteApply(object parameter)
         {
-
+            //todo:メソッド切り出し
             #region GeneralSetting
 
-            Settings.GeneralSetting generalSetting = new Settings.GeneralSetting
+            int convFontSize = 0;
+            if (int.TryParse(FontSize, out convFontSize))
+            {
+                //todo:log. default
+            }
+
+            GeneralSetting generalSetting = new GeneralSetting
             {
                 WrappingText = this.WrappingText,
                 ShowingLineCount = this.ShowingLineCount,
@@ -735,31 +934,31 @@ namespace SynonyMe.ViewModel
                 ShowingNewLine = this.ShowingNewLine,
                 ShowingTab = this.ShowingTab,
                 ShowingSpace = this.ShowingSpace,
-                FontSize = this.FontSize,
+                FontSize = convFontSize,
                 FontColor = this.FontColor.ToString(),
-                MainFontName = this.JapaneseFontName,
-                SubFontName = this.EnglishFontName
+                MainFontName = this.MainFontName,
+                SubFontName = this.SubFontName
             };
 
-            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(Settings.GeneralSetting));
+            FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(GeneralSetting));
 
             #endregion
 
             #region SearchAndSynonymSetting
 
             int margin = 0;
-            if(int.TryParse(SearchResultMargin, out margin)==false)
+            if (int.TryParse(SearchResultMargin, out margin) == false)
             {
                 //todo:ログ出し、規定値
             }
 
             int resultCount = 0;
-            if(int.TryParse(SearchResultDisplayCount, out resultCount)==false)
+            if (int.TryParse(SearchResultDisplayCount, out resultCount) == false)
             {
                 //todo:ログ出し、規定値
             }
 
-            Settings.SearchAndSynonymSetting searchAndSynonymSetting = new Settings.SearchAndSynonymSetting()
+            SearchAndSynonymSetting searchAndSynonymSetting = new SearchAndSynonymSetting()
             {
                 SearchResultBackGroundColor = SearchResultBackGround.ToString(),
                 SearchResultFontColor = SearchResultFontColor.ToString(),
@@ -780,7 +979,7 @@ namespace SynonyMe.ViewModel
                 SearchResultDisplayCount = resultCount
             };
 
-            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_SEARCH, searchAndSynonymSetting, typeof(Settings.SearchAndSynonymSetting));
+            FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_SEARCH, searchAndSynonymSetting, typeof(SearchAndSynonymSetting));
 
             #endregion
 
@@ -792,21 +991,23 @@ namespace SynonyMe.ViewModel
                 resultDisplayCount = 100;//todo 規定値
             }
 
-            Settings.AdvancedSetting advancedSetting = new Settings.AdvancedSetting
+            AdvancedSetting advancedSetting = new AdvancedSetting
             {
                 LogLevel = ConvertDoubleToLogLevel(LogOutputLevel),
                 SpeedUpSearch = UseFastSearch,
                 LogRetentionDays = Convert.ToInt32(LogRetentionDays),
-                SynonymSearchResultDisplayCount = resultDisplayCount,
                 TargetFileExtensionList = GetTargetExtensionsList()
             };
 
-            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_ADVANCED, advancedSetting, typeof(Settings.AdvancedSetting));
+            FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_ADVANCED, advancedSetting, typeof(AdvancedSetting));
 
             #endregion
+
+            //todo:完了ダイアログ表示
         }
 
-
+        /// <summary>表示されているタブをデフォルトにリセットします</summary>
+        /// <param name="parameter"></param>
         private void ExecuteResetToDefault(object parameter)
         {
             if (parameter == null)
@@ -814,9 +1015,9 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            if (Enum.IsDefined(typeof(CommonLibrary.SettingResetKind), parameter))
+            if (Enum.IsDefined(typeof(SettingResetKind), parameter))
             {
-                var a = (CommonLibrary.SettingResetKind)Enum.ToObject(typeof(CommonLibrary.SettingResetKind), parameter);
+                var a = (SettingResetKind)Enum.ToObject(typeof(SettingResetKind), parameter);
                 //todo:下流処理→Model
             }
             else
@@ -829,10 +1030,28 @@ namespace SynonyMe.ViewModel
             // todo:タブ毎に分かれた処理にすること
         }
 
+        /// <summary>全類語グループおよび類語を削除します</summary>
+        private void DeleteAllSynonymGroupsAndWords()
+        {
+            //tood:確認ダイアログ
+        }
+
+        /// <summary>全ログファイルを削除します</summary>
+        private void DeleteAllLogFiles()
+        {
+            //todo:確認ダイアログ
+        }
+
+        /// <summary>全設定を初期値にリセットします</summary>
+        private void ResetAllSettingsToDefault()
+        {
+            // todo:確認ダイアログ
+        }
+
         /// <summary>設定ウィンドウを閉じます</summary>
         private void CloseSettingWindow()
         {
-            Model.Manager.WindowManager.CloseSubWindow(CommonLibrary.Define.SubWindowName.SettingWindow);
+            Model.Manager.WindowManager.CloseSubWindow(Define.SubWindowName.SettingWindow);
         }
 
         private List<string> GetTargetExtensionsList()
@@ -847,56 +1066,56 @@ namespace SynonyMe.ViewModel
             return targets;
         }
 
-        private CommonLibrary.LogLevel ConvertDoubleToLogLevel(double logLevel)
+        private LogLevel ConvertDoubleToLogLevel(double logLevel)
         {
             int intLogLevel = Convert.ToInt32(logLevel);
 
-            if (Enum.IsDefined(typeof(CommonLibrary.LogLevel), intLogLevel))
+            if (Enum.IsDefined(typeof(LogLevel), intLogLevel))
             {
-                return (CommonLibrary.LogLevel)Enum.ToObject(typeof(CommonLibrary.LogLevel), intLogLevel);
+                return (LogLevel)Enum.ToObject(typeof(LogLevel), intLogLevel);
             }
 
             // 変換不可な値だった場合、規定値を返すようにする
             // todo:error log
-            return CommonLibrary.LogLevel.INFO;
+            return LogLevel.INFO;
         }
 
 
         /// <summary>ログ出力レベル表記をスライダーバードラッグにあわせて更新します</summary>
         /// <param name="logLevel"></param>
-        private void UpdateLogLevelVisible(CommonLibrary.LogLevel logLevel)
+        private void UpdateLogLevelVisible(LogLevel logLevel)
         {
             switch (logLevel)
             {
-                case CommonLibrary.LogLevel.DEBUG:
+                case LogLevel.DEBUG:
                     DebugVisible = Visibility.Visible;
                     InfoVisible = Visibility.Visible;
                     WarnVisible = Visibility.Visible;
                     ErrorVisible = Visibility.Visible;
                     FatalVisible = Visibility.Visible;
                     break;
-                case CommonLibrary.LogLevel.INFO:
+                case LogLevel.INFO:
                     DebugVisible = Visibility.Hidden;
                     InfoVisible = Visibility.Visible;
                     WarnVisible = Visibility.Visible;
                     ErrorVisible = Visibility.Visible;
                     FatalVisible = Visibility.Visible;
                     break;
-                case CommonLibrary.LogLevel.WARN:
+                case LogLevel.WARN:
                     DebugVisible = Visibility.Hidden;
                     InfoVisible = Visibility.Hidden;
                     WarnVisible = Visibility.Visible;
                     ErrorVisible = Visibility.Visible;
                     FatalVisible = Visibility.Visible;
                     break;
-                case CommonLibrary.LogLevel.ERROR:
+                case LogLevel.ERROR:
                     DebugVisible = Visibility.Hidden;
                     InfoVisible = Visibility.Hidden;
                     WarnVisible = Visibility.Hidden;
                     ErrorVisible = Visibility.Visible;
                     FatalVisible = Visibility.Visible;
                     break;
-                case CommonLibrary.LogLevel.FATAL:
+                case LogLevel.FATAL:
                     DebugVisible = Visibility.Hidden;
                     InfoVisible = Visibility.Hidden;
                     WarnVisible = Visibility.Hidden;
@@ -923,7 +1142,7 @@ namespace SynonyMe.ViewModel
                 (System.Threading.Thread.CurrentThread.CurrentCulture.Name);
 
             // 使える全言語を取得
-            var fonts = System.Windows.Media.Fonts.SystemFontFamilies.Select
+            var fonts = Fonts.SystemFontFamilies.Select
                  (i => new FontInfo() { FontFamily = i, FontName = i.Source });
 
             // このままだと日本語で表示してくれないので、日本語のものはこちらで取得して入れ込み、表示してやる
@@ -936,7 +1155,7 @@ namespace SynonyMe.ViewModel
 
         private class FontInfo
         {
-            internal System.Windows.Media.FontFamily FontFamily { get; set; }
+            internal FontFamily FontFamily { get; set; }
             internal string FontName { get; set; }
         }
 

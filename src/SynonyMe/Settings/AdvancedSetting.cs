@@ -16,8 +16,6 @@ namespace SynonyMe.Settings
 
         public int LogRetentionDays { get; set; }
 
-        public int SynonymSearchResultDisplayCount { get; set; }
-
         public List<string> TargetFileExtensionList { get; set; }
 
         public AdvancedSetting()

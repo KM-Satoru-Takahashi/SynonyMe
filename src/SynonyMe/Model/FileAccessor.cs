@@ -120,9 +120,13 @@ namespace SynonyMe.Model
             return false;
         }
 
-        internal XmlDocument LoadSettingFile()
+        internal T LoadSettingFile<T>(string targetFileName)
+            where T : class
         {
-            string targetFilePath = GetSettingFilePath(CommonLibrary.Define.SETTING_FILENAME_ADVANCED);
+            string targetFilePath = GetSettingFilePath(targetFileName);
+            // 読込対象ファイルパスを必ず出力しておく(最下流のここでしかファイルパスを取得していないため)
+            Logger.Info(CLASS_NAME, "LoadSettingFile", $"TargetFilePath:[{targetFilePath}]");
+
             if (string.IsNullOrEmpty(targetFilePath))
             {
                 //todo error log 
@@ -131,15 +135,19 @@ namespace SynonyMe.Model
 
             // todo:File.Existで確認させるべき
 
-            XmlDocument xml = new XmlDocument();
-            try
+            T xml = null;
+            var serializer = new XmlSerializer(typeof(T));
+
+            using (FileStream fs = new FileStream(targetFilePath, FileMode.Open))
             {
-                xml.Load(@targetFilePath);
-            }
-            catch
-            {
-                // bakファイルから読み取れないか試みる
-                // todo
+                try
+                {
+                    xml = serializer.Deserialize(fs) as T;
+                }
+                catch
+                {
+                    //todo:Error log
+                }
             }
 
             return xml;

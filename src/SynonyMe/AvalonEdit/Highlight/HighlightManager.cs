@@ -164,6 +164,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         /// <summary>AvalonEditの背景色から、文字色を取得します</summary>
         /// <returns>背景色が白寄りの場合は黒、背景色が黒寄りの場合は白</returns>
+        /// <remarks>todo:設定ファイル値を参照させる、この中でカラーコード変換しない。カラーコードの変換はSettingWindowへ移譲するため</remarks>
         private Color GetForeGroundColor()
         {
             if (_avalonEditBackground == null)

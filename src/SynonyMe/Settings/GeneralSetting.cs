@@ -23,7 +23,7 @@ namespace SynonyMe.Settings
 
         public bool ShowingSpace { get; set; }
 
-        public string FontSize { get; set; }
+        public int FontSize { get; set; }
 
         public string FontColor { get; set; }
 
