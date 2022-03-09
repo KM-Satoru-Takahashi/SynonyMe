@@ -1,42 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<SearchAndSynonymSetting>
-  <SearchResultSetting>
-    <BackGroundColor>000000</BackGroundColor>
-    <FontColor>000000</FontColor>
-  </SearchResultSetting>
-  <SynonymSerchResultSetting>
-    <BackGroundColors>
-      <Color01>000000</Color01>
-      <Color02>000000</Color02>
-      <Color03>000000</Color03>
-      <Color04>000000</Color04>
-      <Color05>000000</Color05>
-      <Color07>000000</Color07>
-      <Color08>000000</Color08>
-      <Color09>000000</Color09>
-      <Color10>000000</Color10>
-      <Color11>000000</Color11>
-      <Color12>000000</Color12>
-      <Color13>000000</Color13>
-      <Color14>000000</Color14>
-      <Color15>000000</Color15>
-      <Color16>000000</Color16>
-      <Color17>000000</Color17>
-      <Color18>000000</Color18>
-      <Color19>000000</Color19>
-      <Color20>000000</Color20>
-      <Color21>000000</Color21>
-      <Color22>000000</Color22>
-      <Color23>000000</Color23>
-      <Color24>000000</Color24>
-      <Color25>000000</Color25>
-      <Color26>000000</Color26>
-      <Color27>000000</Color27>
-      <Color28>000000</Color28>
-      <Color29>000000</Color29>
-      <Color30>000000</Color30>
-    </BackGroundColors>
-    <FontColor>Auto</FontColor>
-  </SynonymSerchResultSetting>
-  <Margin>10</Margin>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SearchAndSynonymSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <SearchResultBackGroundColor>#00000000</SearchResultBackGroundColor>
+  <SearchResultFontColor>#00000000</SearchResultFontColor>
+  <SynonymSearchResultColor1>#00000000</SynonymSearchResultColor1>
+  <SynonymSearchResultColor2>#00000000</SynonymSearchResultColor2>
+  <SynonymSearchResultColor3>#00000000</SynonymSearchResultColor3>
+  <SynonymSearchResultColor4>#00000000</SynonymSearchResultColor4>
+  <SynonymSearchResultColor5>#FF7BDE1E</SynonymSearchResultColor5>
+  <SynonymSearchResultColor6>#00000000</SynonymSearchResultColor6>
+  <SynonymSearchResultColor7>#00000000</SynonymSearchResultColor7>
+  <SynonymSearchResultColor8>#00000000</SynonymSearchResultColor8>
+  <SynonymSearchResultColor9>#00000000</SynonymSearchResultColor9>
+  <SynonymSearchResultColor10>#00000000</SynonymSearchResultColor10>
+  <SynonymSearchFontColor>#00000000</SynonymSearchFontColor>
+  <SearchResultMargin>10</SearchResultMargin>
+  <SearchResultDisplayCount>100</SearchResultDisplayCount>
 </SearchAndSynonymSetting>

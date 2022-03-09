@@ -966,25 +966,25 @@ namespace SynonyMe.ViewModel
         /// <summary>編集済み判定処理</summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void OnIsModifiedChanged(object sender, EventArgs e)
-        {
-            TextEditor textEditor = sender as TextEditor;
-            if (textEditor == null)
-            {
-                Logger.Fatal(CLASS_NAME, "OnIsModifiedChanged", "textEditor is null!");
-                return;
-            }
+        //private void OnIsModifiedChanged(object sender, EventArgs e)
+        //{
+        //    TextEditor textEditor = sender as TextEditor;
+        //    if (textEditor == null)
+        //    {
+        //        Logger.Fatal(CLASS_NAME, "OnIsModifiedChanged", "textEditor is null!");
+        //        return;
+        //    }
 
 
-            if (textEditor.IsModified)
-            {
-                EditedTextVisible = Visibility.Visible;
-            }
-            else
-            {
-                EditedTextVisible = Visibility.Hidden;
-            }
-        }
+        //    if (textEditor.IsModified)
+        //    {
+        //        EditedTextVisible = Visibility.Visible;
+        //    }
+        //    else
+        //    {
+        //        EditedTextVisible = Visibility.Hidden;
+        //    }
+        //}
 
 
 

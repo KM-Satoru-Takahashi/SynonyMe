@@ -218,34 +218,6 @@ namespace SynonyMe.ViewModel
             }
         }
 
-
-        private string _searchResultDisplayCount = "100";
-        public string SearchResultDisplayCount
-        {
-            get
-            {
-                return _searchResultDisplayCount;
-            }
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                {
-                    return;
-                }
-                if (System.Text.RegularExpressions.Regex.IsMatch(value, CommonLibrary.Define.REGEX_NUMBER_ONLY) == false)
-                {
-                    return;
-                }
-
-                if (_searchResultDisplayCount != value)
-                {
-                    _searchResultDisplayCount = value;
-                    OnPropertyChanged("SearchResultDisplayCount");
-                }
-            }
-        }
-
-
         private bool _isTxtTarget = false;
         public bool IsTxtTarget
         {
@@ -546,7 +518,13 @@ namespace SynonyMe.ViewModel
         }
 
 
-        private Color _synonymSearchResultColor5 = new Color();
+        private Color _synonymSearchResultColor5 = new Color()
+        {
+            R = 123,
+            G = 222,
+            B = 30,
+            A = 255
+        };
         public Color SynonymSearchResultColor5
         {
             get
@@ -646,7 +624,9 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        private string _searchResultMargin = null;
+
+
+        private string _searchResultMargin = "10";
         public string SearchResultMargin
         {
             get
@@ -655,25 +635,45 @@ namespace SynonyMe.ViewModel
             }
             set
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return;
+                }
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, CommonLibrary.Define.REGEX_NUMBER_ONLY) == false)
+                {
+                    return;
+                }
+
                 _searchResultMargin = value;
                 OnPropertyChanged("SearchResultMargin");
             }
         }
 
-        private string _searchResultCount = null;
-        public string SearchResultCount
+        private string _searchResultDisplayCount = "100";
+        public string SearchResultDisplayCount
         {
             get
             {
-                return _searchResultCount;
+                return _searchResultDisplayCount;
             }
             set
             {
-                _searchResultCount = value;
-                OnPropertyChanged("SearchResultCount");
+                if (string.IsNullOrEmpty(value))
+                {
+                    return;
+                }
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, CommonLibrary.Define.REGEX_NUMBER_ONLY) == false)
+                {
+                    return;
+                }
+
+                if (_searchResultDisplayCount != value)
+                {
+                    _searchResultDisplayCount = value;
+                    OnPropertyChanged("SearchResultDisplayCount");
+                }
             }
         }
-
 
         #endregion
 
@@ -699,7 +699,7 @@ namespace SynonyMe.ViewModel
             Command_ResetToDefault = new CommandBase(ExecuteResetToDefault, null);
 
 
-
+            //todo:設定ファイル読み込み
             //Model.FileAccessor.GetFileAccessor.LoadSettingFile();
         }
 
@@ -742,6 +742,45 @@ namespace SynonyMe.ViewModel
             };
 
             Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(Settings.GeneralSetting));
+
+            #endregion
+
+            #region SearchAndSynonymSetting
+
+            int margin = 0;
+            if(int.TryParse(SearchResultMargin, out margin)==false)
+            {
+                //todo:ログ出し、規定値
+            }
+
+            int resultCount = 0;
+            if(int.TryParse(SearchResultDisplayCount, out resultCount)==false)
+            {
+                //todo:ログ出し、規定値
+            }
+
+            Settings.SearchAndSynonymSetting searchAndSynonymSetting = new Settings.SearchAndSynonymSetting()
+            {
+                SearchResultBackGroundColor = SearchResultBackGround.ToString(),
+                SearchResultFontColor = SearchResultFontColor.ToString(),
+
+                SynonymSearchResultColor1 = SynonymSearchResultColor1.ToString(),
+                SynonymSearchResultColor2 = SynonymSearchResultColor2.ToString(),
+                SynonymSearchResultColor3 = SynonymSearchResultColor3.ToString(),
+                SynonymSearchResultColor4 = SynonymSearchResultColor4.ToString(),
+                SynonymSearchResultColor5 = SynonymSearchResultColor5.ToString(),
+                SynonymSearchResultColor6 = SynonymSearchResultColor6.ToString(),
+                SynonymSearchResultColor7 = SynonymSearchResultColor7.ToString(),
+                SynonymSearchResultColor8 = SynonymSearchResultColor8.ToString(),
+                SynonymSearchResultColor9 = SynonymSearchResultColor9.ToString(),
+                SynonymSearchResultColor10 = SynonymSearchResultColor10.ToString(),
+
+                SynonymSearchFontColor = SynonymSearchResultFontColor.ToString(),
+                SearchResultMargin = margin,
+                SearchResultDisplayCount = resultCount
+            };
+
+            Model.FileAccessor.GetFileAccessor.SaveSettingFile(CommonLibrary.Define.SETTING_FILENAME_SEARCH, searchAndSynonymSetting, typeof(Settings.SearchAndSynonymSetting));
 
             #endregion
 

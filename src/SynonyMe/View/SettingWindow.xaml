@@ -309,8 +309,7 @@
 
                     <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="10">
                         <TextBlock Text="検索結果の前後文字数" VerticalAlignment="Center" Margin="10,0,0,0"/>
-                        <!--todo:Binding-->
-                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
+                        <TextBox Text="{Binding SearchResultMargin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,0,5,0" Width="50"
                                  InputMethod.IsInputMethodEnabled="False">
                             <!--ペースト不可-->
                             <bh:Interaction.Behaviors>
@@ -409,23 +408,8 @@
                         <Button Content="AllDelete" HorizontalAlignment="Right" Margin="55,0,5,0" Grid.Column="2" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <!--検索・類語検索結果表示数-->
-                    <!--todo:これは検索・類語検索設定にいれるべきでは？-->
-                    <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
-                        <TextBlock Text="検索・類語検索結果表示数" Margin="10,0,5,0"/>
-                        <!--入力値のチェックはVMで行い、入力手段のチェックはWPF/Behaviorで行う-->
-                        <!--IMEを無効にする-->
-                        <TextBox Text="{Binding SearchResultDisplayCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="15,0,5,0" Width="50"
-                                 InputMethod.IsInputMethodEnabled="False">
-                            <!--ペースト不可-->
-                            <bh:Interaction.Behaviors>
-                                <vm:KeyInputOnlyTextboxBehavior/>
-                            </bh:Interaction.Behaviors>
-                        </TextBox>
-                    </StackPanel>
-
                     <!--読込対象拡張子-->
-                    <StackPanel Grid.Row="9" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Row="7" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="読込対象拡張子" Margin="10,0,5,0"/>
                         <TextBlock Text=".txt" Margin="15,0,5,0"/>
                         <CheckBox Margin="5,0,5,0" IsChecked="{Binding IsTxtTarget}"/>

@@ -62,7 +62,7 @@ namespace SynonyMe.CommonLibrary
 
         internal const string SETTING_FILENAME_GENERAL = "GeneralSetting.xml";
 
-        internal const string SETTING_FILENAME_SEARCH = "SearchAndSynonymSetting";
+        internal const string SETTING_FILENAME_SEARCH = "SearchAndSynonymSetting.xml";
 
         internal const string FONTCOLOR_AUTO = "Auto";
 

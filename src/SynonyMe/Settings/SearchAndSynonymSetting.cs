@@ -13,7 +13,19 @@ namespace SynonyMe.Settings
 
         public string SearchResultFontColor { get; set; }
 
-        public List<SynonymSearchResultBackGroundInfo> SynonymSearchResultBackGroundInfos { get; set; }
+        //todo:将来はリスト化して持たせることも想定するが、
+        //現状xamlも繰り返し配置ではなく都度要素を配置しているので、
+        //冗長で正直な書き方にしておく
+        public string SynonymSearchResultColor1 { get; set; }
+        public string SynonymSearchResultColor2 { get; set; }
+        public string SynonymSearchResultColor3 { get; set; }
+        public string SynonymSearchResultColor4 { get; set; }
+        public string SynonymSearchResultColor5 { get; set; }
+        public string SynonymSearchResultColor6 { get; set; }
+        public string SynonymSearchResultColor7 { get; set; }
+        public string SynonymSearchResultColor8 { get; set; }
+        public string SynonymSearchResultColor9 { get; set; }
+        public string SynonymSearchResultColor10 { get; set; } 
 
         public string SynonymSearchFontColor { get; set; }
 
@@ -22,11 +34,4 @@ namespace SynonyMe.Settings
         public int SearchResultDisplayCount { get; set; }
     }
 
-    [Serializable]
-    public class SynonymSearchResultBackGroundInfo
-    {
-        public int Number { get; set; }
-
-        public string Color { get; set; }
-    }
 }
