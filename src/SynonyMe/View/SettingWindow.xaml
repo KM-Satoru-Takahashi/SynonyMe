@@ -16,6 +16,12 @@
         <vm:SettingWindowVM/>
     </Window.DataContext>
 
+    <Window.Resources>
+        <ResourceDictionary>
+            <vm:BoolToEnumConverter x:Key="EnumToBoolean"/>
+        </ResourceDictionary>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <!--上部余白-->
@@ -154,7 +160,7 @@
 
                     <!--todo:ボタンサイズを他タブと合わせて適切に-->
                     <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
-                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.GeneralSetting}"/>
+                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.GeneralSetting}"/>
 
                 </Grid>
             </TabItem>
@@ -213,16 +219,24 @@
                     <StackPanel Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
                         <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Auto},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Black},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center"  Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.White},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.UserSetting},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SearchResultFontColor}" Width="100"
                                       AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
-                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準" IsEnabled="{Binding CanSelectSearchResultFontColor}"/>
                     </StackPanel>
 
                     <!--類語検索結果結果設定-->
@@ -294,17 +308,25 @@
                     <StackPanel Grid.Column="1" Grid.Row="8" VerticalAlignment="Center" Orientation="Horizontal">
                         <TextBlock Text="文字色" VerticalAlignment="Center" Margin="20,0,0,0"/>
                         <TextBlock Text="自動" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Auto},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="黒" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.Black},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="白" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center"  Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.White},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <TextBlock Text="ユーザー設定" VerticalAlignment="Center" Margin="25,0,0,0"/>
-                        <RadioButton VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        <RadioButton IsChecked="{Binding Path=SynonymSearchResultFontColorKind,Mode=TwoWay,Converter={StaticResource EnumToBoolean},
+                            ConverterParameter={x:Static lib:FontColorKind.UserSetting},UpdateSourceTrigger=PropertyChanged}"
+                            VerticalAlignment="Center" Margin="5,0,0,0"/>
                         <!--↓のBindingTodo-->
                         <xctk:ColorPicker Margin="20,0,0,0" SelectedColor="{Binding SynonymSearchResultFontColor}" Width="100"
                                       AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
-                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準" IsEnabled="{Binding CanSelectSynonymSearchResultFontColor}"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Grid.Column="1" Grid.Row="10">
@@ -339,7 +361,7 @@
                         <Button Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="SynonymAllDelete"
                                 Command="{Binding Command_DeleteAllSynonyms}"/>
                         <Button Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Content="Default"
-                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.SearchAndSynonymSetting}"/>
+                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.SearchAndSynonymSetting}"/>
                     </Grid>
 
                 </Grid>
@@ -420,20 +442,20 @@
                     <!--デフォルトボタン-->
                     <!--todo:ボタンサイズ-->
                     <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30"  Margin="0,0,10,0"
-                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.AdvancedSetting}"/>
+                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.AdvancedSetting}"/>
                 </Grid>
             </TabItem>
         </TabControl>
 
         <!--AllResetボタン-->
         <Button Grid.Column="2" Grid.Row="3" Content="AllReset" Command="{Binding Command_ResetToDefault}"
-                CommandParameter="{x:Static lib:SettingResetKind.AllReset}"/>
+                CommandParameter="{x:Static lib:SettingKind.AllReset}"/>
 
         <!--OKボタン-->
-        <Button Grid.Column="4" Grid.Row="3" Content="OK"/>
+        <Button Grid.Column="4" Grid.Row="3" Content="OK" Command="{Binding Command_Ok}"/>
 
         <!--キャンセルボタン-->
-        <Button Grid.Column="6" Grid.Row="3" Content="Cancel"/>
+        <Button Grid.Column="6" Grid.Row="3" Content="Cancel" Command="{Binding Command_Cancel}"/>
 
         <!--適用ボタン-->
         <Button Grid.Column="8" Grid.Row="3" Content="Apply" Command="{Binding Command_Apply}"/>

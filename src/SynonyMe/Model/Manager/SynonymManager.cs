@@ -11,12 +11,12 @@ namespace SynonyMe.Model.Manager
 {
     /// <summary>類語関連の処理を担うクラス</summary>
     /// <remarks>DBへのアクセスはこのクラスが引き受け、各Modelクラスが共通して使う前提とし、staticにする</remarks>
-    internal static class SynonymManager
+    internal static class SynonymManager　//todo:シングルトン化？
     {
 
         private const string CLASS_NAME = "SynonymManager";
 
-        internal static event EventHandler UpdateSynonymEvent = delegate { };
+        internal static event EventHandler UpdateSynonymEvent = delegate { };//todo:delegate, eventの書き方を共通化させたい? これで良いか要確認
 
         // TODO:SynonymModelから持ってきただけなので、全体的なリファクタリングやExceptionの妥当性の確認
 

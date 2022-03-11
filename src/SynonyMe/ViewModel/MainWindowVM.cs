@@ -130,7 +130,7 @@ namespace SynonyMe.ViewModel
             set
             {
                 _model.IsModified = value;
-                if(_model.IsModified)
+                if (_model.IsModified)
                 {
                     EditedTextVisible = Visibility.Visible;
                 }
@@ -369,11 +369,15 @@ namespace SynonyMe.ViewModel
 
             _model = new Model.MainWindowModel(this);
 
+            //todo:並列処理可能では？
             // コマンド初期化処理
             InitializeCommand();
 
             // 類語検索領域初期化処理
             InitializeSynonymSearch();
+
+            // 設定ファイル読み込み
+            LoadAllSettings();
 
             // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
@@ -392,6 +396,18 @@ namespace SynonyMe.ViewModel
             //        Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
             //    }
             //}
+        }
+
+        /// <summary>SynonyMeが扱う全ての設定ファイルを読み込みます</summary>
+        private void LoadAllSettings()
+        {
+            if (_model == null)
+            {
+                //todo:error
+                return;
+            }
+
+            _model.LoadAllSettings();
         }
 
         /// <summary>各種コマンドを初期化します</summary>
@@ -841,7 +857,7 @@ namespace SynonyMe.ViewModel
                 //todo:計算式が汚い……
                 //何もしないと改行がCR+LFで2文字カウントされてしまう。また、1行目に改行コードは存在しない
                 //なので、行数の2倍を文字数から引き、1行目の行数分だけ帳尻を合わせてやれば、改行を除いた文字数になる
-                WordCount = (2+_model.TextDocument.Text.Length -2*_model.TextDocument.LineCount).ToString();
+                WordCount = (2 + _model.TextDocument.Text.Length - 2 * _model.TextDocument.LineCount).ToString();
             }
         }
 

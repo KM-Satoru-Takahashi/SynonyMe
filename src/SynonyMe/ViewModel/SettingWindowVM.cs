@@ -19,12 +19,6 @@ namespace SynonyMe.ViewModel
 
         private const string CLASS_NAME = "SettingWindowVM";
 
-        private GeneralSetting _generalSetting = null;
-
-        private SearchAndSynonymSetting _searchAndSynonymSetting = null;
-
-        private AdvancedSetting _advancedSetting = null;
-
         private Model.SettingWindowModel _model = null;
 
         #endregion
@@ -61,191 +55,6 @@ namespace SynonyMe.ViewModel
 
 
         public ICommand Command_DeleteAllSynonyms { get; private set; }
-
-        #endregion
-
-        #region Tab_AdvancedSettings
-
-        private double _logOutputLevel = 1; //todo:将来的にModel側で管理させること
-        public double LogOutputLevel
-        {
-            get
-            {
-                return _logOutputLevel;
-            }
-            set
-            {
-                if (_logOutputLevel != value)
-                {
-                    _logOutputLevel = value;
-                    UpdateLogLevelVisible(ConvertDoubleToLogLevel(_logOutputLevel));
-                    OnPropertyChanged("LogOutputLevel");
-                }
-            }
-        }
-
-
-        private Visibility _debugVisible = Visibility.Visible;
-        public Visibility DebugVisible
-        {
-            get
-            {
-                return _debugVisible;
-            }
-            set
-            {
-                if (_debugVisible != value)
-                {
-                    _debugVisible = value;
-                    OnPropertyChanged("DebugVisible");
-                }
-            }
-        }
-
-        private Visibility _infoVisible = Visibility.Visible;
-        public Visibility InfoVisible
-        {
-            get
-            {
-                return _infoVisible;
-            }
-            set
-            {
-                if (_infoVisible != value)
-                {
-                    _infoVisible = value;
-                    OnPropertyChanged("InfoVisible");
-                }
-            }
-        }
-
-
-        private Visibility _warnVisible = Visibility.Visible;
-        public Visibility WarnVisible
-        {
-            get
-            {
-                return _warnVisible;
-            }
-            set
-            {
-                if (_warnVisible != value)
-                {
-                    _warnVisible = value;
-                    OnPropertyChanged("WarnVisible");
-                }
-            }
-        }
-
-
-        private Visibility _errorVisible = Visibility.Visible;
-        public Visibility ErrorVisible
-        {
-            get
-            {
-                return _errorVisible;
-            }
-            set
-            {
-                if (_errorVisible != value)
-                {
-                    _errorVisible = value;
-                    OnPropertyChanged("ErrorVisible");
-                }
-            }
-        }
-
-
-        private Visibility _fatalVisible = Visibility.Visible;
-        public Visibility FatalVisible
-        {
-            get
-            {
-                return _fatalVisible;
-            }
-            set
-            {
-                if (_fatalVisible != value)
-                {
-                    _fatalVisible = value;
-                    OnPropertyChanged("FatalVisible");
-                }
-            }
-        }
-
-
-        private double _logRetentionDays = 1;
-        public double LogRetentionDays
-        {
-            get
-            {
-                return _logRetentionDays;
-            }
-            set
-            {
-                if (_logRetentionDays != value)
-                {
-                    _logRetentionDays = value;
-                    LogRetentionDaysString = value.ToString();
-                    OnPropertyChanged("LogRetentionDays");
-                }
-            }
-        }
-
-
-        private string _logRetentionDaysString = "   ";
-        public string LogRetentionDaysString
-        {
-            get
-            {
-                return _logRetentionDaysString;
-            }
-            set
-            {
-                // 将来のことを考えて3桁に整形する
-                if (_logRetentionDaysString != value)
-                {
-                    _logRetentionDaysString = string.Format("{0,-3}", value);
-                    OnPropertyChanged("LogRetentionDaysString");
-                }
-            }
-        }
-
-
-        private bool _useFastSearch = false;
-        public bool UseFastSearch
-        {
-            get
-            {
-                return _useFastSearch;
-            }
-            set
-            {
-                if (_useFastSearch != value)
-                {
-                    _useFastSearch = value;
-                    OnPropertyChanged("UseFastSearch");
-                }
-            }
-        }
-
-        private bool _isTxtTarget = false;
-        public bool IsTxtTarget
-        {
-            get
-            {
-                return _isTxtTarget;
-            }
-            set
-            {
-                if (_isTxtTarget != value)
-                {
-                    _isTxtTarget = value;
-                    OnPropertyChanged("IsTxtTarget");
-                }
-            }
-        }
-
 
         #endregion
 
@@ -452,8 +261,46 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _searchResultBackGround = value;
-                OnPropertyChanged("SearchResultBackGround");
+                if (_searchResultBackGround != value)
+                {
+                    _searchResultBackGround = value;
+                    OnPropertyChanged("SearchResultBackGround");
+                }
+            }
+        }
+
+        private FontColorKind _searchResultFontColorKind = FontColorKind.Auto;
+        public FontColorKind SearchResultFontColorKind
+        {
+            get
+            {
+                return _searchResultFontColorKind;
+            }
+            set
+            {
+                if (_searchResultFontColorKind != value)
+                {
+                    _searchResultFontColorKind = value;
+                    UpdateCanSelectSearchResultFontColor();
+                    OnPropertyChanged("SearchResultFontColorKind");
+                }
+            }
+        }
+
+        private bool _canSelectSearchResultFontColor = false;
+        public bool CanSelectSearchResultFontColor
+        {
+            get
+            {
+                return _canSelectSearchResultFontColor;
+            }
+            set
+            {
+                if (_canSelectSearchResultFontColor != value)
+                {
+                    _canSelectSearchResultFontColor = value;
+                    OnPropertyChanged("CanSelectSearchResultFontColor");
+                }
             }
         }
 
@@ -466,8 +313,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _searchResultFontColor = value;
-                OnPropertyChanged("SearchResultFontColor");
+                if (_searchResultFontColor != value)
+                {
+                    _searchResultFontColor = value;
+                    OnPropertyChanged("SearchResultFontColor");
+                }
             }
         }
 
@@ -480,8 +330,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor1 = value;
-                OnPropertyChanged("SynonymSearchResultColor1");
+                if (_synonymSearchResultColor1 != value)
+                {
+                    _synonymSearchResultColor1 = value;
+                    OnPropertyChanged("SynonymSearchResultColor1");
+                }
             }
         }
 
@@ -494,8 +347,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor2 = value;
-                OnPropertyChanged("SynonymSearchResultColor2");
+                if (_synonymSearchResultColor2 != value)
+                {
+                    _synonymSearchResultColor2 = value;
+                    OnPropertyChanged("SynonymSearchResultColor2");
+                }
             }
         }
 
@@ -508,8 +364,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor3 = value;
-                OnPropertyChanged("SynonymSearchResultColor3");
+                if (_synonymSearchResultColor3 != value)
+                {
+                    _synonymSearchResultColor3 = value;
+                    OnPropertyChanged("SynonymSearchResultColor3");
+                }
             }
         }
 
@@ -523,8 +382,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor4 = value;
-                OnPropertyChanged("SynonymSearchResultColor4");
+                if (_synonymSearchResultColor4 != value)
+                {
+                    _synonymSearchResultColor4 = value;
+                    OnPropertyChanged("SynonymSearchResultColor4");
+                }
             }
         }
 
@@ -558,8 +420,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor6 = value;
-                OnPropertyChanged("SynonymSearchResultColor6");
+                if (_synonymSearchResultColor6 != value)
+                {
+                    _synonymSearchResultColor6 = value;
+                    OnPropertyChanged("SynonymSearchResultColor6");
+                }
             }
         }
 
@@ -572,8 +437,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor7 = value;
-                OnPropertyChanged("SynonymSearchResultColor7");
+                if (_synonymSearchResultColor7 != value)
+                {
+                    _synonymSearchResultColor7 = value;
+                    OnPropertyChanged("SynonymSearchResultColor7");
+                }
             }
         }
 
@@ -587,8 +455,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor8 = value;
-                OnPropertyChanged("SynonymSearchResultColor8");
+                if (_synonymSearchResultColor8 != value)
+                {
+                    _synonymSearchResultColor8 = value;
+                    OnPropertyChanged("SynonymSearchResultColor8");
+                }
             }
         }
 
@@ -602,8 +473,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor9 = value;
-                OnPropertyChanged("SynonymSearchResultColor9");
+                if (_synonymSearchResultColor9 != value)
+                {
+                    _synonymSearchResultColor9 = value;
+                    OnPropertyChanged("SynonymSearchResultColor9");
+                }
             }
         }
 
@@ -616,8 +490,11 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultColor10 = value;
-                OnPropertyChanged("SynonymSearchResultColor10");
+                if (_synonymSearchResultColor10 != value)
+                {
+                    _synonymSearchResultColor10 = value;
+                    OnPropertyChanged("SynonymSearchResultColor10");
+                }
             }
         }
 
@@ -630,12 +507,49 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _synonymSearchResultFontColor = value;
-                OnPropertyChanged("SynonymSearchResultFontColor");
+                if (_synonymSearchResultFontColor != value)
+                {
+                    _synonymSearchResultFontColor = value;
+                    OnPropertyChanged("SynonymSearchResultFontColor");
+                }
             }
         }
 
 
+        private FontColorKind _synonymSearchResultFontColorKind = FontColorKind.Auto;
+        public FontColorKind SynonymSearchResultFontColorKind
+        {
+            get
+            {
+                return _synonymSearchResultFontColorKind;
+            }
+            set
+            {
+                if (_synonymSearchResultFontColorKind != value)
+                {
+                    _synonymSearchResultFontColorKind = value;
+                    UpdateCanSelectSynonymSearchResultFontColor();
+                    OnPropertyChanged("SynonymSearchResultFontColorKind");
+                }
+            }
+        }
+
+        private bool _canSelectSynonymSearchResultFontColor = false;
+        public bool CanSelectSynonymSearchResultFontColor
+        {
+            get
+            {
+                return _canSelectSynonymSearchResultFontColor;
+            }
+            set
+            {
+                if (_canSelectSynonymSearchResultFontColor != value)
+                {
+                    _canSelectSynonymSearchResultFontColor = value;
+                    OnPropertyChanged("CanSelectSynonymSearchResultFontColor");
+                }
+            }
+        }
 
         private string _searchResultMargin = "10";
         public string SearchResultMargin
@@ -655,8 +569,11 @@ namespace SynonyMe.ViewModel
                     return;
                 }
 
-                _searchResultMargin = value;
-                OnPropertyChanged("SearchResultMargin");
+                if (_searchResultMargin != value)
+                {
+                    _searchResultMargin = value;
+                    OnPropertyChanged("SearchResultMargin");
+                }
             }
         }
 
@@ -688,6 +605,190 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
+        #region Tab_AdvancedSettings
+
+        private double _logOutputLevel = 1; //todo:将来的にModel側で管理させること
+        public double LogOutputLevel
+        {
+            get
+            {
+                return _logOutputLevel;
+            }
+            set
+            {
+                if (_logOutputLevel != value)
+                {
+                    _logOutputLevel = value;
+                    UpdateLogLevelVisible(ConvertDoubleToLogLevel(_logOutputLevel));
+                    OnPropertyChanged("LogOutputLevel");
+                }
+            }
+        }
+
+
+        private Visibility _debugVisible = Visibility.Visible;
+        public Visibility DebugVisible
+        {
+            get
+            {
+                return _debugVisible;
+            }
+            set
+            {
+                if (_debugVisible != value)
+                {
+                    _debugVisible = value;
+                    OnPropertyChanged("DebugVisible");
+                }
+            }
+        }
+
+        private Visibility _infoVisible = Visibility.Visible;
+        public Visibility InfoVisible
+        {
+            get
+            {
+                return _infoVisible;
+            }
+            set
+            {
+                if (_infoVisible != value)
+                {
+                    _infoVisible = value;
+                    OnPropertyChanged("InfoVisible");
+                }
+            }
+        }
+
+
+        private Visibility _warnVisible = Visibility.Visible;
+        public Visibility WarnVisible
+        {
+            get
+            {
+                return _warnVisible;
+            }
+            set
+            {
+                if (_warnVisible != value)
+                {
+                    _warnVisible = value;
+                    OnPropertyChanged("WarnVisible");
+                }
+            }
+        }
+
+
+        private Visibility _errorVisible = Visibility.Visible;
+        public Visibility ErrorVisible
+        {
+            get
+            {
+                return _errorVisible;
+            }
+            set
+            {
+                if (_errorVisible != value)
+                {
+                    _errorVisible = value;
+                    OnPropertyChanged("ErrorVisible");
+                }
+            }
+        }
+
+
+        private Visibility _fatalVisible = Visibility.Visible;
+        public Visibility FatalVisible
+        {
+            get
+            {
+                return _fatalVisible;
+            }
+            set
+            {
+                if (_fatalVisible != value)
+                {
+                    _fatalVisible = value;
+                    OnPropertyChanged("FatalVisible");
+                }
+            }
+        }
+
+
+        private double _logRetentionDays = 1;
+        public double LogRetentionDays
+        {
+            get
+            {
+                return _logRetentionDays;
+            }
+            set
+            {
+                if (_logRetentionDays != value)
+                {
+                    _logRetentionDays = value;
+                    LogRetentionDaysString = value.ToString();
+                    OnPropertyChanged("LogRetentionDays");
+                }
+            }
+        }
+
+
+        private string _logRetentionDaysString = "   ";
+        public string LogRetentionDaysString
+        {
+            get
+            {
+                return _logRetentionDaysString;
+            }
+            set
+            {
+                // 将来のことを考えて3桁に整形する
+                if (_logRetentionDaysString != value)
+                {
+                    _logRetentionDaysString = string.Format("{0,-3}", value);
+                    OnPropertyChanged("LogRetentionDaysString");
+                }
+            }
+        }
+
+
+        private bool _useFastSearch = false;
+        public bool UseFastSearch
+        {
+            get
+            {
+                return _useFastSearch;
+            }
+            set
+            {
+                if (_useFastSearch != value)
+                {
+                    _useFastSearch = value;
+                    OnPropertyChanged("UseFastSearch");
+                }
+            }
+        }
+
+        private bool _isTxtTarget = false;
+        public bool IsTxtTarget
+        {
+            get
+            {
+                return _isTxtTarget;
+            }
+            set
+            {
+                if (_isTxtTarget != value)
+                {
+                    _isTxtTarget = value;
+                    OnPropertyChanged("IsTxtTarget");
+                }
+            }
+        }
+
+
+        #endregion
 
         #endregion
 
@@ -711,132 +812,74 @@ namespace SynonyMe.ViewModel
             Command_Apply = new CommandBase(ExecuteApply, null);
             Command_ResetToDefault = new CommandBase(ExecuteResetToDefault, null);
 
-            LoadSettings();
-
             ApplyAllSettings();
         }
 
-        /// <summary>全設定ファイルを読み込みます</summary>
-        private void LoadSettings()
-        {
-            _generalSetting = FileAccessor.GetFileAccessor.LoadSettingFile<GeneralSetting>(Define.SETTING_FILENAME_GENERAL);
-            if (_generalSetting == null)
-            {
-                Logger.Error(CLASS_NAME, "LoadSettings", $"Load GeneralSetting.xml failed. Filename:[{Define.SETTING_FILENAME_GENERAL}]");
-                _generalSetting = new GeneralSetting()
-                {
-                    FontColor = "#FF000000", // 黒
-                    FontSize = 12,
-                    MainFontName = "Meiryo",
-                    SubFontName = "Consolas",
-                    WrappingText = false,
-                    ShowingLineCount = true,
-                    ShowingLineNumber = true,
-                    ShowingNewLine = false,
-                    ShowingSpace = false,
-                    ShowingTab = false,
-                    ShowingWordCount = true
-                };
-            }
-
-            _searchAndSynonymSetting = FileAccessor.GetFileAccessor.LoadSettingFile<SearchAndSynonymSetting>(Define.SETTING_FILENAME_SEARCH);
-            if (_searchAndSynonymSetting == null)
-            {
-                Logger.Error(CLASS_NAME, "LoadSettings", $"Load SearchAndSynonymSetting.xml failed. FileName:[{Define.SETTING_FILENAME_SEARCH}]");
-                string black = "#FF000000";
-                string transparent = "#00FFFFFF";
-
-                _searchAndSynonymSetting = new SearchAndSynonymSetting()
-                {
-                    SearchResultBackGroundColor = transparent, // 透明
-                    SearchResultDisplayCount = 100,
-                    SearchResultFontColor = black, // 黒
-                    SearchResultMargin = 10,
-                    SynonymSearchFontColor = black,
-                    SynonymSearchResultColor1 = transparent, // 異常なので透明にしておく、todo:規定値どうするか
-                    SynonymSearchResultColor2 = transparent,
-                    SynonymSearchResultColor3 = transparent,
-                    SynonymSearchResultColor4 = transparent,
-                    SynonymSearchResultColor5 = transparent,
-                    SynonymSearchResultColor6 = transparent,
-                    SynonymSearchResultColor7 = transparent,
-                    SynonymSearchResultColor8 = transparent,
-                    SynonymSearchResultColor9 = transparent,
-                    SynonymSearchResultColor10 = transparent
-                };
-            }
-
-            _advancedSetting = FileAccessor.GetFileAccessor.LoadSettingFile<AdvancedSetting>(Define.SETTING_FILENAME_ADVANCED);
-            if (_advancedSetting == null)
-            {
-                Logger.Error(CLASS_NAME, "LoadSettings", $"Load AdvancedSetting failed. FileName:[{Define.SETTING_FILENAME_ADVANCED}]");
-                _advancedSetting = new AdvancedSetting()
-                {
-                    LogRetentionDays = 30,
-                    LogLevel = LogLevel.INFO,
-                    SpeedUpSearch = false,
-                    TargetFileExtensionList = new List<string>() //todo:初期値はこれで良いか？
-                    {
-                        "txt"
-                    }
-                };
-            }
-        }
-
-        /// <summary>全設定を更新・適用します</summary>
+        /// <summary>全設定を更新・適用します</summary> //todo:ApplyやOK押した際の値の更新をSettingManagerのイベントハンドラ経由で
         private void ApplyAllSettings()
         {
-            // LoadSettingsで必ず値を代入しているはずなので、nullチェックだけして異常ならreturnしてしまう
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
+
+            // Model側で値は必ずセットされているはずなので、nullチェックだけして異常ならreturnしてしまう
             // この時点でexe動作の正常性を担保できていない(内部処理でnewしているのにnullっているため)
-            if (_generalSetting == null)
+            GeneralSetting generalSetting = _model.GetGeneralSetting();
+            if (generalSetting == null)
             {
                 Logger.Fatal(CLASS_NAME, "ApplySettings", "_generalSetting is null!");
                 return;
             }
 
-            WrappingText = _generalSetting.WrappingText;
-            ShowingLineCount = _generalSetting.ShowingLineCount;
-            ShowingLineNumber = _generalSetting.ShowingLineNumber;
-            ShowingWordCount = _generalSetting.ShowingWordCount;
-            ShowingNewLine = _generalSetting.ShowingNewLine;
-            ShowingTab = _generalSetting.ShowingTab;
-            ShowingSpace = _generalSetting.ShowingSpace;
-            FontColor = ConvertStringToColor(_generalSetting.FontColor);
-            MainFontName = _generalSetting.MainFontName;
-            SubFontName = _generalSetting.SubFontName;
+            WrappingText = generalSetting.WrappingText;
+            ShowingLineCount = generalSetting.ShowingLineCount;
+            ShowingLineNumber = generalSetting.ShowingLineNumber;
+            ShowingWordCount = generalSetting.ShowingWordCount;
+            ShowingNewLine = generalSetting.ShowingNewLine;
+            ShowingTab = generalSetting.ShowingTab;
+            ShowingSpace = generalSetting.ShowingSpace;
+            FontColor = ConvertStringToColor(generalSetting.FontColor);
+            MainFontName = generalSetting.MainFontName;
+            SubFontName = generalSetting.SubFontName;
 
-            if (_searchAndSynonymSetting == null)
+            SearchAndSynonymSetting searchAndSynonymSetting = _model.GetSearchAndSynonymSetting();
+            if (searchAndSynonymSetting == null)
             {
                 Logger.Fatal(CLASS_NAME, "ApplySettings", "_searchAndSynonymSetting is null!");
                 return;
             }
 
-            SearchResultBackGround = ConvertStringToColor(_searchAndSynonymSetting.SearchResultBackGroundColor);
-            SearchResultFontColor = ConvertStringToColor(_searchAndSynonymSetting.SearchResultFontColor);
-            SynonymSearchResultColor1 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor1);
-            SynonymSearchResultColor2 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor2);
-            SynonymSearchResultColor3 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor3);
-            SynonymSearchResultColor4 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor4);
-            SynonymSearchResultColor5 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor5);
-            SynonymSearchResultColor6 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor6);
-            SynonymSearchResultColor7 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor7);
-            SynonymSearchResultColor8 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor8);
-            SynonymSearchResultColor9 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor9);
-            SynonymSearchResultColor10 = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchResultColor10);
-            SynonymSearchResultFontColor = ConvertStringToColor(_searchAndSynonymSetting.SynonymSearchFontColor);
-            SearchResultMargin = _searchAndSynonymSetting.SearchResultMargin.ToString();
-            SearchResultDisplayCount = _searchAndSynonymSetting.SearchResultDisplayCount.ToString();
+            SearchResultBackGround = ConvertStringToColor(searchAndSynonymSetting.SearchResultBackGroundColor);
+            SearchResultFontColor = ConvertStringToColor(searchAndSynonymSetting.SearchResultFontColor);
+            SearchResultFontColorKind = searchAndSynonymSetting.SearchResultFontColorKind;
+            SynonymSearchResultColor1 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor1);
+            SynonymSearchResultColor2 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor2);
+            SynonymSearchResultColor3 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor3);
+            SynonymSearchResultColor4 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor4);
+            SynonymSearchResultColor5 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor5);
+            SynonymSearchResultColor6 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor6);
+            SynonymSearchResultColor7 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor7);
+            SynonymSearchResultColor8 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor8);
+            SynonymSearchResultColor9 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor9);
+            SynonymSearchResultColor10 = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchResultColor10);
+            SynonymSearchResultFontColor = ConvertStringToColor(searchAndSynonymSetting.SynonymSearchFontColor);
+            SynonymSearchResultFontColorKind = searchAndSynonymSetting.SynonymSearchFontColorKind;
+            SearchResultMargin = searchAndSynonymSetting.SearchResultMargin.ToString();
+            SearchResultDisplayCount = searchAndSynonymSetting.SearchResultDisplayCount.ToString();
 
-            if (_advancedSetting == null)
+            AdvancedSetting advancedSetting = _model.GetAdvancedSetting();
+            if (advancedSetting == null)
             {
                 Logger.Fatal(CLASS_NAME, "ApplySettings", "_advancedSetting is null!");
                 return;
             }
 
-            LogOutputLevel = (double)_advancedSetting.LogLevel; //todo:安全なキャスト
-            LogRetentionDays = _advancedSetting.LogRetentionDays;
-            UseFastSearch = _advancedSetting.SpeedUpSearch;
-            if (_advancedSetting.TargetFileExtensionList.Contains("txt")) //todo:リスト検索方法
+            LogOutputLevel = (double)advancedSetting.LogLevel; //todo:安全なキャスト
+            LogRetentionDays = advancedSetting.LogRetentionDays;
+            UseFastSearch = advancedSetting.SpeedUpSearch;
+            if (advancedSetting.TargetFileExtensionList.Contains("txt")) //todo:リスト検索方法
             {
                 IsTxtTarget = true;
             }
@@ -895,6 +938,29 @@ namespace SynonyMe.ViewModel
             };
         }
 
+        private void UpdateCanSelectSearchResultFontColor()
+        {
+            if (SearchResultFontColorKind == FontColorKind.UserSetting)
+            {
+                CanSelectSearchResultFontColor = true;
+            }
+            else
+            {
+                CanSelectSearchResultFontColor = false;
+            }
+        }
+
+        private void UpdateCanSelectSynonymSearchResultFontColor()
+        {
+            if (SynonymSearchResultFontColorKind == FontColorKind.UserSetting)
+            {
+                CanSelectSynonymSearchResultFontColor = true;
+            }
+            else
+            {
+                CanSelectSynonymSearchResultFontColor = false;
+            }
+        }
 
         /// <summary>OKボタン押下時処理</summary>
         /// <param name="parameter"></param>
@@ -909,6 +975,7 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteCancel(object parameter)
         {
+            //todo:変更を破棄して良いですかダイアログ表示
             CloseSettingWindow();
         }
 
@@ -962,6 +1029,7 @@ namespace SynonyMe.ViewModel
             {
                 SearchResultBackGroundColor = SearchResultBackGround.ToString(),
                 SearchResultFontColor = SearchResultFontColor.ToString(),
+                SearchResultFontColorKind = SearchResultFontColorKind,
 
                 SynonymSearchResultColor1 = SynonymSearchResultColor1.ToString(),
                 SynonymSearchResultColor2 = SynonymSearchResultColor2.ToString(),
@@ -975,6 +1043,7 @@ namespace SynonyMe.ViewModel
                 SynonymSearchResultColor10 = SynonymSearchResultColor10.ToString(),
 
                 SynonymSearchFontColor = SynonymSearchResultFontColor.ToString(),
+                SynonymSearchFontColorKind = SynonymSearchResultFontColorKind,
                 SearchResultMargin = margin,
                 SearchResultDisplayCount = resultCount
             };
@@ -1015,10 +1084,30 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            if (Enum.IsDefined(typeof(SettingResetKind), parameter))
+            if (Enum.IsDefined(typeof(SettingKind), parameter))
             {
-                var a = (SettingResetKind)Enum.ToObject(typeof(SettingResetKind), parameter);
-                //todo:下流処理→Model
+                SettingKind kind = (SettingKind)Enum.ToObject(typeof(SettingKind), parameter);
+                switch (kind)
+                {
+                    case SettingKind.GeneralSetting:
+
+                        break;
+                    case SettingKind.SearchAndSynonymSetting:
+
+                        break;
+
+                    case SettingKind.AdvancedSetting:
+
+                        break;
+
+                    case SettingKind.AllReset:
+                        //todo:上記3つのリセット処理を全て呼べば良い
+                        break;
+                    default:
+                        // 勝手にリセットされては困るうえ、想定外なので何もさせない
+                        Logger.Error(CLASS_NAME, "ExecuteResetToDefault", $"SettingKind is invalid. kind:[{kind}]");
+                        break;
+                }
             }
             else
             {
@@ -1042,11 +1131,6 @@ namespace SynonyMe.ViewModel
             //todo:確認ダイアログ
         }
 
-        /// <summary>全設定を初期値にリセットします</summary>
-        private void ResetAllSettingsToDefault()
-        {
-            // todo:確認ダイアログ
-        }
 
         /// <summary>設定ウィンドウを閉じます</summary>
         private void CloseSettingWindow()
@@ -1079,7 +1163,6 @@ namespace SynonyMe.ViewModel
             // todo:error log
             return LogLevel.INFO;
         }
-
 
         /// <summary>ログ出力レベル表記をスライダーバードラッグにあわせて更新します</summary>
         /// <param name="logLevel"></param>

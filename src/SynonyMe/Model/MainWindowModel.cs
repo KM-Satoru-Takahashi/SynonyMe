@@ -213,6 +213,15 @@ namespace SynonyMe.Model
             return filePathList;
         }
 
+        /// <summary>本exeで管理されている全設定ファイルを読み込み、管理対象に追加します</summary>
+        /// <returns>true:成功, false:失敗</returns>
+        internal bool LoadAllSettings()
+        {
+            Manager.SettingManager.GetSettingManager.LoadAllSettings();
+
+            return true;
+        }
+
         /// <summary>渡されたファイル情報に基づいて保存処理を実行する</summary>
         /// <param name="filePath">保存対象ファイルパス</param>
         /// <param name="displayText">保存したいテキスト情報</param>

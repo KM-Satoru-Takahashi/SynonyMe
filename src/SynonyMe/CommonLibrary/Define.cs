@@ -25,12 +25,20 @@ namespace SynonyMe.CommonLibrary
         FATAL = 5
     }
 
-    public enum SettingResetKind
+    public enum SettingKind
     {
         GeneralSetting,
         SearchAndSynonymSetting,
         AdvancedSetting,
         AllReset
+    }
+
+    public enum FontColorKind
+    {
+        Auto,
+        Black,
+        White,
+        UserSetting
     }
 
     /// <summary>固定値やenum設定クラス</summary>

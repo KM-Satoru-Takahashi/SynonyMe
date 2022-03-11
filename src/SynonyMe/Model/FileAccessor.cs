@@ -16,12 +16,14 @@ namespace SynonyMe.Model
     {
         private const string CLASS_NAME = "FileAccessManager";
 
-        private static FileAccessor _fileAccessor = new FileAccessor();
+        /// <summary></summary>
+        /// <remarks>マルチスレッドアクセスに対応させるため、Lazyで初期化する</remarks>
+        private static Lazy<FileAccessor> _fileAccessor = new Lazy<FileAccessor>(() => new FileAccessor());
         internal static FileAccessor GetFileAccessor
         {
             get
             {
-                return _fileAccessor;
+                return _fileAccessor.Value;
             }
         }
 
@@ -114,10 +116,11 @@ namespace SynonyMe.Model
                 catch
                 {
                     //todo:error log
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         internal T LoadSettingFile<T>(string targetFileName)

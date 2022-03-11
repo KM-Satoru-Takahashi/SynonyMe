@@ -102,6 +102,8 @@
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\Manager\DialogManager.cs" />
     <Compile Include="Model\FileAccessor.cs" />
+    <Compile Include="Model\Manager\Events\SettingChangedEventArgs.cs" />
+    <Compile Include="Model\Manager\SettingManager.cs" />
     <Compile Include="Model\Manager\SynonymManager.cs" />
     <Compile Include="Model\Searcher.cs" />
     <Compile Include="Model\SettingWindowModel.cs" />
@@ -110,6 +112,7 @@
     <Compile Include="Settings\AdvancedSetting.cs" />
     <Compile Include="Settings\SearchAndSynonymSetting.cs" />
     <Compile Include="Settings\GeneralSetting.cs" />
+    <Compile Include="ViewModel\BoolToEnumConverter.cs" />
     <Compile Include="ViewModel\ExpanderGridSplitterProperty.cs" />
     <Compile Include="ViewModel\KeyInputOnlyTextboxBehavior.cs" />
     <Compile Include="ViewModel\SettingWindowVM.cs" />

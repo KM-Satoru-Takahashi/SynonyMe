@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SynonyMe.CommonLibrary;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,8 @@ namespace SynonyMe.Settings
 
         public string SearchResultFontColor { get; set; }
 
+        public FontColorKind SearchResultFontColorKind { get; set; }
+
         //todo:将来はリスト化して持たせることも想定するが、
         //現状xamlも繰り返し配置ではなく都度要素を配置しているので、
         //冗長で正直な書き方にしておく
@@ -25,9 +28,11 @@ namespace SynonyMe.Settings
         public string SynonymSearchResultColor7 { get; set; }
         public string SynonymSearchResultColor8 { get; set; }
         public string SynonymSearchResultColor9 { get; set; }
-        public string SynonymSearchResultColor10 { get; set; } 
+        public string SynonymSearchResultColor10 { get; set; }
 
         public string SynonymSearchFontColor { get; set; }
+
+        public FontColorKind SynonymSearchFontColorKind { get; set; }
 
         public int SearchResultMargin { get; set; }
 
