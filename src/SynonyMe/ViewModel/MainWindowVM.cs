@@ -331,29 +331,6 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
-        #region event
-
-        /// <summary>類語グループあるいは類語一覧に更新があった際に発火するイベントハンドラ</summary>
-        private event EventHandler UpdateSynonymEventHandler
-        {
-            add
-            {
-                if (_model != null)
-                {
-                    _model.UpdateSynonymEvent += value;
-                }
-            }
-            remove
-            {
-                if (_model != null)
-                {
-                    _model.UpdateSynonymEvent -= value;
-                }
-            }
-        }
-
-        #endregion
-
         #region method
 
         /// <summary>コンストラクタ</summary>
@@ -376,9 +353,12 @@ namespace SynonyMe.ViewModel
             // 類語検索領域初期化処理
             InitializeSynonymSearch();
 
-            // 設定ファイル読み込み
-            LoadAllSettings();
+            // 設定更新時のイベント登録
+            InitializeUpdateSettingEvents();
 
+            // 設定値を画面に適用する
+            //todo:Model側をメインに
+            ApplySettings();
             // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
             // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
             // DependencyPropertyDescriptorは強参照のため、参照を解除できず、繰り返し行うとメモリリークにつながる
@@ -396,18 +376,6 @@ namespace SynonyMe.ViewModel
             //        Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
             //    }
             //}
-        }
-
-        /// <summary>SynonyMeが扱う全ての設定ファイルを読み込みます</summary>
-        private void LoadAllSettings()
-        {
-            if (_model == null)
-            {
-                //todo:error
-                return;
-            }
-
-            _model.LoadAllSettings();
         }
 
         /// <summary>各種コマンドを初期化します</summary>
@@ -441,10 +409,57 @@ namespace SynonyMe.ViewModel
             UpdateSynonymArea(true);
 
             // 類語更新時のイベント登録
-            // todo
-            UpdateSynonymEventHandler -= UpdateSynonymSearchAreaEvent;
-            UpdateSynonymEventHandler += UpdateSynonymSearchAreaEvent;
+            if (_model == null)
+            {
+                //todo:error log
+                return;
+            }
+            _model.UpdateSynonymEvent -= UpdateSynonymSearchAreaEvent;
+            _model.UpdateSynonymEvent += UpdateSynonymSearchAreaEvent;
         }
+
+        private void InitializeUpdateSettingEvents()
+        {
+            // todo
+            // 設定変更時に発火するイベント登録
+            if (_model == null)
+            {
+                //todo:error log
+                return;
+            }
+
+            _model.GeneralSettingChangedEvent -= UpdateGeneralSettingEvent;
+            _model.GeneralSettingChangedEvent += UpdateGeneralSettingEvent;
+
+            _model.SearchAndSynonymSettingChangedEvent -= UpdateSearchAndSynonymSettingEvent;
+            _model.SearchAndSynonymSettingChangedEvent += UpdateSearchAndSynonymSettingEvent;
+
+            _model.AdvancedSettingChangedEvent -= UpdateAdvancedSettingEvent;
+            _model.AdvancedSettingChangedEvent += UpdateAdvancedSettingEvent;
+
+        }
+
+        private void UpdateGeneralSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
+        {
+
+        }
+
+        private void UpdateSearchAndSynonymSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
+        {
+
+        }
+
+        private void UpdateAdvancedSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
+        {
+
+        }
+
+        private void ApplySettings()
+        {
+
+        }
+
+
 
         /// <summary>類語グループ一覧、類語一覧、類語検索結果を最新の状態に更新する</summary>
         private void UpdateSynonymArea(bool isInitialize = false)

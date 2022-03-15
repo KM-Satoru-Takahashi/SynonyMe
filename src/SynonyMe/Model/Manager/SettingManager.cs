@@ -26,7 +26,11 @@ namespace SynonyMe.Model.Manager
         }
 
         /// <summary>シングルトン担保</summary>
-        private SettingManager() { }
+        /// <remarks>起動時(インスタンス生成時)に、必ず全設定ファイルを読み込みます</remarks>
+        private SettingManager()
+        {
+            LoadAllSettings();
+        }
 
         #endregion
 
@@ -51,24 +55,26 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>設定の変更を通知します</summary>
         /// todo:SettingManagerに設定ファイル読み書きが移管されたらこのあたり作成する
-        internal void NotifySettingChanged(CommonLibrary.SettingKind kind, object setting)
+        internal void NotifySettingChanged(CommonLibrary.SettingResetKind kind)
         {
             switch (kind)
             {
-                case CommonLibrary.SettingKind.AdvancedSetting:
-                    AdvancedSettingChangedEvent(this, new Events.SettingChangedEventArgs(setting));
+                case CommonLibrary.SettingResetKind.AdvancedSetting:
+                    AdvancedSettingChangedEvent(this,
+                        new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting))));
                     break;
 
-                case CommonLibrary.SettingKind.GeneralSetting:
-                    GeneralSettingChangedEvent(this, new Events.SettingChangedEventArgs(setting));
+                case CommonLibrary.SettingResetKind.GeneralSetting:
+                    GeneralSettingChangedEvent(this,
+                        new Events.SettingChangedEventArgs(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting))));
                     break;
 
 
-                case CommonLibrary.SettingKind.SearchAndSynonymSetting:
+                case CommonLibrary.SettingResetKind.SearchAndSynonymSetting:
 
                     break;
 
-                case CommonLibrary.SettingKind.AllReset:
+                case CommonLibrary.SettingResetKind.AllReset:
 
                     break;
 
@@ -92,7 +98,7 @@ namespace SynonyMe.Model.Manager
         /// <param name="type">設定ファイル種別</param>
         /// <param name="setting">設定ファイルインスタンス</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool AddSetting(Type type, object setting)
+        private bool AddSetting(Type type, object setting)
         {
             if (_settingDictionary.TryAdd(type, setting) == false)
             {
@@ -105,18 +111,17 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>指定した設定情報を取得します</summary>
         /// <param name="target"></param>
-        /// <param name="setting"></param>
         /// <returns></returns>
-        internal bool GetSetting(Type target, out object setting)
+        internal object GetSetting(Type target)
         {
-            setting = null;
+            object setting;
             if (_settingDictionary.TryGetValue(target, out setting) == false)
             {
                 //todo:log
-                return false;
+                return null;
             }
 
-            return true;
+            return setting;
         }
 
         /// <summary>管理下にある設定情報を更新、また存在していない場合は登録します</summary>
@@ -142,18 +147,19 @@ namespace SynonyMe.Model.Manager
             return true;
         }
 
-        internal bool LoadAllSettings()
+        private void LoadAllSettings()
         {
-            bool result = true;
+            // 設定ファイル読み込みに時間がかかることを想定し、マルチスレッドで行わせる
+            Task task = Task.Run(() =>
+            {
+                LoadGeneralSetting();
+                LoadSearchAndSynonymSetting();
+                LoadAdvancedSetting();
+            });
 
-            Parallel.Invoke
-                (
-                  () => result &= LoadGeneralSetting(),
-                  () => result &= LoadSearchAndSynonymSetting(),
-                  () => result &= LoadAdvancedSetting()
-                );
-
-            return result;
+            //LoadGeneralSetting();
+            //LoadSearchAndSynonymSetting();
+            //LoadAdvancedSetting();
         }
 
 

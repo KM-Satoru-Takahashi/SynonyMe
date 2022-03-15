@@ -14,7 +14,7 @@ namespace SynonyMe.Model
     /// <remarks>シングルトン</remarks>
     internal class FileAccessor
     {
-        private const string CLASS_NAME = "FileAccessManager";
+        private const string CLASS_NAME = "FileAccess";
 
         /// <summary></summary>
         /// <remarks>マルチスレッドアクセスに対応させるため、Lazyで初期化する</remarks>

@@ -11,7 +11,7 @@ namespace SynonyMe.Model.Manager
 {
     /// <summary>類語関連の処理を担うクラス</summary>
     /// <remarks>DBへのアクセスはこのクラスが引き受け、各Modelクラスが共通して使う前提とし、staticにする</remarks>
-    internal static class SynonymManager　//todo:シングルトン化？
+    internal static class SynonymManager　//todo:シングルトン化
     {
 
         private const string CLASS_NAME = "SynonymManager";
@@ -306,7 +306,7 @@ namespace SynonyMe.Model.Manager
 
         internal static bool DeleteAllSynonymGroupsAndWords()
         {
-            //todo:実装 TRUNCATE TABLEでいけるらしい
+            //todo:実装 DELETEでテーブル除去し、VACUUMで予約領域も削除させる
             return true;
         }
 

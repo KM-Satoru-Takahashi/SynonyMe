@@ -25,7 +25,7 @@ namespace SynonyMe.CommonLibrary
         FATAL = 5
     }
 
-    public enum SettingKind
+    public enum SettingResetKind
     {
         GeneralSetting,
         SearchAndSynonymSetting,

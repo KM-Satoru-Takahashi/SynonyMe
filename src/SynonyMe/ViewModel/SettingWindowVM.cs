@@ -605,6 +605,7 @@ namespace SynonyMe.ViewModel
 
         #endregion
 
+        //todo:ログ出力レベルは構造体化して管理した方が良いだろう
         #region Tab_AdvancedSettings
 
         private double _logOutputLevel = 1; //todo:将来的にModel側で管理させること
@@ -807,16 +808,27 @@ namespace SynonyMe.ViewModel
         {
             _model = new SettingWindowModel(this);
 
+            InitializeCommands();
+            ApplyAllSettings();
+        }
+
+        private void InitializeCommands()
+        {
             Command_Ok = new CommandBase(ExecuteOk, null);
             Command_Cancel = new CommandBase(ExecuteCancel, null);
             Command_Apply = new CommandBase(ExecuteApply, null);
             Command_ResetToDefault = new CommandBase(ExecuteResetToDefault, null);
-
-            ApplyAllSettings();
         }
 
         /// <summary>全設定を更新・適用します</summary> //todo:ApplyやOK押した際の値の更新をSettingManagerのイベントハンドラ経由で
         private void ApplyAllSettings()
+        {
+            ApplyGeneralSetting();
+            ApplySearchAndSynonymSetting();
+            ApplyAdvancedSetting();
+        }
+
+        private void ApplyAdvancedSetting()
         {
             if (_model == null)
             {
@@ -824,30 +836,34 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // Model側で値は必ずセットされているはずなので、nullチェックだけして異常ならreturnしてしまう
-            // この時点でexe動作の正常性を担保できていない(内部処理でnewしているのにnullっているため)
-            GeneralSetting generalSetting = _model.GetGeneralSetting();
-            if (generalSetting == null)
+            AdvancedSetting advancedSetting = _model.GetAdvancedSetting();
+            if (advancedSetting == null)
             {
-                Logger.Fatal(CLASS_NAME, "ApplySettings", "_generalSetting is null!");
+                Logger.Fatal(CLASS_NAME, "ApplyAdvancedSetting", "advancedSetting is null!");
                 return;
             }
 
-            WrappingText = generalSetting.WrappingText;
-            ShowingLineCount = generalSetting.ShowingLineCount;
-            ShowingLineNumber = generalSetting.ShowingLineNumber;
-            ShowingWordCount = generalSetting.ShowingWordCount;
-            ShowingNewLine = generalSetting.ShowingNewLine;
-            ShowingTab = generalSetting.ShowingTab;
-            ShowingSpace = generalSetting.ShowingSpace;
-            FontColor = ConvertStringToColor(generalSetting.FontColor);
-            MainFontName = generalSetting.MainFontName;
-            SubFontName = generalSetting.SubFontName;
+            LogOutputLevel = (double)advancedSetting.LogLevel; //todo:安全なキャスト
+            LogRetentionDays = advancedSetting.LogRetentionDays;
+            UseFastSearch = advancedSetting.SpeedUpSearch;
+            if (advancedSetting.TargetFileExtensionList.Contains("txt")) //todo:リスト検索方法
+            {
+                IsTxtTarget = true;
+            }
+        }
+
+        private void ApplySearchAndSynonymSetting()
+        {
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
 
             SearchAndSynonymSetting searchAndSynonymSetting = _model.GetSearchAndSynonymSetting();
             if (searchAndSynonymSetting == null)
             {
-                Logger.Fatal(CLASS_NAME, "ApplySettings", "_searchAndSynonymSetting is null!");
+                Logger.Fatal(CLASS_NAME, "ApplyAdvancedSetting", "searchAndSynonymSetting is null!");
                 return;
             }
 
@@ -868,24 +884,37 @@ namespace SynonyMe.ViewModel
             SynonymSearchResultFontColorKind = searchAndSynonymSetting.SynonymSearchFontColorKind;
             SearchResultMargin = searchAndSynonymSetting.SearchResultMargin.ToString();
             SearchResultDisplayCount = searchAndSynonymSetting.SearchResultDisplayCount.ToString();
+        }
 
-            AdvancedSetting advancedSetting = _model.GetAdvancedSetting();
-            if (advancedSetting == null)
+        private void ApplyGeneralSetting()
+        {
+            if (_model == null)
             {
-                Logger.Fatal(CLASS_NAME, "ApplySettings", "_advancedSetting is null!");
+                //todo:log
                 return;
             }
 
-            LogOutputLevel = (double)advancedSetting.LogLevel; //todo:安全なキャスト
-            LogRetentionDays = advancedSetting.LogRetentionDays;
-            UseFastSearch = advancedSetting.SpeedUpSearch;
-            if (advancedSetting.TargetFileExtensionList.Contains("txt")) //todo:リスト検索方法
+            // Model側で値は必ずセットされているはずなので、nullチェックだけして異常ならreturnしてしまう
+            // この時点でexe動作の正常性を担保できていない(内部処理でnewしているのにnullっているため)
+            GeneralSetting generalSetting = _model.GetGeneralSetting();
+            if (generalSetting == null)
             {
-                IsTxtTarget = true;
+                Logger.Fatal(CLASS_NAME, "ApplyGeneralSetting", "generalSetting is null!");
+                return;
             }
 
-            //todo:プロパティに値割り当て
+            WrappingText = generalSetting.WrappingText;
+            ShowingLineCount = generalSetting.ShowingLineCount;
+            ShowingLineNumber = generalSetting.ShowingLineNumber;
+            ShowingWordCount = generalSetting.ShowingWordCount;
+            ShowingNewLine = generalSetting.ShowingNewLine;
+            ShowingTab = generalSetting.ShowingTab;
+            ShowingSpace = generalSetting.ShowingSpace;
+            FontColor = ConvertStringToColor(generalSetting.FontColor);
+            MainFontName = generalSetting.MainFontName;
+            SubFontName = generalSetting.SubFontName;
         }
+
 
         /// <summary>#AARRGGBB形式の文字列をColor構造体に変換します</summary>
         /// <param name="source">#AARRGGBBであること</param>
@@ -1081,26 +1110,28 @@ namespace SynonyMe.ViewModel
         {
             if (parameter == null)
             {
+                //todo:error log
                 return;
             }
 
-            if (Enum.IsDefined(typeof(SettingKind), parameter))
+            //todo:実装
+            if (Enum.IsDefined(typeof(SettingResetKind), parameter))
             {
-                SettingKind kind = (SettingKind)Enum.ToObject(typeof(SettingKind), parameter);
+                SettingResetKind kind = (SettingResetKind)Enum.ToObject(typeof(SettingResetKind), parameter);
                 switch (kind)
                 {
-                    case SettingKind.GeneralSetting:
+                    case SettingResetKind.GeneralSetting:
 
                         break;
-                    case SettingKind.SearchAndSynonymSetting:
-
-                        break;
-
-                    case SettingKind.AdvancedSetting:
+                    case SettingResetKind.SearchAndSynonymSetting:
 
                         break;
 
-                    case SettingKind.AllReset:
+                    case SettingResetKind.AdvancedSetting:
+
+                        break;
+
+                    case SettingResetKind.AllReset:
                         //todo:上記3つのリセット処理を全て呼べば良い
                         break;
                     default:

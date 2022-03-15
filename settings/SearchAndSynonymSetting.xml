@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <SearchAndSynonymSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <SearchResultBackGroundColor>#00000000</SearchResultBackGroundColor>
-  <SearchResultFontColor>#00000000</SearchResultFontColor>
+  <SearchResultFontColor>#FFFFA07A</SearchResultFontColor>
+  <SearchResultFontColorKind>Black</SearchResultFontColorKind>
   <SynonymSearchResultColor1>#00000000</SynonymSearchResultColor1>
   <SynonymSearchResultColor2>#00000000</SynonymSearchResultColor2>
   <SynonymSearchResultColor3>#00000000</SynonymSearchResultColor3>
@@ -12,7 +13,8 @@
   <SynonymSearchResultColor8>#00000000</SynonymSearchResultColor8>
   <SynonymSearchResultColor9>#00000000</SynonymSearchResultColor9>
   <SynonymSearchResultColor10>#00000000</SynonymSearchResultColor10>
-  <SynonymSearchFontColor>#00000000</SynonymSearchFontColor>
-  <SearchResultMargin>10</SearchResultMargin>
+  <SynonymSearchFontColor>#FF708090</SynonymSearchFontColor>
+  <SynonymSearchFontColorKind>White</SynonymSearchFontColorKind>
+  <SearchResultMargin>102</SearchResultMargin>
   <SearchResultDisplayCount>100</SearchResultDisplayCount>
 </SearchAndSynonymSetting>

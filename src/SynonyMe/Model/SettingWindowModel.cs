@@ -24,8 +24,8 @@ namespace SynonyMe.Model
 
         internal GeneralSetting GetGeneralSetting()
         {
-            object setting = null;
-            if (SettingManager.GetSettingManager.GetSetting(typeof(GeneralSetting), out setting) == false)
+            object setting = SettingManager.GetSettingManager.GetSetting(typeof(GeneralSetting));
+            if (setting == null)
             {
                 //todo:log
                 setting = new GeneralSetting()
@@ -49,9 +49,8 @@ namespace SynonyMe.Model
 
         internal AdvancedSetting GetAdvancedSetting()
         {
-            object setting = null;
-
-            if (SettingManager.GetSettingManager.GetSetting(typeof(AdvancedSetting), out setting) == false)
+            object setting = SettingManager.GetSettingManager.GetSetting(typeof(AdvancedSetting));
+            if (setting == null)
             {
                 Logger.Error(CLASS_NAME, "GetAdvancedSetting", $"Get AdvancedSetting failed. FileName:[{Define.SETTING_FILENAME_ADVANCED}]");
                 setting = new AdvancedSetting()
@@ -69,11 +68,16 @@ namespace SynonyMe.Model
             return setting as AdvancedSetting;
         }
 
-
+        /// <summary>
+        /// 検索・類語検索設定を取得します
+        /// </summary>
+        /// <returns></returns>
+        /// <remarks>todo:設定情報取得周り、nullならもうどうしようもないからログ出ししてnullをreturnとかさせるべき
+        /// また、プロパティ値の設定はModel側で完結させるべき</remarks>
         internal SearchAndSynonymSetting GetSearchAndSynonymSetting()
         {
-            object setting = null;
-            if (SettingManager.GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting), out setting) == false)
+            object setting = SettingManager.GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting));
+            if (setting == null)
             {
                 Logger.Error(CLASS_NAME, "GetSearchAndSynonymSetting", $"Get SearchAndSynonymSetting.xml failed. FileName:[{Define.SETTING_FILENAME_SEARCH}]");
                 string black = "#FF000000";

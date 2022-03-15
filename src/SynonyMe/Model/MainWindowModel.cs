@@ -73,13 +73,53 @@ namespace SynonyMe.Model
         {
             add
             {
-                Manager.SynonymManager.UpdateSynonymEvent += value;
+                SynonymManager.UpdateSynonymEvent += value;
             }
             remove
             {
-                Manager.SynonymManager.UpdateSynonymEvent -= value;
+                SynonymManager.UpdateSynonymEvent -= value;
             }
         }
+
+        /// <summary>高度な設定変更時に発火するイベントハンドラ</summary>
+        internal event EventHandler<Manager.Events.SettingChangedEventArgs> AdvancedSettingChangedEvent
+        {
+            add
+            {
+                SettingManager.GetSettingManager.AdvancedSettingChangedEvent += value;
+            }
+            remove
+            {
+                SettingManager.GetSettingManager.AdvancedSettingChangedEvent -= value;
+            }
+        }
+
+        /// <summary>一般設定変更時に発火するイベントハンドラ</summary>
+        internal event EventHandler<Manager.Events.SettingChangedEventArgs> GeneralSettingChangedEvent
+        {
+            add
+            {
+                SettingManager.GetSettingManager.GeneralSettingChangedEvent += value;
+            }
+            remove
+            {
+                SettingManager.GetSettingManager.GeneralSettingChangedEvent -= value;
+            }
+        }
+
+        /// <summary>検索・類語検索設定変更時に発火するイベントハンドラ</summary>
+        internal event EventHandler<Manager.Events.SettingChangedEventArgs> SearchAndSynonymSettingChangedEvent
+        {
+            add
+            {
+                SettingManager.GetSettingManager.SearchAndSynonymSettingChangedEvent += value;
+            }
+            remove
+            {
+                SettingManager.GetSettingManager.SearchAndSynonymSettingChangedEvent -= value;
+            }
+        }
+
 
         #region method
 
@@ -94,8 +134,26 @@ namespace SynonyMe.Model
             }
 
             _viewModel = viewModel;
-            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
+
+            Initialize();
         }
+
+        private void Initialize()
+        {
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
+
+            ApplySettings();
+        }
+
+
+        private void ApplySettings()
+        {
+
+        }
+
+
+
+
 
         /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
         /// <param name="targets">対象語句</param>
@@ -211,15 +269,6 @@ namespace SynonyMe.Model
             // 現状、表示できるファイルは1つだけなので先頭のものを使用
             // filePathListのnull/AnyチェックはConbertDropInfoToPathList内で行っている
             return filePathList;
-        }
-
-        /// <summary>本exeで管理されている全設定ファイルを読み込み、管理対象に追加します</summary>
-        /// <returns>true:成功, false:失敗</returns>
-        internal bool LoadAllSettings()
-        {
-            Manager.SettingManager.GetSettingManager.LoadAllSettings();
-
-            return true;
         }
 
         /// <summary>渡されたファイル情報に基づいて保存処理を実行する</summary>
@@ -642,6 +691,7 @@ namespace SynonyMe.Model
         /// </summary>
         /// <param name="index">カーソル配置位置</param>
         /// <returns>true:正常、false:異常</returns>
+        /// <remarks>todo:MainWindowから画面要素取得しないでもなんとかならないか</remarks>
         internal bool UpdateCaretOffset(int index)
         {
             if (index < 0)
