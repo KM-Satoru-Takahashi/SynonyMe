@@ -42,6 +42,8 @@ namespace SynonyMe.Model
 
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
+        private Manager.SettingManager _settingManager = null;
+
         #endregion
 
         #region property
@@ -49,20 +51,29 @@ namespace SynonyMe.Model
         /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
         internal bool IsModified { get; set; } = false;
 
+        internal bool ShowLineCount { get; private set; }
+
+        internal bool ShowWordCount { get; private set; }
+
+        internal bool ShowNumberOfLines { get; private set; }
+
+        internal bool WordWrap { get; private set; }
+
         /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
-        /// todo:MainWindowXamlと[TextEditor]はBindingされていない。[DisplayTextDocument]はBindingされている
-        /// MainWindow→ DisplayTextDocument ← TextEditorのDisplayTextDocument の状態
-        /// MainWindowとMainWindowModelのTextEditorをなんとかして合致させる
         /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
         /// Options.ShowEndOfLine, ShowSpaces, ShowTabs, ShowBoxForControlCharacters
-        //internal TextEditor TextEditor { get; } = new TextEditor();
 
         /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
         internal TextDocument TextDocument { get; set; } = new TextDocument();
 
-        internal TextEditorOptions TextEditorOptions = new TextEditorOptions();
+        /// <summary>テキスト表示オプション設定</summary>
+        /// <remarks>内部のプロパティを変更すると、AvalonEdit側で動的に変更してくれる</remarks>
+        internal TextEditorOptions TextEditorOptions = new TextEditorOptions()
+        {
+            EnableImeSupport = false
+        };
 
         /// <summary>画面表示中テキストの絶対パス</summary>
         internal string DisplayTextFilePath;
@@ -141,19 +152,97 @@ namespace SynonyMe.Model
         private void Initialize()
         {
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
-
-            ApplySettings();
+            _settingManager = Manager.SettingManager.GetSettingManager;
         }
 
 
-        private void ApplySettings()
+        internal void ApplySettings()
         {
-
+            ApplyGeneralSetting();
+            ApplySearchAndSynonymSetting();
+            ApplyAdvancedSetting();
         }
 
 
+        private void ApplyGeneralSetting()
+        {
+            if (_settingManager == null)
+            {
+                //todo:log
+                return;
+            }
+
+            UpdateGeneralSetting(_settingManager.GetSetting(typeof(Settings.GeneralSetting)) as Settings.GeneralSetting);
+        }
+
+        private void ApplySearchAndSynonymSetting()
+        {
+            if (_settingManager == null)
+            {
+                //todo:log
+                return;
+            }
+
+            UpdateSearchAndSynonymSetting(_settingManager.GetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting);
+        }
+
+        private void ApplyAdvancedSetting()
+        {
+            if (_settingManager == null)
+            {
+                //todo:log
+                return;
+            }
+
+            UpdateAdvancedSetting(_settingManager.GetSetting(typeof(Settings.AdvancedSetting)) as Settings.AdvancedSetting);
+        }
+
+        internal void UpdateGeneralSetting(Settings.GeneralSetting setting)
+        {
+            if (setting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            ShowLineCount = setting.ShowingLineCount;
+            _viewModel.NotifyPropertyChanged("LineCountVisible");
+
+            ShowNumberOfLines = setting.ShowingNumberOfLines;
+            _viewModel.NotifyPropertyChanged("CanShowNumberOfLines");
+
+            ShowWordCount = setting.ShowingWordCount;
+            _viewModel.NotifyPropertyChanged("WordCountVisible");
+
+            TextEditorOptions.ShowEndOfLine = setting.ShowingNewLine;
+            TextEditorOptions.ShowSpaces = setting.ShowingSpace;
+            TextEditorOptions.ShowTabs = setting.ShowingTab;
+            _viewModel.NotifyPropertyChanged("TextEditorOptions");
+
+            WordWrap = setting.WrappingText;
+            _viewModel.NotifyPropertyChanged("WordWrap");
 
 
+
+        }
+
+        internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)
+        {
+            if (setting == null)
+            {
+                //todo:log
+                return;
+            }
+
+        }
+
+        internal void UpdateAdvancedSetting(Settings.AdvancedSetting setting)
+        {
+            if (setting == null)
+            {
+                return;
+            }
+        }
 
         /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
         /// <param name="targets">対象語句</param>

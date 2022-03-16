@@ -50,7 +50,7 @@ namespace SynonyMe.ViewModel
         private string _wordCount = null;
 
         /// <summary>行数表示</summary>
-        private string _numberOfLines = null;
+        private string _lineCount = null;
 
         /// <summary>「編集済み」文字のVisibility</summary>
         private Visibility _editedTextVisible = Visibility.Hidden;
@@ -66,7 +66,7 @@ namespace SynonyMe.ViewModel
         #region property
 
         /// <summary>ウィンドウタイトル</summary>
-        public string MainWindowTitle { get; } = CommonLibrary.MessageLibrary.MainWindowTitle;
+        public string MainWindowTitle { get; } = MessageLibrary.MainWindowTitle;
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
         public int ToolbarHeight { get; } = 40;
@@ -78,25 +78,25 @@ namespace SynonyMe.ViewModel
         public string SearchButtonText { get; } = MessageLibrary.SearchButtonText;
 
         /// <summary>類語検索ボタン表示文字列</summary>
-        public string SearchSynonymText { get; } = CommonLibrary.MessageLibrary.SearchSynonymButtonText;
+        public string SearchSynonymText { get; } = MessageLibrary.SearchSynonymButtonText;
 
         /// <summary類語グループリストの類語名ヘッダ</summary>
-        public string SynonymGroupNameHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupName;
+        public string SynonymGroupNameHeader { get; } = MessageLibrary.MainWindowSynonymGroupName;
 
         /// <summary>類語グループリストの最終更新日ヘッダ</summary>
-        public string SynonymGroupLastUpdateHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymGroupLastUpdate;
+        public string SynonymGroupLastUpdateHeader { get; } = MessageLibrary.MainWindowSynonymGroupLastUpdate;
 
         /// <summary>類語リストの類語名ヘッダ</summary>
-        public string SynonymWordHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordHeader;
+        public string SynonymWordHeader { get; } = MessageLibrary.MainWindowSynonymWordHeader;
 
         /// <summary>類語リストの連続使用(繰り返し)回数ヘッダ</summary>
-        public string SynonymWordRepeatingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
+        public string SynonymWordRepeatingCountHeader { get; } = MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
 
         /// <summary>類語リストの合計使用回数ヘッダ</summary>
-        public string SynonymWordUsingCountHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordUsingCountHeader;
+        public string SynonymWordUsingCountHeader { get; } = MessageLibrary.MainWindowSynonymWordUsingCountHeader;
 
         /// <summary>類語リストの使用箇所ヘッダ</summary>
-        public string SynonymWordSectionHeader { get; } = CommonLibrary.MessageLibrary.MainWindowSynonymWordSectionHeader;
+        public string SynonymWordSectionHeader { get; } = MessageLibrary.MainWindowSynonymWordSectionHeader;
 
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument TextDocument
@@ -141,6 +141,30 @@ namespace SynonyMe.ViewModel
                 OnPropertyChanged("IsModified");
             }
         }
+
+        public TextEditorOptions TextEditorOptions
+        {
+            get
+            {
+                if (_model != null)
+                {
+                    return _model.TextEditorOptions;
+                }
+                return null;
+            }
+            set
+            {
+                if (_model != null)
+                {
+                    if (_model.TextEditorOptions != value)
+                    {
+                        _model.TextEditorOptions = value;
+                        OnPropertyChanged("TextEditorOptions");
+                    }
+                }
+            }
+        }
+
 
         /// <summary>検索文字列</summary>
         public string SearchWord { get; set; } = null;
@@ -202,25 +226,81 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        /// <summary>行数表示の固定値「行数」</summary>
-        public string NumberOfLinesText { get; } = "行数：";
-
-        /// <summary>行数表示箇所</summary>
-        public string NumberOfLines
+        public Visibility WordCountVisible
         {
             get
             {
-                return _numberOfLines;
+                if (_model == null)
+                {
+                    return Visibility.Collapsed;
+                }
+                if (_model.ShowWordCount)
+                {
+                    return Visibility.Visible;
+                }
+                return Visibility.Hidden;
+            }
+        }
+
+        /// <summary>行数表示の固定値「行数」</summary>
+        public string LineCountText { get; } = "行数：";
+
+        /// <summary>行数表示箇所</summary>
+        public string LineCount
+        {
+            get
+            {
+                return _lineCount;
             }
             set
             {
-                if (_numberOfLines == value)
+                if (_lineCount == value)
                 {
                     return;
                 }
 
-                _numberOfLines = value;
-                OnPropertyChanged("NumberOfLines");
+                _lineCount = value;
+                OnPropertyChanged("LineCount");
+            }
+        }
+
+        public Visibility LineCountVisible
+        {
+            get
+            {
+                if (_model == null)
+                {
+                    return Visibility.Collapsed;
+                }
+                if (_model.ShowLineCount)
+                {
+                    return Visibility.Visible;
+                }
+                return Visibility.Hidden;
+            }
+        }
+
+        public bool CanShowNumberOfLines
+        {
+            get
+            {
+                if (_model == null)
+                {
+                    return false;
+                }
+                return _model.ShowNumberOfLines;
+            }
+        }
+
+        public bool WordWrap
+        {
+            get
+            {
+                if (_model == null)
+                {
+                    return false;
+                }
+                return _model.WordWrap;
             }
         }
 
@@ -436,27 +516,89 @@ namespace SynonyMe.ViewModel
 
             _model.AdvancedSettingChangedEvent -= UpdateAdvancedSettingEvent;
             _model.AdvancedSettingChangedEvent += UpdateAdvancedSettingEvent;
-
         }
 
         private void UpdateGeneralSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
         {
+            if (args == null)
+            {
+                //todo:log
+                return;
+            }
 
+            Settings.GeneralSetting generalSetting = args.GetTargetSetting(typeof(Settings.GeneralSetting)) as Settings.GeneralSetting;
+            if (generalSetting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
+
+            _model.UpdateGeneralSetting(generalSetting);
         }
 
         private void UpdateSearchAndSynonymSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
         {
+            if (args == null)
+            {
+                //todo:log
+                return;
+            }
 
+            Settings.SearchAndSynonymSetting searchAndSynonymSetting = args.GetTargetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting;
+            if (searchAndSynonymSetting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
+
+            _model.UpdateSearchAndSynonymSetting(searchAndSynonymSetting);
         }
 
         private void UpdateAdvancedSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
         {
+            if (args == null)
+            {
+                //todo:log
+                return;
+            }
 
+            Settings.AdvancedSetting advancedSetting = args.GetTargetSetting(typeof(Settings.AdvancedSetting)) as Settings.AdvancedSetting;
+            if (advancedSetting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
+
+            _model.UpdateAdvancedSetting(advancedSetting);
         }
 
         private void ApplySettings()
         {
+            if (_model == null)
+            {
+                //todo:log
+                return;
+            }
 
+            _model.ApplySettings();
         }
 
 
@@ -863,12 +1005,12 @@ namespace SynonyMe.ViewModel
             if (_model == null || _model.TextDocument == null)
             {
                 WordCount = null;
-                NumberOfLines = null;
+                LineCount = null;
             }
             else
             {
                 //todo:設定に合わせて計算する
-                NumberOfLines = _model.TextDocument.LineCount.ToString();
+                LineCount = _model.TextDocument.LineCount.ToString();
                 //todo:計算式が汚い……
                 //何もしないと改行がCR+LFで2文字カウントされてしまう。また、1行目に改行コードは存在しない
                 //なので、行数の2倍を文字数から引き、1行目の行数分だけ帳尻を合わせてやれば、改行を除いた文字数になる
@@ -1017,7 +1159,16 @@ namespace SynonyMe.ViewModel
         //    }
         //}
 
+        internal void NotifyPropertyChanged(string propertyName)
+        {
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                //todo:log
+                return;
+            }
 
+            OnPropertyChanged(propertyName);
+        }
 
         #endregion
 

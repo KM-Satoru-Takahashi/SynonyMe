@@ -13,7 +13,7 @@ namespace SynonyMe.Settings
 
         public bool ShowingLineCount { get; set; }
 
-        public bool ShowingLineNumber { get; set; }
+        public bool ShowingNumberOfLines { get; set; }
 
         public bool ShowingWordCount { get; set; }
 

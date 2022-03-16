@@ -55,27 +55,29 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>設定の変更を通知します</summary>
         /// todo:SettingManagerに設定ファイル読み書きが移管されたらこのあたり作成する
-        internal void NotifySettingChanged(CommonLibrary.SettingResetKind kind)
+        internal void NotifySettingChanged(CommonLibrary.SettingKind kind)
         {
             switch (kind)
             {
-                case CommonLibrary.SettingResetKind.AdvancedSetting:
+                case CommonLibrary.SettingKind.AdvancedSetting:
                     AdvancedSettingChangedEvent(this,
                         new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting))));
                     break;
 
-                case CommonLibrary.SettingResetKind.GeneralSetting:
+                case CommonLibrary.SettingKind.GeneralSetting:
                     GeneralSettingChangedEvent(this,
                         new Events.SettingChangedEventArgs(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting))));
                     break;
 
-
-                case CommonLibrary.SettingResetKind.SearchAndSynonymSetting:
-
+                case CommonLibrary.SettingKind.SearchAndSynonymSetting:
+                    SearchAndSynonymSettingChangedEvent(this,
+                        new Events.SettingChangedEventArgs(typeof(SearchAndSynonymSetting), GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting))));
                     break;
 
-                case CommonLibrary.SettingResetKind.AllReset:
-
+                case CommonLibrary.SettingKind.All:
+                    Events.SettingChangedEventArgs args = new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting)));
+                    args.AddChangedSetting(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting)));
+                    args.AddChangedSetting(typeof(SearchAndSynonymSetting), GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting)));
                     break;
 
                 default:
@@ -205,7 +207,7 @@ namespace SynonyMe.Model.Manager
                     SubFontName = "Consolas",
                     WrappingText = false,
                     ShowingLineCount = true,
-                    ShowingLineNumber = true,
+                    ShowingNumberOfLines = true,
                     ShowingNewLine = false,
                     ShowingSpace = false,
                     ShowingTab = false,

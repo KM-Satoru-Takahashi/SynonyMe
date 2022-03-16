@@ -200,6 +200,14 @@
 
             <!--メイン領域-->
             <Grid Grid.Row="0" Grid.Column="2">
+
+                <!--実用上まったく問題ないが、VSがxamlデザイン表示する際にnull例外で表示できなくなってしまうのを防ぐために定義しておく-->
+                <!--いじってエラーが出た場合、クリーン→ビルド→VS再起動で解消するので確認すること-->
+                <!--削除してもちょいちょい起こる→VSの安定性の問題か？-->
+                <Grid.Resources>
+                    <ae:TextEditorOptions x:Key="StaticTextEditorOptions"/>
+                </Grid.Resources>
+
                 <Grid.RowDefinitions>
                     <!--文字数等表示行-->
                     <RowDefinition Height="20"/>
@@ -216,13 +224,13 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                         <!--文字数-->
-                        <TextBlock Text="{Binding WordCountText}"/>
-                        <TextBlock Text="{Binding WordCount}" />
+                        <TextBlock Text="{Binding WordCountText}" Visibility="{Binding WordCountVisible}"/>
+                        <TextBlock Text="{Binding WordCount}" Visibility="{Binding WordCountVisible}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <!--行数-->
-                        <TextBlock Text="{Binding NumberOfLinesText}"/>
-                        <TextBlock Text="{Binding NumberOfLines}" Margin="0,0,40,0"/>
+                        <TextBlock Text="{Binding LineCountText}" Visibility="{Binding LineCountVisible}"/>
+                        <TextBlock Text="{Binding LineCount}" Margin="0,0,40,0" Visibility="{Binding LineCountVisible}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <!--編集済み-->
@@ -233,11 +241,13 @@
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
                 <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
-                    dd:DragDrop.IsDropTarget="True"
-                    dd:DragDrop.DropHandler="{Binding}"                    
+                    dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
+                    dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"            
                     Document="{Binding Path=TextDocument}"
                     Background="{Binding AvalonEditBackGround}"
-                    Focusable="True" ShowLineNumbers="True" >
+                    Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >
+                    <!--Optionsはパラメタ等初期化したものを渡さないとxamlが解釈できなくてnull例外起こしてしまう？-->
+
                     <!--todo:showLineNumbersのバインディング、LineNumbersForgroundの設定-->
                     <!--BackGroundは文字色を設定するために必要-->
 

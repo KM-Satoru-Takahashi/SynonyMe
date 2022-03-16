@@ -905,7 +905,7 @@ namespace SynonyMe.ViewModel
 
             WrappingText = generalSetting.WrappingText;
             ShowingLineCount = generalSetting.ShowingLineCount;
-            ShowingLineNumber = generalSetting.ShowingLineNumber;
+            ShowingLineNumber = generalSetting.ShowingNumberOfLines;
             ShowingWordCount = generalSetting.ShowingWordCount;
             ShowingNewLine = generalSetting.ShowingNewLine;
             ShowingTab = generalSetting.ShowingTab;
@@ -1025,7 +1025,7 @@ namespace SynonyMe.ViewModel
             {
                 WrappingText = this.WrappingText,
                 ShowingLineCount = this.ShowingLineCount,
-                ShowingLineNumber = this.ShowingLineNumber,
+                ShowingNumberOfLines = this.ShowingLineNumber,
                 ShowingWordCount = this.ShowingWordCount,
                 ShowingNewLine = this.ShowingNewLine,
                 ShowingTab = this.ShowingTab,
@@ -1115,23 +1115,23 @@ namespace SynonyMe.ViewModel
             }
 
             //todo:実装
-            if (Enum.IsDefined(typeof(SettingResetKind), parameter))
+            if (Enum.IsDefined(typeof(SettingKind), parameter))
             {
-                SettingResetKind kind = (SettingResetKind)Enum.ToObject(typeof(SettingResetKind), parameter);
+                SettingKind kind = (SettingKind)Enum.ToObject(typeof(SettingKind), parameter);
                 switch (kind)
                 {
-                    case SettingResetKind.GeneralSetting:
+                    case SettingKind.GeneralSetting:
 
                         break;
-                    case SettingResetKind.SearchAndSynonymSetting:
-
-                        break;
-
-                    case SettingResetKind.AdvancedSetting:
+                    case SettingKind.SearchAndSynonymSetting:
 
                         break;
 
-                    case SettingResetKind.AllReset:
+                    case SettingKind.AdvancedSetting:
+
+                        break;
+
+                    case SettingKind.All:
                         //todo:上記3つのリセット処理を全て呼べば良い
                         break;
                     default:

@@ -160,7 +160,7 @@
 
                     <!--todo:ボタンサイズを他タブと合わせて適切に-->
                     <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
-                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.GeneralSetting}"/>
+                            Content="ResetToDflt" Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.GeneralSetting}"/>
 
                 </Grid>
             </TabItem>
@@ -361,7 +361,7 @@
                         <Button Grid.Column="0" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="SynonymAllDelete"
                                 Command="{Binding Command_DeleteAllSynonyms}"/>
                         <Button Grid.Column="1" Margin="0,0,10,0" VerticalAlignment="Center" HorizontalAlignment="Right" Content="Default"
-                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.SearchAndSynonymSetting}"/>
+                                Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.SearchAndSynonymSetting}"/>
                     </Grid>
 
                 </Grid>
@@ -442,14 +442,14 @@
                     <!--デフォルトボタン-->
                     <!--todo:ボタンサイズ-->
                     <Button Grid.Row="9" HorizontalAlignment="Right" VerticalAlignment="Center" Width="50" Height="30"  Margin="0,0,10,0"
-                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingResetKind.AdvancedSetting}"/>
+                            Command="{Binding Command_ResetToDefault}" CommandParameter="{x:Static lib:SettingKind.AdvancedSetting}"/>
                 </Grid>
             </TabItem>
         </TabControl>
 
         <!--AllResetボタン-->
         <Button Grid.Column="2" Grid.Row="3" Content="AllReset" Command="{Binding Command_ResetToDefault}"
-                CommandParameter="{x:Static lib:SettingResetKind.AllReset}"/>
+                CommandParameter="{x:Static lib:SettingKind.All}"/>
 
         <!--OKボタン-->
         <Button Grid.Column="4" Grid.Row="3" Content="OK" Command="{Binding Command_Ok}"/>

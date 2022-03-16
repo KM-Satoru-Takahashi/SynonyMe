@@ -36,7 +36,7 @@ namespace SynonyMe.Model
                     SubFontName = "Consolas",
                     WrappingText = false,
                     ShowingLineCount = true,
-                    ShowingLineNumber = true,
+                    ShowingNumberOfLines = true,
                     ShowingNewLine = false,
                     ShowingSpace = false,
                     ShowingTab = false,

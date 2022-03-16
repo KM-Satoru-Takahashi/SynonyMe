@@ -14,7 +14,7 @@ namespace SynonyMe.Model.Manager.Events
 
         //重複しないようにConcurrentDicとかにした方が良いかもtodo
         /// <summary>変更対象の設定情報を保持している、スレッドセーフな設定種別(キー)と設定情報(値)のペア</summary>
-        internal readonly Dictionary<Type, object> _changedSettings = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _changedSettings = new Dictionary<Type, object>();
 
         public SettingChangedEventArgs(Dictionary<Type, object> targetSettings)
         {
