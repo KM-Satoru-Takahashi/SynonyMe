@@ -2,13 +2,13 @@
 <GeneralSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <WrappingText>true</WrappingText>
   <ShowingLineCount>true</ShowingLineCount>
-  <ShowingNumberOfLines>true</ShowingLineNumber>
+  <ShowingNumberOfLines>true</ShowingNumberOfLines>
   <ShowingWordCount>true</ShowingWordCount>
   <ShowingNewLine>true</ShowingNewLine>
   <ShowingTab>true</ShowingTab>
   <ShowingSpace>true</ShowingSpace>
   <FontSize>0</FontSize>
-  <FontColor>#00000000</FontColor>
+  <FontColor>#FF000000</FontColor>
   <MainFontName>Meiryo</MainFontName>
   <SubFontName>Consolas</SubFontName>
 </GeneralSetting>

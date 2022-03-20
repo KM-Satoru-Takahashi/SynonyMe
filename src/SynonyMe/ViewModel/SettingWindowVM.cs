@@ -823,6 +823,7 @@ namespace SynonyMe.ViewModel
         /// <summary>全設定を更新・適用します</summary> //todo:ApplyやOK押した際の値の更新をSettingManagerのイベントハンドラ経由で
         private void ApplyAllSettings()
         {
+            //todo:各ApplySettingをModelに処理移譲する
             ApplyGeneralSetting();
             ApplySearchAndSynonymSetting();
             ApplyAdvancedSetting();
@@ -1012,7 +1013,7 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteApply(object parameter)
         {
-            //todo:メソッド切り出し
+            //todo:メソッド切り出し、Modelに処理を渡す
             #region GeneralSetting
 
             int convFontSize = 0;
@@ -1037,6 +1038,7 @@ namespace SynonyMe.ViewModel
             };
 
             FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(GeneralSetting));
+            Model.Manager.SettingManager.GetSettingManager.UpdateOrAddSetting(typeof(GeneralSetting), generalSetting);
 
             #endregion
 
@@ -1078,6 +1080,8 @@ namespace SynonyMe.ViewModel
             };
 
             FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_SEARCH, searchAndSynonymSetting, typeof(SearchAndSynonymSetting));
+            Model.Manager.SettingManager.GetSettingManager.UpdateOrAddSetting(typeof(SearchAndSynonymSetting), searchAndSynonymSetting);
+
 
             #endregion
 
@@ -1098,10 +1102,15 @@ namespace SynonyMe.ViewModel
             };
 
             FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_ADVANCED, advancedSetting, typeof(AdvancedSetting));
+            Model.Manager.SettingManager.GetSettingManager.UpdateOrAddSetting(typeof(AdvancedSetting), advancedSetting);
 
             #endregion
 
             //todo:完了ダイアログ表示
+
+            // 変更を通知する
+            //todo:変更有無検知と、ウィンドウを閉じた際に通知するようにして不要な変更イベント発火を抑制する
+            Model.Manager.SettingManager.GetSettingManager.NotifySettingChanged(SettingKind.All);
         }
 
         /// <summary>表示されているタブをデフォルトにリセットします</summary>

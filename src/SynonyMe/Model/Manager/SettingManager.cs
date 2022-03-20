@@ -55,7 +55,7 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>設定の変更を通知します</summary>
         /// todo:SettingManagerに設定ファイル読み書きが移管されたらこのあたり作成する
-        internal void NotifySettingChanged(CommonLibrary.SettingKind kind)
+        internal void NotifySettingChanged(SettingKind kind)
         {
             switch (kind)
             {
@@ -78,6 +78,10 @@ namespace SynonyMe.Model.Manager
                     Events.SettingChangedEventArgs args = new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting)));
                     args.AddChangedSetting(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting)));
                     args.AddChangedSetting(typeof(SearchAndSynonymSetting), GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting)));
+                    AdvancedSettingChangedEvent(this, args);
+                    GeneralSettingChangedEvent(this, args);
+                    SearchAndSynonymSettingChangedEvent(this, args);
+
                     break;
 
                 default:

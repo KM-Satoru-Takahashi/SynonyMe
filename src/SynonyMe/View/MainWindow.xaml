@@ -201,11 +201,13 @@
             <!--メイン領域-->
             <Grid Grid.Row="0" Grid.Column="2">
 
-                <!--実用上まったく問題ないが、VSがxamlデザイン表示する際にnull例外で表示できなくなってしまうのを防ぐために定義しておく-->
-                <!--いじってエラーが出た場合、クリーン→ビルド→VS再起動で解消するので確認すること-->
-                <!--削除してもちょいちょい起こる→VSの安定性の問題か？-->
+                <!--実用上まったく問題ないが、VSがxamlデザイン表示する際にnull例外で表示できなくなってしまうのを防ぐために定義する-->
+                <!--AvalonEditのOptionsには何かしらの非nullインスタンスが割り当てられていなければNGという報告あり
+                https://github.com/icsharpcode/AvalonEdit/issues/187-->
+                <!--ただし、上記を実行しても頻繁にデザイナでNullRefelenceExceptionが起きてしまう。
+                どうもOptionsのBinding、StackTrace的にはUpdateImeEnabledが何か悪さをしているみたいだが、現状時間をかけたくないので諦める-->
                 <Grid.Resources>
-                    <ae:TextEditorOptions x:Key="StaticTextEditorOptions"/>
+                    <ae:TextEditorOptions EnableImeSupport="True" x:Key="StaticTextEditorOptions"/>
                 </Grid.Resources>
 
                 <Grid.RowDefinitions>
@@ -246,7 +248,6 @@
                     Document="{Binding Path=TextDocument}"
                     Background="{Binding AvalonEditBackGround}"
                     Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >
-                    <!--Optionsはパラメタ等初期化したものを渡さないとxamlが解釈できなくてnull例外起こしてしまう？-->
 
                     <!--todo:showLineNumbersのバインディング、LineNumbersForgroundの設定-->
                     <!--BackGroundは文字色を設定するために必要-->

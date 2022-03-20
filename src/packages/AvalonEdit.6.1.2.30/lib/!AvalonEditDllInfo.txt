@@ -1,0 +1,9 @@
+●AvalonEdit側のコードをいじった内容をここに記載する
+　・AvalonEditの全コード自体は現状Upしない
+
+
+・2022/03/20
+　void UpdateImeEnabled()
+　→if (textArea.Options.EnableImeSupport && textArea.IsKeyboardFocused)
+　　のif文で、Optionsのnullチェックをしていないため、Bindingするとデザイナ側がnull参照例外を起こしてしまう
+　　nullチェックを追加することは妥当なので、textAreaとtextArea.Optionsのnullチェックを追加

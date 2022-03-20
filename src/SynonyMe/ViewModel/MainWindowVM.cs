@@ -42,10 +42,6 @@ namespace SynonyMe.ViewModel
         /// <summary>検索結果無し時の表示状態</summary>
         private Visibility _noSearchResultVisibility = Visibility.Hidden;
 
-        /// <summary>単語検索時、前後何文字を検索結果として表示するか</summary>
-        /// <remarks>将来的にはユーザが設定変更可能にするが、試作段階では前後10文字固定とする</remarks>
-        internal int SEARCHRESULT_MARGIN = 10;
-
         /// <summary>文字数表示</summary>
         private string _wordCount = null;
 
@@ -884,7 +880,7 @@ namespace SynonyMe.ViewModel
             }
 
             // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
-            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, TextDocument.Text, SEARCHRESULT_MARGIN);
+            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, TextDocument.Text);
             if (UpdateSearchResultVisiblity(indexWordPairs) == false)
             {
                 Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");

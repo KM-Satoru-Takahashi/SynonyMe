@@ -35,11 +35,6 @@ namespace SynonyMe.Model
             ".txt"
         };
 
-        /// <summary>検索結果を何個まで表示するか(何個まで検索対象とするか)</summary>
-        /// <remarks>将来的に設定ファイルで外出しする予定</remarks>
-        private const int SEARCH_RESULT_DISPLAY_NUMBER = 100;
-
-
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
 
         private Manager.SettingManager _settingManager = null;
@@ -58,6 +53,10 @@ namespace SynonyMe.Model
         internal bool ShowNumberOfLines { get; private set; }
 
         internal bool WordWrap { get; private set; }
+
+        internal int SearchResultMargin { get; private set; }
+
+        internal int SearchResultCount { get; private set; }
 
         /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
@@ -205,6 +204,8 @@ namespace SynonyMe.Model
                 return;
             }
 
+
+            //todo:VMのプロパティに直に代入すれば良いのでは？
             ShowLineCount = setting.ShowingLineCount;
             _viewModel.NotifyPropertyChanged("LineCountVisible");
 
@@ -221,9 +222,6 @@ namespace SynonyMe.Model
 
             WordWrap = setting.WrappingText;
             _viewModel.NotifyPropertyChanged("WordWrap");
-
-
-
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)
@@ -234,6 +232,11 @@ namespace SynonyMe.Model
                 return;
             }
 
+
+            //todo:固定値割り振り
+            SearchResultMargin = setting.SearchResultMargin;
+            SearchResultCount = setting.SearchResultDisplayCount;
+
         }
 
         internal void UpdateAdvancedSetting(Settings.AdvancedSetting setting)
@@ -242,6 +245,9 @@ namespace SynonyMe.Model
             {
                 return;
             }
+
+            //todo:固定値割り振り
+            List<string> targetFileList = setting.TargetFileExtensionList;
         }
 
         /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
@@ -586,11 +592,10 @@ namespace SynonyMe.Model
         /// <summary>検索処理を実施する</summary>
         /// <param name="searchWord">検索語句</param>
         /// <param name="targetText">検索対象の文章</param>
-        /// <param name="margin">検索結果として、対象語句の前後何文字を含めるか</param>
         /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
-        internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText, int margin)
+        internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText)
         {
-            return Searcher.GetSearcher.SearchAllWordsInText(searchWord, targetText, margin, SEARCH_RESULT_DISPLAY_NUMBER);
+            return Searcher.GetSearcher.SearchAllWordsInText(searchWord, targetText, SearchResultMargin, SearchResultCount);
         }
 
         /// <summary>設定ウィンドウを開く</summary>
@@ -742,7 +747,7 @@ namespace SynonyMe.Model
                 return null;
             }
 
-            return Searcher.GetSearcher.SynonymSearch(targetSynonyms, targetText, _viewModel.SEARCHRESULT_MARGIN, SEARCH_RESULT_DISPLAY_NUMBER);
+            return Searcher.GetSearcher.SynonymSearch(targetSynonyms, targetText, SearchResultMargin, SearchResultCount);
         }
 
         /// <summary>渡された全類語を対象の文章内から検索する</summary>
@@ -757,7 +762,7 @@ namespace SynonyMe.Model
                 return null;
             }
 
-            return Searcher.GetSearcher.GetAllSynonymSearchResult(targetSynonymWords, targetText, _viewModel.SEARCHRESULT_MARGIN, SEARCH_RESULT_DISPLAY_NUMBER);
+            return Searcher.GetSearcher.GetAllSynonymSearchResult(targetSynonymWords, targetText, SearchResultMargin, SearchResultCount);
         }
 
         /// <summary>表示中のテキストと、ハイライト表示情報を破棄します</summary>
