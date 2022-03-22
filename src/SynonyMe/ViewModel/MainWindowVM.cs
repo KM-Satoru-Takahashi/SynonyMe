@@ -420,6 +420,8 @@ namespace SynonyMe.ViewModel
         {
             Logger.Info(CLASS_NAME, "Initialize", "start");
 
+            // 必ず最初にMainWindowModelをnewすること
+            // これにより、下流でSettingManagerのインスタンスが生成され、全設定情報が読み込まれるため
             _model = new Model.MainWindowModel(this);
 
             //todo:並列処理可能では？
@@ -906,7 +908,7 @@ namespace SynonyMe.ViewModel
             }
 
             // 検索結果にハイライトをかける
-            _model.ApplyHighlightToTarget(SearchWord);
+            _model.ApplyHighlightToSearchResult(SearchWord);
         }
 
         /// <summary>検索結果へのジャンプ処理</summary>
@@ -1100,7 +1102,7 @@ namespace SynonyMe.ViewModel
             {
                 searchWords[i] = DisplaySynonymWords[i].SynonymWord;
             }
-            _model.ApplyHighlightToTargets(searchWords);
+            _model.ApplyHighlightToTargets(searchWords, ApplyHighlightKind.SynonymSearch);
         }
 
         #endregion

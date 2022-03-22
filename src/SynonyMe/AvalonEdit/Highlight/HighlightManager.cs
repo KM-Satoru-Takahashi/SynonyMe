@@ -15,9 +15,8 @@ using SynonyMe.CommonLibrary.Log;
 
 namespace SynonyMe.AvalonEdit.Highlight
 {
-    /// <summary>
-    /// AvalonEditのテキストハイライトを管理するクラス
-    /// </summary>
+    /// <summary>AvalonEditのテキストハイライトを管理するクラス</summary>
+    /// todo:singleton
     internal class HighlightManager
     {
         private const string CLASS_NAME = "HighlightManager";
@@ -57,33 +56,17 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         private string _xshdFilePath = null;
 
-        /// <summary>背景色候補となる色定義</summary>
-        /// <remarks>将来はユーザが設定ツールから、デフォルトか自分で設定した色リストかを選択可能とすることも想定するが、
-        /// 現状は判別しやすい下記の色定義を使用する</remarks>
-        private readonly Color[] BACKGROUND_COLORS_DEFAULT = new Color[]
-        {
-            Colors.HotPink,
-            Colors.Cyan,
-            Colors.Yellow,
-            Colors.Lime,
-            Colors.Violet,
-            Colors.Red,
-            Colors.Blue,
-            Colors.Chocolate,
-            Colors.Green,
-            Colors.DarkViolet,
-            Colors.Gray,
-            // この下は20個に満たないから強引に足した色なので、↑のと組み合わせがいいかは正直微妙
-            Colors.DarkSalmon,
-            Colors.Goldenrod,
-            Colors.Pink,
-            Colors.MediumOrchid,
-            Colors.MidnightBlue,
-            Colors.SteelBlue,
-            Colors.DarkOrange,
-            Colors.LimeGreen,
-            Colors.ForestGreen
-        };
+        private Color[] _synonymSearchBackGroundColors = CommonLibrary.Define.BACKGROUND_COLORS_DEFAULT;
+
+        private Color _synonymSearchFontColor = new Color();
+
+        private CommonLibrary.FontColorKind _synonymSearchFontColorKind = CommonLibrary.FontColorKind.Auto;
+
+        private Color _searchBackGroundColor = CommonLibrary.Define.BACKGROUND_COLORS_DEFAULT[0];
+
+        private Color _searchResultFontColor = new Color();
+
+        private CommonLibrary.FontColorKind _searchResultFontColorKind = CommonLibrary.FontColorKind.Auto;
 
         /// <summary>背景色一覧のIndexで、次に使用すべきIndexを保持します</summary>
         /// <remarks>必ずプロパティ側からGetすること</remarks>
@@ -92,12 +75,12 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>MainWindowのAvalonEditの背景色</summary>
         private Brush _avalonEditBackground = null;
 
-        /// <summary>自動指定の背景色に関して、Index値を順にを提供します</summary>
+        /// <summary>自動指定の背景色に関して、Index値を順に提供します</summary>
         private int GetBackgroundColorIndex
         {
             get
             {
-                if (BACKGROUND_COLORS_DEFAULT.Count() - 1 < _backgroundColorIndex)
+                if (_synonymSearchBackGroundColors.Count() - 1 < _backgroundColorIndex)
                 {
                     // 上限までいったので、リセットする
                     Logger.Info(CLASS_NAME, "GetBackGroundColorIndex", $"index is [{_backgroundColorIndex}], reset to 0");
@@ -110,9 +93,21 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
         }
 
-        /// <summary>
-        /// TextHighlightInfoが正常かどうか調べます
-        /// </summary>
+        /// <summary>検索・類語検索設定変更時に発火するイベントハンドラ</summary>
+        private event EventHandler<Model.Manager.Events.SettingChangedEventArgs> SearchAndSynonymSettingChangedEvent
+        {
+            add
+            {
+                Model.Manager.SettingManager.GetSettingManager.SearchAndSynonymSettingChangedEvent += value;
+            }
+            remove
+            {
+                Model.Manager.SettingManager.GetSettingManager.SearchAndSynonymSettingChangedEvent -= value;
+            }
+        }
+
+
+        /// <summary>TextHighlightInfoが正常かどうか調べます
         /// <returns>true:正常、false:異常</returns>
         private bool IsInfoCorrect(TextHighlightInfo info)
         {
@@ -128,14 +123,115 @@ namespace SynonyMe.AvalonEdit.Highlight
             return true;
         }
 
-
-        internal HighlightManager(Brush backGround)
+        /// <summary>コンストラクタ</summary>
+        /// <param name="wallPaper">AvalonEditの背景色（壁紙色）</param>
+        internal HighlightManager(Brush wallPaper)
         {
-            _avalonEditBackground = backGround;
+            _avalonEditBackground = wallPaper;
             _xshdFilePath = GetXshdFilePath();
+            ApplySetting(Model.Manager.SettingManager.GetSettingManager.GetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting);
+
+            SearchAndSynonymSettingChangedEvent -= UpdateSearchAndSynonymSettingEvent;
+            SearchAndSynonymSettingChangedEvent += UpdateSearchAndSynonymSettingEvent;
         }
 
-        private bool CreateHighlightInfos(string[] targetWords)
+        private void UpdateSearchAndSynonymSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
+        {
+            if (args == null)
+            {
+                //todo:log
+                return;
+            }
+
+            Settings.SearchAndSynonymSetting searchAndSynonymSetting = args.GetTargetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting;
+            if (searchAndSynonymSetting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            ApplySetting(searchAndSynonymSetting);
+        }
+
+
+        private void ApplySetting(Settings.SearchAndSynonymSetting setting)
+        {
+            if (setting == null)
+            {
+                //todo:log
+                return;
+            }
+
+            _synonymSearchFontColorKind = setting.SynonymSearchFontColorKind;
+            switch (_synonymSearchFontColorKind)
+            {
+                case CommonLibrary.FontColorKind.Auto:
+                    _synonymSearchFontColor = GetAutoFontColor();
+                    break;
+                case CommonLibrary.FontColorKind.Black:
+                    _synonymSearchFontColor = Colors.Black;
+                    break;
+                case CommonLibrary.FontColorKind.White:
+                    _synonymSearchFontColor = Colors.White;
+                    break;
+                case CommonLibrary.FontColorKind.UserSetting:
+                    _synonymSearchFontColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchFontColor);
+                    break;
+                default:
+                    //todo:error log
+                    _synonymSearchFontColor = GetAutoFontColor();
+                    break;
+            }
+
+            _synonymSearchBackGroundColors = new Color[]
+            {
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor1),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor2),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor3),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor4),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor5),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor6),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor7),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor8),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor9),
+                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor10)
+            };
+
+            _searchResultFontColorKind = setting.SearchResultFontColorKind;
+
+            switch (_searchResultFontColorKind)
+            {
+                case CommonLibrary.FontColorKind.Auto:
+                    _searchResultFontColor = GetAutoFontColor();
+                    break;
+
+                case CommonLibrary.FontColorKind.Black://todo:実装
+                    _searchResultFontColor = Colors.Black;
+                    break;
+
+                case CommonLibrary.FontColorKind.White:
+                    _searchResultFontColor = Colors.White;
+                    break;
+
+                case CommonLibrary.FontColorKind.UserSetting:
+                    _searchResultFontColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SearchResultFontColor);
+                    break;
+
+                default:
+                    //todo:log
+                    _searchResultFontColor = GetAutoFontColor();
+                    break;
+            }
+
+            _searchBackGroundColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SearchResultBackGroundColor);
+
+        }
+
+
+        /// <summary>類語検索実施時、該当する類語に文字色と背景色を適用それぞれします</summary>
+        /// <param name="targetWords"></param>
+        /// <returns></returns>
+        private bool CreateSynonymSearchHighlightInfos(string[] targetWords)
         {
             Logger.Info(CLASS_NAME, "CreateHighlightInfos", "start");
 
@@ -145,19 +241,33 @@ namespace SynonyMe.AvalonEdit.Highlight
                 return false;
             }
 
-            Color foreGround = GetForeGroundColor();
-
             foreach (string target in targetWords)
             {
-                Color backGround = BACKGROUND_COLORS_DEFAULT[GetBackgroundColorIndex];
+                Color backGround = _synonymSearchBackGroundColors[GetBackgroundColorIndex];
 
                 if (string.IsNullOrEmpty(target))
                 {
                     Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround.ToString()}]");
                     continue;
                 }
-                _infos.Add(new TextHighlightInfo(foreGround, backGround, target));
+                _infos.Add(new TextHighlightInfo(_synonymSearchFontColor, backGround, target));//todo:検索と類語検索で_fontColorとbackGroundを分ける
             }
+
+            return true;
+        }
+
+        /// <summary>検索実施時、該当する検索結果に文字色と背景色を適用します</summary>
+        /// <param name="targetWord"></param>
+        /// <returns></returns>
+        private bool CreateSearchHighlightInfo(string targetWord)
+        {
+            if (string.IsNullOrEmpty(targetWord))
+            {
+                //todo:log
+                return false;
+            }
+
+            _infos.Add(new TextHighlightInfo(_searchResultFontColor, _searchBackGroundColor, targetWord));
 
             return true;
         }
@@ -165,7 +275,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// <summary>AvalonEditの背景色から、文字色を取得します</summary>
         /// <returns>背景色が白寄りの場合は黒、背景色が黒寄りの場合は白</returns>
         /// <remarks>todo:設定ファイル値を参照させる、この中でカラーコード変換しない。カラーコードの変換はSettingWindowへ移譲するため</remarks>
-        private Color GetForeGroundColor()
+        private Color GetAutoFontColor()
         {
             if (_avalonEditBackground == null)
             {
@@ -175,7 +285,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
 
             // 今の背景色を[#AARRGGBB]文字列形式で取得する
-            string backGroundColorCode = _avalonEditBackground.ToString();
+            string backGroundColorCode = _avalonEditBackground.ToString();//todo:ConversionUtility
             if (string.IsNullOrEmpty(backGroundColorCode) ||
                backGroundColorCode.Length != "#AARRGGBB".Length)
             {
@@ -220,7 +330,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         /// ハイライト用のXshdファイルを更新します
         /// </summary>
         /// <returns>true:正常、false:異常</returns>
-        internal bool UpdateXshdFile(string[] targetWords)
+        internal bool UpdateXshdFile(string[] targetWords, CommonLibrary.ApplyHighlightKind kind)
         {
             Logger.Info(CLASS_NAME, "UpdateXshdFile", "start");
 
@@ -231,10 +341,27 @@ namespace SynonyMe.AvalonEdit.Highlight
                 return false;
             }
 
-            if (CreateHighlightInfos(targetWords) == false)
+            switch (kind)
             {
-                Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "CreateHighlightInfos is incorrect!");
-                return false;
+                case CommonLibrary.ApplyHighlightKind.SynonymSearch:
+                    if (CreateSynonymSearchHighlightInfos(targetWords) == false)
+                    {
+                        Logger.Fatal(CLASS_NAME, "UpdateXshdFile", "CreateHighlightInfos is incorrect!");
+                        return false;
+                    }
+                    break;
+
+                case CommonLibrary.ApplyHighlightKind.Search:
+                    if (CreateSearchHighlightInfo(targetWords[0]) == false)
+                    {
+                        //todo:log
+                        return false;
+                    }
+                    break;
+
+                default:
+                    //todo:log
+                    break;
             }
 
             if (DeleteXshdFile() == false)

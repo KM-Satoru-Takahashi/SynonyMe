@@ -366,7 +366,8 @@
 
                 </Grid>
             </TabItem>
-            <TabItem Header="高度な設定">
+            <!--現状、制約事項とする(v1.0.0)-->
+            <TabItem Header="高度な設定" IsEnabled="False">
                 <Grid>
                     <Grid.RowDefinitions>
                         <!--上部余白-->

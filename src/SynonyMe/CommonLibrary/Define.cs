@@ -3,9 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace SynonyMe.CommonLibrary
 {
+    /// <summary>/summary>
+    internal enum ApplyHighlightKind
+    {
+        Search,
+        SynonymSearch
+    }
 
     /// <summary>AvalonEditで表示する背景色定義</summary>
     /// <remarks>BackGroundとするとHighlightManagerで紛らわしい
@@ -97,5 +104,31 @@ namespace SynonyMe.CommonLibrary
 
         /// <summary>タイトルバーにコントロールがあるWindow</summary>
         internal const int WS_SYSMENU = 0x80000;
+
+        /// <summary>背景色候補となる色定義のデフォルト値</summary>
+        internal static readonly Color[] BACKGROUND_COLORS_DEFAULT = new Color[]
+        {
+            Colors.HotPink,
+            Colors.Cyan,
+            Colors.Yellow,
+            Colors.Lime,
+            Colors.Violet,
+            Colors.Red,
+            Colors.Blue,
+            Colors.Chocolate,
+            Colors.Green,
+            Colors.Gray
+            // この下は20個使いたい場合に用いることにする
+            //Colors.DarkViolet,
+            //Colors.DarkSalmon,
+            //Colors.Goldenrod,
+            //Colors.Pink,
+            //Colors.MediumOrchid,
+            //Colors.MidnightBlue,
+            //Colors.SteelBlue,
+            //Colors.DarkOrange,
+            //Colors.LimeGreen,
+            //Colors.ForestGreen
+        };
     }
 }

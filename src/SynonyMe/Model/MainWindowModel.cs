@@ -71,7 +71,7 @@ namespace SynonyMe.Model
         /// <remarks>内部のプロパティを変更すると、AvalonEdit側で動的に変更してくれる</remarks>
         internal TextEditorOptions TextEditorOptions = new TextEditorOptions()
         {
-            EnableImeSupport = false
+            EnableImeSupport = true
         };
 
         /// <summary>画面表示中テキストの絶対パス</summary>
@@ -150,8 +150,10 @@ namespace SynonyMe.Model
 
         private void Initialize()
         {
-            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
+            // ★必ず最初に取得すること->singleton生成に伴う設定読込のため
             _settingManager = Manager.SettingManager.GetSettingManager;
+
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
         }
 
 
@@ -253,7 +255,7 @@ namespace SynonyMe.Model
         /// <summary>ハイライトを対象語句にそれぞれ適用します</summary>
         /// <param name="targets">対象語句</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool ApplyHighlightToTargets(string[] targets)
+        internal bool ApplyHighlightToTargets(string[] targets, CommonLibrary.ApplyHighlightKind kind) //todo:検索か類語検索かの判別しないとFontColorとBackGroundが分けられない
         {
             if (targets == null || targets.Any() == false)
             {
@@ -267,13 +269,13 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            return _highlightManager.UpdateXshdFile(targets);
+            return _highlightManager.UpdateXshdFile(targets, kind);
         }
 
         /// <summary>指定された語句にハイライトを適用します</summary>
         /// <param name="target">対象語句</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool ApplyHighlightToTarget(string target)
+        internal bool ApplyHighlightToSearchResult(string target)
         {
             if (string.IsNullOrEmpty(target))
             {
@@ -286,7 +288,7 @@ namespace SynonyMe.Model
                 target
             };
 
-            return ApplyHighlightToTargets(targets);
+            return ApplyHighlightToTargets(targets, CommonLibrary.ApplyHighlightKind.Search);
         }
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>

@@ -295,6 +295,137 @@ namespace SynonyMe.Model.Manager
             }
         }
 
+        /// <summary>類語、類語グループDBを全削除します</summary>
+        /// <returns>true:成功, false:異常</returns>
+        internal bool TruncateAll()
+        {
+            if (DropSynonymGroupTable() == false)
+            {
+                //todo:log
+                //return false;
+            }
+
+            if (DropSynonymWordsTable() == false)
+            {
+                //return false;
+            }
+
+            if(Vacuum()==false)
+            {
+                //return false;
+            }
+
+            if (CreateSynonymGroupTable() == false)
+            {
+               // return false;
+            }
+
+            if (CreateSynonymWordsTable() == false)
+            {
+               // return false;
+            }
+
+            return true;
+        }
+
+
+        private bool Vacuum()
+        {
+            string sql = " VACUUM ;";
+
+            // transaction中にはVacuumできないので、自前で処理を行う
+            // 破棄したテーブルが保持していた領域を開放してやる必要がある
+            using (SQLiteCommand command = sqLiteConnection.CreateCommand())
+            {
+                try
+                {
+                    command.CommandText = sql;
+                    command.ExecuteNonQuery();
+                }
+                catch(Exception e)
+                {
+                    //todo:log
+                    return false;
+                }
+            }
+                return true;
+        }
+
+        private bool DropSynonymGroupTable()
+        {
+            string sql = "DELETE FROM " +
+                CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP +
+                " ; "
+                ;
+
+            if (ExecuteNonQuery(sql) == false)
+            {
+                //todo:log
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool DropSynonymWordsTable()
+        {
+            string sql = "DELETE FROM " +
+                CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS +
+                " ; " 
+                ;
+
+
+            if (ExecuteNonQuery(sql) == false)
+            {
+                //todo:log
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool CreateSynonymGroupTable()
+        {
+            string sql = "CREATE TABLE IF NOT EXISTS " +
+                        CommonLibrary.Define.DB_TABLE_SYNONYM_GROUP +
+                        " ( " +
+                        "GroupID INTEGER PRIMARY KEY UNIQUE NOT NULL, " +
+                        "GroupName TEXT NOT NULL," +
+                        "GroupRegistDate TEXT NOT NULL, " +
+                        "GroupUpdateDate TEXT NOT NULL " +
+                        " ) ;";
+
+            if (ExecuteNonQuery(sql) == false)
+            {
+                //todo:log
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool CreateSynonymWordsTable()
+        {
+            string sql = "CREATE TABLE IF NOT EXISTS " +
+                        CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS +
+                        " ( " +
+                        "WordID INTEGER PRIMARY KEY UNIQUE NOT NULL, " +
+                        "GroupID INTEGER, " +
+                        "Word TEXT NOT NULL, " +
+                        "RegistDate TEXT NOT NULL, " +
+                        "UpdateDate TEXT NOT NULL, " +
+                        "FOREIGN KEY (GroupID) REFERENCES SynonymGroup (GroupID) " +
+                        " ) ;";
+
+            if (ExecuteNonQuery(sql) == false)
+            {
+                //todo:log
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>レコードを取得するSQLの実行処理を行う</summary>
         /// <param name="sql">実行したいSQL文</param>
         /// <returns>結果を保持したReaderインスタンス★呼び出し元で適切に破棄する！</returns>
@@ -404,6 +535,7 @@ namespace SynonyMe.Model.Manager
         {
             if (result < CommonLibrary.Define.EXECUTE_NONQUERY_SUCCESSED)
             {
+                //todo:log
                 return false;
             }
             else

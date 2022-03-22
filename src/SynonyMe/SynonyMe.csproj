@@ -40,7 +40,8 @@
     <Reference Include="GongSolutions.WPF.DragDrop, Version=2.0.0.0, Culture=neutral, PublicKeyToken=91f1945125b7a587, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.2.3.2\lib\net47\GongSolutions.WPF.DragDrop.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.AvalonEdit, Version=6.1.2.30, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+    <Reference Include="ICSharpCode.AvalonEdit, Version=6.1.0.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AvalonEdit.6.1.2.30\lib\net45\ICSharpCode.AvalonEdit.dll</HintPath>
     </Reference>
     <Reference Include="log4net, Version=2.0.12.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
@@ -92,6 +93,7 @@
     </ApplicationDefinition>
     <Compile Include="AvalonEdit\Highlight\HighlightManager.cs" />
     <Compile Include="AvalonEdit\Highlight\XshdBrush.cs" />
+    <Compile Include="CommonLibrary\ConversionUtility.cs" />
     <Compile Include="CommonLibrary\Define.cs" />
     <Compile Include="CommonLibrary\Entity\SearchResultEntity.cs" />
     <Compile Include="CommonLibrary\Entity\SynonymGroupEntity.cs" />

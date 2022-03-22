@@ -156,16 +156,17 @@ namespace SynonyMe.Model.Manager
         private void LoadAllSettings()
         {
             // 設定ファイル読み込みに時間がかかることを想定し、マルチスレッドで行わせる
-            Task task = Task.Run(() =>
-            {
-                LoadGeneralSetting();
-                LoadSearchAndSynonymSetting();
-                LoadAdvancedSetting();
-            });
+            //todo:asyncとawaitにしないと、下流処理に流れてしまい設定がnullになる
+            //Task task = Task.Run(() =>
+            //{
+            //    LoadGeneralSetting();
+            //    LoadSearchAndSynonymSetting();
+            //    LoadAdvancedSetting();
+            //});
 
-            //LoadGeneralSetting();
-            //LoadSearchAndSynonymSetting();
-            //LoadAdvancedSetting();
+            LoadGeneralSetting();
+            LoadSearchAndSynonymSetting();
+            LoadAdvancedSetting();
         }
 
 

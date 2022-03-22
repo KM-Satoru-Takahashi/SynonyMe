@@ -10,6 +10,7 @@ using SynonyMe.Settings;
 using SynonyMe.CommonLibrary;
 using SynonyMe.Model;
 using SynonyMe.CommonLibrary.Log;
+using System.Windows.Forms;
 
 namespace SynonyMe.ViewModel
 {
@@ -818,6 +819,7 @@ namespace SynonyMe.ViewModel
             Command_Cancel = new CommandBase(ExecuteCancel, null);
             Command_Apply = new CommandBase(ExecuteApply, null);
             Command_ResetToDefault = new CommandBase(ExecuteResetToDefault, null);
+            Command_DeleteAllSynonyms = new CommandBase(ExecuteDeleteAllSynonymGroupsAndWords, null);
         }
 
         /// <summary>全設定を更新・適用します</summary> //todo:ApplyやOK押した際の値の更新をSettingManagerのイベントハンドラ経由で
@@ -920,10 +922,11 @@ namespace SynonyMe.ViewModel
         /// <summary>#AARRGGBB形式の文字列をColor構造体に変換します</summary>
         /// <param name="source">#AARRGGBBであること</param>
         /// <returns>文字列異常は透明(#00FFFFFF),変換失敗は対応チャネルをFF</returns>
+        /// todo:ConversionUtilityを使用
         private Color ConvertStringToColor(string source)
         {
             // [#AARRGGBB]文字列形式であるかを確認
-            if (string.IsNullOrEmpty(source) ||
+            if (string.IsNullOrEmpty(source) ||//todo:ConversionUtility
                source.Length != "#AARRGGBB".Length)
             {
                 Logger.Error(CLASS_NAME, "ConvertStringToColor", $"source is incorrect! value[{source}]");
@@ -1160,9 +1163,33 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>全類語グループおよび類語を削除します</summary>
-        private void DeleteAllSynonymGroupsAndWords()
+        private void ExecuteDeleteAllSynonymGroupsAndWords(object parameter)
         {
             //tood:確認ダイアログ
+            DialogResult dialogResult = DialogResult.Cancel;
+            bool result = Model.Manager.DialogManager.GetDialogManager.OpenOkCancelDialog
+                ("登録された全類語グループ、および類語を削除します。\n" +
+                "この操作は元に戻せません。本当に削除しますか？", out dialogResult);
+
+            if (result == false)
+            {
+                //todo:log
+                return;
+            }
+
+            if (dialogResult == DialogResult.OK)
+            {
+                //todo:log
+                //todo:Modelへ
+                using (var mng = new Model.Manager.DBManager(Define.DB_NAME))
+                {
+                    mng.TruncateAll();
+                }
+            }
+            else
+            {
+                //todo:log
+            }
         }
 
         /// <summary>全ログファイルを削除します</summary>

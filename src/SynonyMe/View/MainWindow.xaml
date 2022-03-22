@@ -204,8 +204,6 @@
                 <!--実用上まったく問題ないが、VSがxamlデザイン表示する際にnull例外で表示できなくなってしまうのを防ぐために定義する-->
                 <!--AvalonEditのOptionsには何かしらの非nullインスタンスが割り当てられていなければNGという報告あり
                 https://github.com/icsharpcode/AvalonEdit/issues/187-->
-                <!--ただし、上記を実行しても頻繁にデザイナでNullRefelenceExceptionが起きてしまう。
-                どうもOptionsのBinding、StackTrace的にはUpdateImeEnabledが何か悪さをしているみたいだが、現状時間をかけたくないので諦める-->
                 <Grid.Resources>
                     <ae:TextEditorOptions EnableImeSupport="True" x:Key="StaticTextEditorOptions"/>
                 </Grid.Resources>
@@ -242,15 +240,13 @@
 
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
+                <!--todo:SyntaxHighlightのBinding-->
                 <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
                     dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
                     dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"            
                     Document="{Binding Path=TextDocument}"
                     Background="{Binding AvalonEditBackGround}"
                     Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >
-
-                    <!--todo:showLineNumbersのバインディング、LineNumbersForgroundの設定-->
-                    <!--BackGroundは文字色を設定するために必要-->
 
                     <!--文書更新時に文字数等の更新処理をかける-->
                     <bh:Interaction.Triggers>

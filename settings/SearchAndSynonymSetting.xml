@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <SearchAndSynonymSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SearchResultBackGroundColor>#00000000</SearchResultBackGroundColor>
-  <SearchResultFontColor>#FFFFA07A</SearchResultFontColor>
-  <SearchResultFontColorKind>Black</SearchResultFontColorKind>
-  <SynonymSearchResultColor1>#00000000</SynonymSearchResultColor1>
-  <SynonymSearchResultColor2>#00000000</SynonymSearchResultColor2>
+  <SearchResultBackGroundColor>#FFFFFF00</SearchResultBackGroundColor>
+  <SearchResultFontColor>#FFFF0000</SearchResultFontColor>
+  <SearchResultFontColorKind>UserSetting</SearchResultFontColorKind>
+  <SynonymSearchResultColor1>#FF000000</SynonymSearchResultColor1>
+  <SynonymSearchResultColor2>#FF7B68EE</SynonymSearchResultColor2>
   <SynonymSearchResultColor3>#00000000</SynonymSearchResultColor3>
   <SynonymSearchResultColor4>#00000000</SynonymSearchResultColor4>
   <SynonymSearchResultColor5>#FF7BDE1E</SynonymSearchResultColor5>
@@ -13,8 +13,8 @@
   <SynonymSearchResultColor8>#00000000</SynonymSearchResultColor8>
   <SynonymSearchResultColor9>#00000000</SynonymSearchResultColor9>
   <SynonymSearchResultColor10>#00000000</SynonymSearchResultColor10>
-  <SynonymSearchFontColor>#FF708090</SynonymSearchFontColor>
-  <SynonymSearchFontColorKind>White</SynonymSearchFontColorKind>
+  <SynonymSearchFontColor>#FF3CB371</SynonymSearchFontColor>
+  <SynonymSearchFontColorKind>UserSetting</SynonymSearchFontColorKind>
   <SearchResultMargin>102</SearchResultMargin>
   <SearchResultDisplayCount>100</SearchResultDisplayCount>
 </SearchAndSynonymSetting>
