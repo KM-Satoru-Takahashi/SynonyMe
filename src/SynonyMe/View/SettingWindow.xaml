@@ -153,10 +153,22 @@
                                       AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
 
                     <TextBlock Grid.Row="5" Grid.Column="4" Text="フォント名称(主)" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                    <!--todo:プルダウンメニュー実装-->
-
+                    <ComboBox Grid.Row="5" Grid.Column="5" ItemsSource="{Binding FontList}" SelectedItem="{Binding MainFont}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FontName}" FontFamily="{Binding FontFamily}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    
                     <TextBlock Grid.Row="7" Grid.Column="4" Text="フォント名称(副) ※[主]で表示できない場合" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                    <!--todo:プルダウンメニュー実装-->
+                    <ComboBox Grid.Row="7" Grid.Column="5" ItemsSource="{Binding FontList}" SelectedItem="{Binding SubFont}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FontName}" FontFamily="{Binding FontFamily}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
 
                     <!--todo:ボタンサイズを他タブと合わせて適切に-->
                     <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"

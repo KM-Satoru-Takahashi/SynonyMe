@@ -52,6 +52,8 @@ namespace SynonyMe.CommonLibrary
     /// <remarks>使用するWindow種別によって細分化、切り出しも想定する（将来）</remarks>
     internal static class Define
     {
+        //todo:整理したい……
+
         /// <summary>SynonyMeで使用するDBファイル名(含:拡張子)</summary>
         internal const string DB_NAME = "SynonymData.db";
 

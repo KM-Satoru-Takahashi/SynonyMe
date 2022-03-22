@@ -11,6 +11,7 @@ using SynonyMe.CommonLibrary;
 using SynonyMe.Model;
 using SynonyMe.CommonLibrary.Log;
 using System.Windows.Forms;
+using System.Collections.ObjectModel;
 
 namespace SynonyMe.ViewModel
 {
@@ -215,36 +216,38 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        private string _mainFontName = "Meiryo";
-        public string MainFontName
+        public List<FontInfo> FontList { get; private set; }
+
+        private FontInfo _mainFont = null;
+        public FontInfo MainFont
         {
             get
             {
-                return _mainFontName;
+                return _mainFont;
             }
             set
             {
-                if (_mainFontName != value)
+                if (_mainFont != value)
                 {
-                    _mainFontName = value;
-                    OnPropertyChanged("MainFontName");
+                    _mainFont = value;
+                    OnPropertyChanged("MainFont");
                 }
             }
         }
 
-        private string _subFontName = "Consolas";
-        public string SubFontName
+        private FontInfo _subFont = null;
+        public FontInfo SubFont
         {
             get
             {
-                return _subFontName;
+                return _subFont;
             }
             set
             {
-                if (_subFontName != value)
+                if (_subFont != value)
                 {
-                    _subFontName = value;
-                    OnPropertyChanged("SubFontName");
+                    _subFont = value;
+                    OnPropertyChanged("Subfont");
                 }
             }
         }
@@ -810,6 +813,7 @@ namespace SynonyMe.ViewModel
             _model = new SettingWindowModel(this);
 
             InitializeCommands();
+            GetSystemFontName(); // ApplySettingの前に置くとFont一覧がnullで正常に反映されないので気をつけること
             ApplyAllSettings();
         }
 
@@ -914,8 +918,50 @@ namespace SynonyMe.ViewModel
             ShowingTab = generalSetting.ShowingTab;
             ShowingSpace = generalSetting.ShowingSpace;
             FontColor = ConvertStringToColor(generalSetting.FontColor);
-            MainFontName = generalSetting.MainFontName;
-            SubFontName = generalSetting.SubFontName;
+            MainFont = GetFontInfoFromFontName(generalSetting.MainFontName);
+            SubFont = GetFontInfoFromFontName(generalSetting.SubFontName);
+        }
+
+        /// <summary>フォント名称からFontInfoを取得します</summary>
+        /// <param name="fontName">対象のフォント名</param>
+        /// <returns></returns>
+        /// <remarks>フォント名設定コンボボックスに表示されているフォント名称と合致するかを判定するので、引数の日本語/英語は考慮しなくて良い</remarks>
+        private FontInfo GetFontInfoFromFontName(string fontName)
+        {
+            if (string.IsNullOrEmpty(fontName))
+            {
+                //todo:log
+                return null;
+            }
+
+            if (FontList == null || FontList.Any() == false)
+            {
+                //todo:log
+                return null;
+            }
+
+            FontInfo target = null;
+            foreach (FontInfo fontInfo in FontList) //todo:高速化, 重複することないのでParallel等を検討
+            {
+                if (fontInfo == null)
+                {
+                    // ログを出せる情報がない
+                    continue;
+                }
+
+                if (fontInfo.FontName.Equals(fontName))
+                {
+                    target = fontInfo;
+                    break;
+                }
+            }
+
+            if (target == null)
+            {
+                //todo:log
+            }
+
+            return target;
         }
 
 
@@ -1025,7 +1071,7 @@ namespace SynonyMe.ViewModel
                 //todo:log. default
             }
 
-            GeneralSetting generalSetting = new GeneralSetting
+            GeneralSetting generalSetting = new GeneralSetting//todo:既存のApplyGeneralSettings等使って細かく切り出せるのでは？　下のも含め
             {
                 WrappingText = this.WrappingText,
                 ShowingLineCount = this.ShowingLineCount,
@@ -1036,8 +1082,8 @@ namespace SynonyMe.ViewModel
                 ShowingSpace = this.ShowingSpace,
                 FontSize = convFontSize,
                 FontColor = this.FontColor.ToString(),
-                MainFontName = this.MainFontName,
-                SubFontName = this.SubFontName
+                MainFontName = MainFont != null ? MainFont.FontName : string.Empty,//todo:デフォルト値
+                SubFontName = SubFont != null ? SubFont.FontName : string.Empty//todo:デフォルト値
             };
 
             FileAccessor.GetFileAccessor.SaveSettingFile(Define.SETTING_FILENAME_GENERAL, generalSetting, typeof(GeneralSetting));
@@ -1133,18 +1179,18 @@ namespace SynonyMe.ViewModel
                 switch (kind)
                 {
                     case SettingKind.GeneralSetting:
-
+                        ResetGeneralSetting();
                         break;
                     case SettingKind.SearchAndSynonymSetting:
-
+                        ResetSearchAndSynonymSetting();
                         break;
-
                     case SettingKind.AdvancedSetting:
-
+                        ResetAdvancedSetting();
                         break;
-
                     case SettingKind.All:
-                        //todo:上記3つのリセット処理を全て呼べば良い
+                        ResetGeneralSetting();
+                        ResetSearchAndSynonymSetting();
+                        ResetAdvancedSetting();
                         break;
                     default:
                         // 勝手にリセットされては困るうえ、想定外なので何もさせない
@@ -1155,17 +1201,61 @@ namespace SynonyMe.ViewModel
             else
             {
                 // 現状、想定していない
-                CommonLibrary.Log.Logger.Error(CLASS_NAME, "ExecuteResetToDefault", "parameter is null!");
+                Logger.Error(CLASS_NAME, "ExecuteResetToDefault", "parameter is null!");
                 return;
             }
+        }
 
-            // todo:タブ毎に分かれた処理にすること
+        /// <summary>「一般設定」タブ表示を規定値にリセットします</summary>
+        /// <remarks>OK/適用ボタンを押下するまで、リセット後の値は確定していません</remarks>
+        private void ResetGeneralSetting()
+        {//todo:固定値化、ログ
+            WrappingText = true;
+            ShowingLineCount = true;
+            ShowingLineNumber = true;
+            ShowingWordCount = true;
+            ShowingNewLine = false;
+            ShowingTab = false;
+            ShowingSpace = false;
+            FontColor = Colors.Black;
+            MainFont = GetFontInfoFromFontName("Consolas");
+            SubFont = GetFontInfoFromFontName("メイリオ");
+        }
+
+        /// <summary>「検索・類語検索設定」タブ表示を規定値にリセットします</summary>
+        /// <remarks>OK/適用ボタンを押下するまで、リセット後の値は確定していません</remarks>
+        private void ResetSearchAndSynonymSetting()
+        {//todo:固定値、ログ
+            SearchResultBackGround = Define.BACKGROUND_COLORS_DEFAULT[0];
+            SearchResultFontColor = Colors.Black;
+            SearchResultFontColorKind = FontColorKind.Auto;
+            SynonymSearchResultColor1 = Define.BACKGROUND_COLORS_DEFAULT[0];
+            SynonymSearchResultColor2 = Define.BACKGROUND_COLORS_DEFAULT[1];
+            SynonymSearchResultColor3 = Define.BACKGROUND_COLORS_DEFAULT[2];
+            SynonymSearchResultColor4 = Define.BACKGROUND_COLORS_DEFAULT[3];
+            SynonymSearchResultColor5 = Define.BACKGROUND_COLORS_DEFAULT[4];
+            SynonymSearchResultColor6 = Define.BACKGROUND_COLORS_DEFAULT[5];
+            SynonymSearchResultColor7 = Define.BACKGROUND_COLORS_DEFAULT[6];
+            SynonymSearchResultColor8 = Define.BACKGROUND_COLORS_DEFAULT[7];
+            SynonymSearchResultColor9 = Define.BACKGROUND_COLORS_DEFAULT[8];
+            SynonymSearchResultColor10 = Define.BACKGROUND_COLORS_DEFAULT[9];
+            SynonymSearchResultFontColor = Colors.Black;
+            SynonymSearchResultFontColorKind = FontColorKind.Auto;
+            SearchResultMargin = 10.ToString();
+            SearchResultDisplayCount = 100.ToString();
+        }
+
+        /// <summary>「高度な設定」タブ表示を規定値にリセットします</summary>
+        /// <remarks>OK/適用ボタンを押下するまで、リセット後の値は確定していません</remarks>
+        private void ResetAdvancedSetting()
+        {
+            //todo:現状、高度な設定はいじれない（いじっても意味がない）ので空実装としておく
         }
 
         /// <summary>全類語グループおよび類語を削除します</summary>
         private void ExecuteDeleteAllSynonymGroupsAndWords(object parameter)
         {
-            //tood:確認ダイアログ
+            //todo:確認ダイアログ
             DialogResult dialogResult = DialogResult.Cancel;
             bool result = Model.Manager.DialogManager.GetDialogManager.OpenOkCancelDialog
                 ("登録された全類語グループ、および類語を削除します。\n" +
@@ -1283,7 +1373,8 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        private void Test_FontGet()
+        /// <summary>選択可能な全フォント一覧を取得します</summary>
+        private void GetSystemFontName()
         {
             //todo:起動時に一度呼ぶだけで良いので、設定ファイルの読み込み箇所とかに移動させるべき
             // 日本語フォントを日本語で表示したいので、現在動いている環境の言語を取得する
@@ -1295,18 +1386,29 @@ namespace SynonyMe.ViewModel
             var fonts = Fonts.SystemFontFamilies.Select
                  (i => new FontInfo() { FontFamily = i, FontName = i.Source });
 
+            // IEnumerableのままだと要素の更新ができないので、一旦ローカルで受け取る
+            FontInfo[] fontsArr = fonts.ToArray();
+
             // このままだと日本語で表示してくれないので、日本語のものはこちらで取得して入れ込み、表示してやる
-            fonts.Select(i => i.FontName = i.FontFamily.FamilyNames
-                 .FirstOrDefault(j => j.Key == language).Value ?? i.FontFamily.Source).ToArray();
+            foreach (var fontInfo in fontsArr)
+            {
+                foreach (var familyName in fontInfo.FontFamily.FamilyNames)
+                {
+                    if (familyName.Key == language && familyName.Value != null)
+                    {
+                        fontInfo.FontName = familyName.Value;
+                        break;
+                    }
+                }
+            }
 
-            //return fonts;
-
+            FontList = fontsArr.ToList();//todo:ToArrayしているので型を配列にする
         }
 
-        private class FontInfo
+        public class FontInfo
         {
-            internal FontFamily FontFamily { get; set; }
-            internal string FontName { get; set; }
+            public FontFamily FontFamily { get; set; }
+            public string FontName { get; set; }
         }
 
         #endregion

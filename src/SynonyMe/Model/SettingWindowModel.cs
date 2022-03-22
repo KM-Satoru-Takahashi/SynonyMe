@@ -27,7 +27,7 @@ namespace SynonyMe.Model
             object setting = SettingManager.GetSettingManager.GetSetting(typeof(GeneralSetting));
             if (setting == null)
             {
-                //todo:log
+                //todo:log, デフォルト値の定数化
                 setting = new GeneralSetting()
                 {
                     FontColor = "#FF000000", // 黒

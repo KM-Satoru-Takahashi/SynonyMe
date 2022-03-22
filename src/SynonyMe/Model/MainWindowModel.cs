@@ -58,6 +58,8 @@ namespace SynonyMe.Model
 
         internal int SearchResultCount { get; private set; }
 
+        internal string FontFamily { get; private set; }
+
         /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
         /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
@@ -224,6 +226,9 @@ namespace SynonyMe.Model
 
             WordWrap = setting.WrappingText;
             _viewModel.NotifyPropertyChanged("WordWrap");
+
+            FontFamily = setting.MainFontName + ", " + setting.SubFontName;
+            _viewModel.NotifyPropertyChanged("FontFamily");
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)

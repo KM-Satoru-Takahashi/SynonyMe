@@ -161,6 +161,18 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        public string FontFamily
+        {
+            get
+            {
+                if (_model != null)
+                {
+                    return _model.FontFamily;
+                }
+                return null;
+            }
+            // MainWindowから変更されることはあり得ないので、ここにsetterはなくてよい
+        }
 
         /// <summary>検索文字列</summary>
         public string SearchWord { get; set; } = null;
