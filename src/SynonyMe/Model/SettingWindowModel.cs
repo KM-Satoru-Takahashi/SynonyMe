@@ -31,7 +31,7 @@ namespace SynonyMe.Model
                 setting = new GeneralSetting()
                 {
                     FontColor = "#FF000000", // 黒
-                    FontSize = 12,
+                    FontSize = 12.0,
                     MainFontName = "Meiryo",
                     SubFontName = "Consolas",
                     WrappingText = false,

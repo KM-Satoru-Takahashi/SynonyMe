@@ -245,7 +245,7 @@
                     dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
                     dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"            
                     Document="{Binding Path=TextDocument}" FontFamily="{Binding FontFamily}"
-                    Background="{Binding AvalonEditBackGround}"
+                    Background="{Binding AvalonEditBackGround}" FontSize="{Binding FontSize}"
                     Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >
 
                     <!--文書更新時に文字数等の更新処理をかける-->

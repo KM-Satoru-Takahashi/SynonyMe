@@ -174,6 +174,14 @@ namespace SynonyMe.ViewModel
             // MainWindowから変更されることはあり得ないので、ここにsetterはなくてよい
         }
 
+        public double FontSize
+        {
+            get
+            {
+                return _model.FontSize;
+            }
+        }
+
         /// <summary>検索文字列</summary>
         public string SearchWord { get; set; } = null;
 
