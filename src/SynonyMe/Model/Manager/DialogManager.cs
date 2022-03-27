@@ -54,7 +54,7 @@ namespace SynonyMe.Model.Manager
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "OpenOkCancelDialog", $"result:[{result}], message:{e.Message}");
+                Logger.Fatal(CLASS_NAME, "OpenOkCancelDialog", $"result:[{result}], message:{e.ToString()}");
                 return false;
             }
 

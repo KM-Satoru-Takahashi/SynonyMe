@@ -212,7 +212,7 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymGroups", e.Message);
+                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymGroups", e.ToString());
                     return false;
                 }
             }
@@ -289,7 +289,7 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymWords", e.Message);
+                    Logger.Fatal(CLASS_NAME, "GetTargetSynonymWords", e.ToString());
                     return false;
                 }
             }
@@ -461,7 +461,7 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "ExecuteQuery", e.Message);
+                    Logger.Fatal(CLASS_NAME, "ExecuteQuery", e.ToString());
                     return null;
                 }
                 // 呼び出し元でCloseしているので、ExecuteQueryではfinally句でCloseしなくて良い
@@ -522,7 +522,7 @@ namespace SynonyMe.Model.Manager
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", e.Message);
+                    Logger.Fatal(CLASS_NAME, "ExecuteNonQuery", e.ToString());
                     return false;
                 }
             }

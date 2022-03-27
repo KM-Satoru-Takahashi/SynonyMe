@@ -60,6 +60,8 @@ namespace SynonyMe.Model
 
         internal string FontFamily { get; private set; }
 
+        internal double FontSize { get; private set; }
+
         /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
         /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
@@ -229,6 +231,9 @@ namespace SynonyMe.Model
 
             FontFamily = setting.MainFontName + ", " + setting.SubFontName;
             _viewModel.NotifyPropertyChanged("FontFamily");
+
+            FontSize = setting.FontSize;
+            _viewModel.NotifyPropertyChanged("FontSize");
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)
@@ -403,12 +408,15 @@ namespace SynonyMe.Model
             try
             {
                 TextDocument.Text = displayText;
-                TextEditor textEditor = new TextEditor();
+                TextEditor textEditor = new TextEditor
+                {
+                    Document = TextDocument
+                };
                 textEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "Save", e.Message);
+                Logger.Fatal(CLASS_NAME, "Save", e.ToString());
                 return false;
             }
 
@@ -524,7 +532,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "Load", e.Message);
+                Logger.Fatal(CLASS_NAME, "Load", e.ToString());
                 return false;
             }
 
@@ -841,7 +849,7 @@ namespace SynonyMe.Model
             TextDocument.Text = text;
 
             // ドロップ直後に「編集済み」が出るのを抑制する
-            IsModified = false;
+            _viewModel.IsModified = false;//todo:check null
 
             // Ctrl + Sで名前をつけて保存にしなくて良くする
             _forceSaveAs = false;

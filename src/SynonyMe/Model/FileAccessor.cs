@@ -70,7 +70,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "SaveFile", e.Message);
+                Logger.Fatal(CLASS_NAME, "SaveFile", e.ToString());
                 return false;
             }
 
@@ -106,7 +106,7 @@ namespace SynonyMe.Model
                 IndentChars = "  "
             };
 
-            using (var writer = XmlWriter.Create(GetSettingFilePath(fileName), settings))
+            using (XmlWriter writer = XmlWriter.Create(GetSettingFilePath(fileName), settings))
             {
                 XmlSerializer serializer = new XmlSerializer(targetType);
                 try
@@ -147,9 +147,9 @@ namespace SynonyMe.Model
                 {
                     xml = serializer.Deserialize(fs) as T;
                 }
-                catch
+                catch (Exception e)
                 {
-                    //todo:Error log
+                    Logger.Fatal(CLASS_NAME, "LoadSettingFile", e.ToString());
                 }
             }
 

@@ -60,13 +60,13 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         private Color _synonymSearchFontColor = new Color();
 
-        private CommonLibrary.FontColorKind _synonymSearchFontColorKind = CommonLibrary.FontColorKind.Auto;
+        private CommonLibrary.FontColorKind synonymSearchFontColorKind = CommonLibrary.FontColorKind.Auto;
 
         private Color _searchBackGroundColor = CommonLibrary.Define.BACKGROUND_COLORS_DEFAULT[0];
 
         private Color _searchResultFontColor = new Color();
 
-        private CommonLibrary.FontColorKind _searchResultFontColorKind = CommonLibrary.FontColorKind.Auto;
+        private CommonLibrary.FontColorKind searchResultFontColorKind = CommonLibrary.FontColorKind.Auto;
 
         /// <summary>背景色一覧のIndexで、次に使用すべきIndexを保持します</summary>
         /// <remarks>必ずプロパティ側からGetすること</remarks>
@@ -139,14 +139,14 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (args == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"args is null! sender:[{sender ?? "sender is null!"}");
                 return;
             }
 
             Settings.SearchAndSynonymSetting searchAndSynonymSetting = args.GetTargetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting;
             if (searchAndSynonymSetting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"searchAndSynonymSetting is null! sender:[{sender ?? "sender is null!"}");
                 return;
             }
 
@@ -158,12 +158,12 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (setting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "ApplySetting", "setting is null!");
                 return;
             }
 
-            _synonymSearchFontColorKind = setting.SynonymSearchFontColorKind;
-            switch (_synonymSearchFontColorKind)
+            synonymSearchFontColorKind = setting.SynonymSearchFontColorKind;
+            switch (synonymSearchFontColorKind)
             {
                 case CommonLibrary.FontColorKind.Auto:
                     _synonymSearchFontColor = GetAutoFontColor();
@@ -178,7 +178,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     _synonymSearchFontColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchFontColor);
                     break;
                 default:
-                    //todo:error log
+                    Logger.Error(CLASS_NAME, "ApplySetting", $"synonymSearchFontColorKind is incorrect! value:[{synonymSearchFontColorKind}]");
                     _synonymSearchFontColor = GetAutoFontColor();
                     break;
             }
@@ -197,15 +197,15 @@ namespace SynonyMe.AvalonEdit.Highlight
                 CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor10)
             };
 
-            _searchResultFontColorKind = setting.SearchResultFontColorKind;
+            searchResultFontColorKind = setting.SearchResultFontColorKind;
 
-            switch (_searchResultFontColorKind)
+            switch (searchResultFontColorKind)
             {
                 case CommonLibrary.FontColorKind.Auto:
                     _searchResultFontColor = GetAutoFontColor();
                     break;
 
-                case CommonLibrary.FontColorKind.Black://todo:実装
+                case CommonLibrary.FontColorKind.Black:
                     _searchResultFontColor = Colors.Black;
                     break;
 
@@ -218,7 +218,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     break;
 
                 default:
-                    //todo:log
+                    Logger.Error(CLASS_NAME, "ApplySetting", $"searchResultFontColorKind is invalid! value:[{searchResultFontColorKind}]");
                     _searchResultFontColor = GetAutoFontColor();
                     break;
             }
@@ -247,7 +247,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
                 if (string.IsNullOrEmpty(target))
                 {
-                    Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround.ToString()}]");
+                    Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround}]");
                     continue;
                 }
                 _infos.Add(new TextHighlightInfo(_synonymSearchFontColor, backGround, target));//todo:検索と類語検索で_fontColorとbackGroundを分ける
@@ -263,7 +263,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (string.IsNullOrEmpty(targetWord))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "CreateSearchHighlightInfo", "targetWord is null or empty!");
                 return false;
             }
 
@@ -299,7 +299,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             string stringBValue = backGroundColorCode.Substring(7, 2);
 
             byte byteRValue, byteGValue, byteBValue;
-            try
+            try //todo:CommonLibのUtilityで変換
             {
                 byteRValue = Convert.ToByte(stringRValue, 16);
                 byteGValue = Convert.ToByte(stringGValue, 16);
@@ -307,7 +307,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "GetForeGroundColor", $"ErrorMessage:[{e.Message}], R:[{stringRValue}], G:[{stringGValue}], B:[{stringBValue}]");
+                Logger.Fatal(CLASS_NAME, "GetForeGroundColor", $"ErrorMessage:[{e.ToString()}], R:[{stringRValue}], G:[{stringGValue}], B:[{stringBValue}]");
                 return Colors.Black;
             }
 
@@ -354,13 +354,13 @@ namespace SynonyMe.AvalonEdit.Highlight
                 case CommonLibrary.ApplyHighlightKind.Search:
                     if (CreateSearchHighlightInfo(targetWords[0]) == false)
                     {
-                        //todo:log
+                        Logger.Error(CLASS_NAME, "UpdateXshdFile", $"CreateSearchHighlightInfo return false! target:[{targetWords[0]}]");
                         return false;
                     }
                     break;
 
                 default:
-                    //todo:log
+                    Logger.Error(CLASS_NAME, "UpdateXshdFile", $"ApplyHighlightKing is invalid! value:[{kind}]");
                     break;
             }
 
@@ -512,7 +512,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "WriteXshdFile", e.Message);
+                    Logger.Fatal(CLASS_NAME, "WriteXshdFile", e.ToString());
                     return false;
                 }
                 finally
@@ -552,7 +552,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "SetXshdFile", e.Message);
+                Logger.Fatal(CLASS_NAME, "SetXshdFile", e.ToString());
                 return false;
             }
 
@@ -590,7 +590,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "DeleteXshdFile", e.Message);
+                Logger.Fatal(CLASS_NAME, "DeleteXshdFile", e.ToString());
                 return false;
             }
 

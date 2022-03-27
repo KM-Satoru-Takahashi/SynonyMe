@@ -190,6 +190,15 @@ namespace SynonyMe.ViewModel
             }
             set
             {
+                if (string.IsNullOrEmpty(value))
+                {
+                    return;
+                }
+                if (System.Text.RegularExpressions.Regex.IsMatch(value, Define.REGEX_NUMBER_ONLY) == false)
+                {
+                    return;
+                }
+
                 if (_fontSize != value)
                 {
                     _fontSize = value;
@@ -920,6 +929,7 @@ namespace SynonyMe.ViewModel
             FontColor = ConvertStringToColor(generalSetting.FontColor);
             MainFont = GetFontInfoFromFontName(generalSetting.MainFontName);
             SubFont = GetFontInfoFromFontName(generalSetting.SubFontName);
+            FontSize = generalSetting.FontSize.ToString();
         }
 
         /// <summary>フォント名称からFontInfoを取得します</summary>
@@ -1065,8 +1075,8 @@ namespace SynonyMe.ViewModel
             //todo:メソッド切り出し、Modelに処理を渡す
             #region GeneralSetting
 
-            int convFontSize = 0;
-            if (int.TryParse(FontSize, out convFontSize))
+            double convFontSize = 0;
+            if (double.TryParse(FontSize, out convFontSize) == false)
             {
                 //todo:log. default
             }
@@ -1220,6 +1230,7 @@ namespace SynonyMe.ViewModel
             FontColor = Colors.Black;
             MainFont = GetFontInfoFromFontName("Consolas");
             SubFont = GetFontInfoFromFontName("メイリオ");
+            FontSize = 12.0.ToString();
         }
 
         /// <summary>「検索・類語検索設定」タブ表示を規定値にリセットします</summary>

@@ -4,11 +4,11 @@
   <ShowingLineCount>true</ShowingLineCount>
   <ShowingNumberOfLines>true</ShowingNumberOfLines>
   <ShowingWordCount>true</ShowingWordCount>
-  <ShowingNewLine>true</ShowingNewLine>
-  <ShowingTab>true</ShowingTab>
-  <ShowingSpace>true</ShowingSpace>
-  <FontSize>0</FontSize>
+  <ShowingNewLine>false</ShowingNewLine>
+  <ShowingTab>false</ShowingTab>
+  <ShowingSpace>false</ShowingSpace>
+  <FontSize>12</FontSize>
   <FontColor>#FF000000</FontColor>
-  <MainFontName>Meiryo</MainFontName>
-  <SubFontName>Consolas</SubFontName>
+  <MainFontName>Consolas</MainFontName>
+  <SubFontName>メイリオ</SubFontName>
 </GeneralSetting>

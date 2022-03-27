@@ -1,20 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <SearchAndSynonymSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SearchResultBackGroundColor>#FFFFFF00</SearchResultBackGroundColor>
-  <SearchResultFontColor>#FFFF0000</SearchResultFontColor>
-  <SearchResultFontColorKind>UserSetting</SearchResultFontColorKind>
-  <SynonymSearchResultColor1>#FF000000</SynonymSearchResultColor1>
-  <SynonymSearchResultColor2>#FF7B68EE</SynonymSearchResultColor2>
-  <SynonymSearchResultColor3>#00000000</SynonymSearchResultColor3>
-  <SynonymSearchResultColor4>#00000000</SynonymSearchResultColor4>
-  <SynonymSearchResultColor5>#FF7BDE1E</SynonymSearchResultColor5>
-  <SynonymSearchResultColor6>#00000000</SynonymSearchResultColor6>
-  <SynonymSearchResultColor7>#00000000</SynonymSearchResultColor7>
-  <SynonymSearchResultColor8>#00000000</SynonymSearchResultColor8>
-  <SynonymSearchResultColor9>#00000000</SynonymSearchResultColor9>
-  <SynonymSearchResultColor10>#00000000</SynonymSearchResultColor10>
-  <SynonymSearchFontColor>#FF3CB371</SynonymSearchFontColor>
-  <SynonymSearchFontColorKind>UserSetting</SynonymSearchFontColorKind>
-  <SearchResultMargin>102</SearchResultMargin>
+  <SearchResultBackGroundColor>#FFFF69B4</SearchResultBackGroundColor>
+  <SearchResultFontColor>#FF000000</SearchResultFontColor>
+  <SearchResultFontColorKind>Auto</SearchResultFontColorKind>
+  <SynonymSearchResultColor1>#FFFF69B4</SynonymSearchResultColor1>
+  <SynonymSearchResultColor2>#FF00FFFF</SynonymSearchResultColor2>
+  <SynonymSearchResultColor3>#FFFFFF00</SynonymSearchResultColor3>
+  <SynonymSearchResultColor4>#FF00FF00</SynonymSearchResultColor4>
+  <SynonymSearchResultColor5>#FFEE82EE</SynonymSearchResultColor5>
+  <SynonymSearchResultColor6>#FFFF0000</SynonymSearchResultColor6>
+  <SynonymSearchResultColor7>#FF0000FF</SynonymSearchResultColor7>
+  <SynonymSearchResultColor8>#FFD2691E</SynonymSearchResultColor8>
+  <SynonymSearchResultColor9>#FF008000</SynonymSearchResultColor9>
+  <SynonymSearchResultColor10>#FF808080</SynonymSearchResultColor10>
+  <SynonymSearchFontColor>#FF000000</SynonymSearchFontColor>
+  <SynonymSearchFontColorKind>Auto</SynonymSearchFontColorKind>
+  <SearchResultMargin>10</SearchResultMargin>
   <SearchResultDisplayCount>100</SearchResultDisplayCount>
 </SearchAndSynonymSetting>
