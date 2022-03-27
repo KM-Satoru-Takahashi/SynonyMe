@@ -20,13 +20,13 @@ namespace SynonyMe.CommonLibrary
         {
             if (string.IsNullOrEmpty(code))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "ConversitonColorCodeToColor", "code is null or empty!");
                 return new Color();
             }
 
             if (code.Length != "#AARRGGBB".Length)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "ConversitonColorCodeToColor", $"code is invalid! code:[{code}]");
                 return new Color();
             }
 

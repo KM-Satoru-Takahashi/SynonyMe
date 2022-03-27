@@ -408,12 +408,15 @@ namespace SynonyMe.Model
             try
             {
                 TextDocument.Text = displayText;
-                TextEditor textEditor = new TextEditor();
+                TextEditor textEditor = new TextEditor
+                {
+                    Document = TextDocument
+                };
                 textEditor.Save(DisplayTextFilePath);
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "Save", e.Message);
+                Logger.Fatal(CLASS_NAME, "Save", e.ToString());
                 return false;
             }
 
@@ -529,7 +532,7 @@ namespace SynonyMe.Model
             }
             catch (Exception e)
             {
-                Logger.Fatal(CLASS_NAME, "Load", e.Message);
+                Logger.Fatal(CLASS_NAME, "Load", e.ToString());
                 return false;
             }
 
@@ -846,7 +849,7 @@ namespace SynonyMe.Model
             TextDocument.Text = text;
 
             // ドロップ直後に「編集済み」が出るのを抑制する
-            IsModified = false;
+            _viewModel.IsModified = false;//todo:check null
 
             // Ctrl + Sで名前をつけて保存にしなくて良くする
             _forceSaveAs = false;
