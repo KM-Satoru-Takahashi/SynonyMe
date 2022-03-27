@@ -173,7 +173,7 @@ namespace SynonyMe.Model
         {
             if (_settingManager == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplyGeneralSetting", "_settingManager is null!");
                 return;
             }
 
@@ -184,7 +184,7 @@ namespace SynonyMe.Model
         {
             if (_settingManager == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplySearchAndSynonymSetting", "_settingManager is null!");
                 return;
             }
 
@@ -195,7 +195,7 @@ namespace SynonyMe.Model
         {
             if (_settingManager == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplyAdvancedSetting", "_settingManager is null!");
                 return;
             }
 
@@ -206,7 +206,7 @@ namespace SynonyMe.Model
         {
             if (setting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateGeneralSetting", "setting is null!");
                 return;
             }
 
@@ -240,15 +240,13 @@ namespace SynonyMe.Model
         {
             if (setting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSetting", "setting is null!");
                 return;
             }
-
 
             //todo:固定値割り振り
             SearchResultMargin = setting.SearchResultMargin;
             SearchResultCount = setting.SearchResultDisplayCount;
-
         }
 
         internal void UpdateAdvancedSetting(Settings.AdvancedSetting setting)

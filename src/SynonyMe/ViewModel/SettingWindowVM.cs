@@ -844,11 +844,12 @@ namespace SynonyMe.ViewModel
             ApplyAdvancedSetting();
         }
 
+        /// <summary>高度な設定情報を画面に適用させます</summary>
         private void ApplyAdvancedSetting()
         {
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplyAdvancedSetting", "model is null!");
                 return;
             }
 
@@ -868,11 +869,12 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>検索・類語検索設定を適用します</summary>
         private void ApplySearchAndSynonymSetting()
         {
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplySearchAndSynonymSetting", "model is null!");
                 return;
             }
 
@@ -902,11 +904,12 @@ namespace SynonyMe.ViewModel
             SearchResultDisplayCount = searchAndSynonymSetting.SearchResultDisplayCount.ToString();
         }
 
+        /// <summary>一般設定を画面に適用させます</summary>
         private void ApplyGeneralSetting()
         {
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplyGeneralSetting", "model is null!");
                 return;
             }
 
@@ -934,19 +937,19 @@ namespace SynonyMe.ViewModel
 
         /// <summary>フォント名称からFontInfoを取得します</summary>
         /// <param name="fontName">対象のフォント名</param>
-        /// <returns></returns>
+        /// <returns>true:成功, false:失敗</returns>
         /// <remarks>フォント名設定コンボボックスに表示されているフォント名称と合致するかを判定するので、引数の日本語/英語は考慮しなくて良い</remarks>
         private FontInfo GetFontInfoFromFontName(string fontName)
         {
             if (string.IsNullOrEmpty(fontName))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "GetFontInfoFromName", "fontName is null or empty!");
                 return null;
             }
 
             if (FontList == null || FontList.Any() == false)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "GetFontInfoFromName", "FontList is null or empty!");
                 return null;
             }
 
@@ -968,7 +971,7 @@ namespace SynonyMe.ViewModel
 
             if (target == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "GetFontInfoFromFontName", $"target is null! fontName:[{fontName}]");
             }
 
             return target;
@@ -1078,7 +1081,8 @@ namespace SynonyMe.ViewModel
             double convFontSize = 0;
             if (double.TryParse(FontSize, out convFontSize) == false)
             {
-                //todo:log. default
+                Logger.Error(CLASS_NAME, "ExecuteApply", $"TryParse failed. value:[{FontSize}]");
+                //todo:default
             }
 
             GeneralSetting generalSetting = new GeneralSetting//todo:既存のApplyGeneralSettings等使って細かく切り出せるのでは？　下のも含め
@@ -1178,11 +1182,10 @@ namespace SynonyMe.ViewModel
         {
             if (parameter == null)
             {
-                //todo:error log
+                Logger.Fatal(CLASS_NAME, "ExecuteResetToDefault", "parameter is null!");
                 return;
             }
 
-            //todo:実装
             if (Enum.IsDefined(typeof(SettingKind), parameter))
             {
                 SettingKind kind = (SettingKind)Enum.ToObject(typeof(SettingKind), parameter);
@@ -1266,7 +1269,8 @@ namespace SynonyMe.ViewModel
         /// <summary>全類語グループおよび類語を削除します</summary>
         private void ExecuteDeleteAllSynonymGroupsAndWords(object parameter)
         {
-            //todo:確認ダイアログ
+            const string methodName = "ExecuteDeleteAllSynonymGroupsAndWords";
+            //todo:定数化
             DialogResult dialogResult = DialogResult.Cancel;
             bool result = Model.Manager.DialogManager.GetDialogManager.OpenOkCancelDialog
                 ("登録された全類語グループ、および類語を削除します。\n" +
@@ -1274,13 +1278,13 @@ namespace SynonyMe.ViewModel
 
             if (result == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, methodName, "OpenOkCancelDialog failed");
                 return;
             }
 
             if (dialogResult == DialogResult.OK)
             {
-                //todo:log
+                Logger.Info(CLASS_NAME, methodName, "Clicked Ok button");
                 //todo:Modelへ
                 using (var mng = new Model.Manager.DBManager(Define.DB_NAME))
                 {
@@ -1289,7 +1293,7 @@ namespace SynonyMe.ViewModel
             }
             else
             {
-                //todo:log
+                Logger.Info(CLASS_NAME, methodName, "Clicked cancel button");
             }
         }
 
@@ -1318,7 +1322,7 @@ namespace SynonyMe.ViewModel
             return targets;
         }
 
-        private LogLevel ConvertDoubleToLogLevel(double logLevel)
+        private LogLevel ConvertDoubleToLogLevel(double logLevel)//todo:Utilityへ移譲
         {
             int intLogLevel = Convert.ToInt32(logLevel);
 
@@ -1328,7 +1332,7 @@ namespace SynonyMe.ViewModel
             }
 
             // 変換不可な値だった場合、規定値を返すようにする
-            // todo:error log
+            Logger.Error(CLASS_NAME, "ConvertDoubleToLogLevel", $"LogLevel cannot convert to enum. value:[{logLevel}]");
             return LogLevel.INFO;
         }
 
@@ -1374,7 +1378,7 @@ namespace SynonyMe.ViewModel
                     FatalVisible = Visibility.Visible;
                     break;
                 default: // 想定していないが、とりあえず全部表示させておく？
-                    //todo:ErrorLog
+                    Logger.Warn(CLASS_NAME, "UpdateLogLevelVisible", $"LogLevel is invalid. value:[{logLevel}]");
                     DebugVisible = Visibility.Visible;
                     InfoVisible = Visibility.Visible;
                     WarnVisible = Visibility.Visible;

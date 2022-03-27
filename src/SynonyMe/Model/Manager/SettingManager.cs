@@ -59,33 +59,32 @@ namespace SynonyMe.Model.Manager
         {
             switch (kind)
             {
-                case CommonLibrary.SettingKind.AdvancedSetting:
+                case SettingKind.AdvancedSetting:
                     AdvancedSettingChangedEvent(this,
                         new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting))));
                     break;
 
-                case CommonLibrary.SettingKind.GeneralSetting:
+                case SettingKind.GeneralSetting:
                     GeneralSettingChangedEvent(this,
                         new Events.SettingChangedEventArgs(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting))));
                     break;
 
-                case CommonLibrary.SettingKind.SearchAndSynonymSetting:
+                case SettingKind.SearchAndSynonymSetting:
                     SearchAndSynonymSettingChangedEvent(this,
                         new Events.SettingChangedEventArgs(typeof(SearchAndSynonymSetting), GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting))));
                     break;
 
-                case CommonLibrary.SettingKind.All:
+                case SettingKind.All:
                     Events.SettingChangedEventArgs args = new Events.SettingChangedEventArgs(typeof(AdvancedSetting), GetSettingManager.GetSetting(typeof(AdvancedSetting)));
                     args.AddChangedSetting(typeof(GeneralSetting), GetSettingManager.GetSetting(typeof(GeneralSetting)));
                     args.AddChangedSetting(typeof(SearchAndSynonymSetting), GetSettingManager.GetSetting(typeof(SearchAndSynonymSetting)));
                     AdvancedSettingChangedEvent(this, args);
                     GeneralSettingChangedEvent(this, args);
                     SearchAndSynonymSettingChangedEvent(this, args);
-
                     break;
 
                 default:
-                    //todo:error log
+                    Logger.Error(CLASS_NAME, "NotifySettingChanged", $"Setting kind is invalid. kind:[{kind}]");
                     break;
             }
 
@@ -108,7 +107,7 @@ namespace SynonyMe.Model.Manager
         {
             if (_settingDictionary.TryAdd(type, setting) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "AddSetting", $"TryAdd failed. type:[{type}], setting:[{(setting == null ? "setting is null" : $"{setting.ToString()}")}]");
                 return false;
             }
 
@@ -123,7 +122,7 @@ namespace SynonyMe.Model.Manager
             object setting;
             if (_settingDictionary.TryGetValue(target, out setting) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "GetSetting", $"TryGetValue failed. target:[{target.ToString()}]");
                 return null;
             }
 
@@ -131,16 +130,17 @@ namespace SynonyMe.Model.Manager
         }
 
         /// <summary>管理下にある設定情報を更新、また存在していない場合は登録します</summary>
-        /// <param name="type"></param>
-        /// <param name="setting"></param>
-        /// <returns></returns>
+        /// <param name="type">取得対象の設定ファイルに紐付く設定クラスの型</param>
+        /// <param name="setting">取得した設定情報</param>
+        /// <returns>true:成功, false:失敗</returns>
         internal bool UpdateOrAddSetting(Type type, object setting)
         {
             if (_settingDictionary.ContainsKey(type))
             {
                 if (_settingDictionary.TryUpdate(type, setting, _settingDictionary[type]) == false)
                 {
-                    //todo:log
+                    Logger.Error(CLASS_NAME, "UpdateOrAddSetting", $"TryUpdate failed. target type:[{type.ToString()}], " +
+                        $"target setting:[{(setting == null ? "setting is null" : $"{setting.ToString()}")}");
                     return false;
                 }
             }
@@ -190,7 +190,7 @@ namespace SynonyMe.Model.Manager
 
             if (AddSetting(typeof(AdvancedSetting), advancedSetting) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "LoadAdvancedSetting", $"AddSetting failed. advancedSetting:[{advancedSetting.ToString()}]");
                 return false;
             }
 
@@ -222,7 +222,7 @@ namespace SynonyMe.Model.Manager
 
             if (AddSetting(typeof(GeneralSetting), generalSetting) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "LoadGeneralSetting", $"LoadGeneralSetting failed. generalSetting:[{generalSetting.ToString()}]");
                 return false;
             }
 
@@ -264,7 +264,7 @@ namespace SynonyMe.Model.Manager
 
             if (AddSetting(typeof(SearchAndSynonymSetting), searchAndSynonymSetting) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "LoadSearchAndSynonymSetting", $"LoadSearchAndSynonymSetting failed. searchAndSynonymSetting:[{searchAndSynonymSetting.ToString()}]");
                 return false;
             }
 

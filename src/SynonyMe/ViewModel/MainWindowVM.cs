@@ -509,7 +509,7 @@ namespace SynonyMe.ViewModel
             // 類語更新時のイベント登録
             if (_model == null)
             {
-                //todo:error log
+                Logger.Fatal(CLASS_NAME, "InitializeSynonymSearch", "model is null!");
                 return;
             }
             _model.UpdateSynonymEvent -= UpdateSynonymSearchAreaEvent;
@@ -522,7 +522,7 @@ namespace SynonyMe.ViewModel
             // 設定変更時に発火するイベント登録
             if (_model == null)
             {
-                //todo:error log
+                Logger.Fatal(CLASS_NAME, "InitializeUpdateSettingEvent", "model is null!");
                 return;
             }
 
@@ -540,79 +540,86 @@ namespace SynonyMe.ViewModel
         {
             if (args == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateGeneralSettingEvent", "args is null!");
                 return;
             }
 
             Settings.GeneralSetting generalSetting = args.GetTargetSetting(typeof(Settings.GeneralSetting)) as Settings.GeneralSetting;
             if (generalSetting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateGeneralSettingEvent", "generalSetting is null!");
                 return;
             }
 
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "UpdateGeneralSetting", "model is null!");
                 return;
             }
 
             _model.UpdateGeneralSetting(generalSetting);
         }
 
+        /// <summary>検索・類語検索設定の変更通知を受け取ります</summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         private void UpdateSearchAndSynonymSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
         {
             if (args == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSetting", "args is null!");
                 return;
             }
 
             Settings.SearchAndSynonymSetting searchAndSynonymSetting = args.GetTargetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting;
             if (searchAndSynonymSetting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", "searchAndSynonymSetting is null!");
                 return;
             }
 
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", "model is null!");
                 return;
             }
 
             _model.UpdateSearchAndSynonymSetting(searchAndSynonymSetting);
         }
 
+        /// <summary>高度な設定の変更通知を受け取ります</summary>
+        /// <param name="sender">発信者</param>
+        /// <param name="args">変更後の設定情報</param>
         private void UpdateAdvancedSettingEvent(object sender, Model.Manager.Events.SettingChangedEventArgs args)
         {
             if (args == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateAdvancedSettingEvent", "args is null!");
                 return;
             }
 
             Settings.AdvancedSetting advancedSetting = args.GetTargetSetting(typeof(Settings.AdvancedSetting)) as Settings.AdvancedSetting;
             if (advancedSetting == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "UpdateAdvancedSetting", "advancedSetting is null!");
                 return;
             }
 
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "UpdateAdvancedSetting", "model is null!");
                 return;
             }
 
             _model.UpdateAdvancedSetting(advancedSetting);
         }
 
+        /// <summary>exeで管理している全設定情報を画面に適用させます</summary>
         private void ApplySettings()
         {
             if (_model == null)
             {
-                //todo:log
+                Logger.Fatal(CLASS_NAME, "ApplySettings", ",model is null!");
                 return;
             }
 
@@ -1181,7 +1188,7 @@ namespace SynonyMe.ViewModel
         {
             if (string.IsNullOrEmpty(propertyName))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "NotifyPropertyChanged", "propertyName is null or empty!");
                 return;
             }
 

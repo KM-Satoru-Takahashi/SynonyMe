@@ -139,14 +139,14 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             if (args == null)
             {
-                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"args is null! sender:[{sender ?? "sender is null!"}");
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"args is null! sender:[{(sender == null ? "sender is null!" : $"{sender.ToString()}")}");
                 return;
             }
 
             Settings.SearchAndSynonymSetting searchAndSynonymSetting = args.GetTargetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting;
             if (searchAndSynonymSetting == null)
             {
-                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"searchAndSynonymSetting is null! sender:[{sender ?? "sender is null!"}");
+                Logger.Error(CLASS_NAME, "UpdateSearchAndSynonymSettingEvent", $"searchAndSynonymSetting is null! sender:[{(sender == null ? "sender is null!" : $"{sender.ToString()}")}");
                 return;
             }
 

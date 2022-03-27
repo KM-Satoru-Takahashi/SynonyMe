@@ -301,56 +301,62 @@ namespace SynonyMe.Model.Manager
         {
             if (DropSynonymGroupTable() == false)
             {
-                //todo:log
-                //return false;
+                Logger.Error(CLASS_NAME, "TruncateAll", "DropSynonymGroupTable return false");
+                return false;
             }
 
             if (DropSynonymWordsTable() == false)
             {
-                //return false;
+                Logger.Error(CLASS_NAME, "TruncateAll", "DropSynonymWordsTable return false");
+                return false;
             }
 
-            if(Vacuum()==false)
+            if (Vacuum() == false)
             {
-                //return false;
+                Logger.Error(CLASS_NAME, "TruncateAll", "Vacuum failed");
+                return false;
             }
 
             if (CreateSynonymGroupTable() == false)
             {
-               // return false;
+                Logger.Error(CLASS_NAME, "TruncateAll", "CreateSynonymGroupTable return false");
+                return false;
             }
 
             if (CreateSynonymWordsTable() == false)
             {
-               // return false;
+                Logger.Error(CLASS_NAME, "TruncateAll", "CreateSynonymWordsTable return false");
+                return false;
             }
 
             return true;
         }
 
-
+        /// <summary>DBの予約領域を開放します</summary>
+        /// <returns>true:成功, false:失敗</returns>
         private bool Vacuum()
         {
-            string sql = " VACUUM ;";
-
             // transaction中にはVacuumできないので、自前で処理を行う
             // 破棄したテーブルが保持していた領域を開放してやる必要がある
             using (SQLiteCommand command = sqLiteConnection.CreateCommand())
             {
                 try
                 {
-                    command.CommandText = sql;
+                    command.CommandText = " VACUUM ;";
                     command.ExecuteNonQuery();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
-                    //todo:log
+                    Logger.Error(CLASS_NAME, "Vacuum", e.ToString());
                     return false;
                 }
             }
-                return true;
+            return true;
         }
 
+        /// <summary>類語グループテーブルを削除します</summary>
+        /// <returns>true:成功, false:失敗</returns>
+        /// <remarks>予約領域までは削除できず最適化はしていないので、必ずVacuumとセットで使用してください</remarks>
         private bool DropSynonymGroupTable()
         {
             string sql = "DELETE FROM " +
@@ -360,30 +366,36 @@ namespace SynonyMe.Model.Manager
 
             if (ExecuteNonQuery(sql) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "DropSynonymGroupTable", $"ExecuteNonQuery error. sql:[{sql}]");
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>類語一覧テーブルを削除します</summary>
+        /// <returnstrue:成功, false:失敗></returns>
+        /// <remarks>予約領域までは削除できず最適化はしていないので、必ずVacuumとセットで使用してください</remarks>
         private bool DropSynonymWordsTable()
         {
             string sql = "DELETE FROM " +
                 CommonLibrary.Define.DB_TABLE_SYNONYM_WORDS +
-                " ; " 
+                " ; "
                 ;
 
 
             if (ExecuteNonQuery(sql) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "DropSynonymWordsTable", $"ExecuteNonQuery error. sql:[{sql}]");
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>類語グループテーブルを新規生成します</summary>
+        /// <returns>true:成功, false:失敗</returns>
+        /// todo:Add等失敗時に一度このメソッドを入れてリトライさせる
         private bool CreateSynonymGroupTable()
         {
             string sql = "CREATE TABLE IF NOT EXISTS " +
@@ -397,13 +409,16 @@ namespace SynonyMe.Model.Manager
 
             if (ExecuteNonQuery(sql) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "CreateSynonymGroupTable", $"Create SynonymGroup failed. sql:[{sql}]");
                 return false;
             }
 
             return true;
         }
 
+        /// <summary>類語一覧テーブルを生成します</summary>
+        /// <returns>true:成功, false:失敗</returns>
+        /// todo:Add等失敗時に一度このメソッドを入れてリトライさせる
         private bool CreateSynonymWordsTable()
         {
             string sql = "CREATE TABLE IF NOT EXISTS " +
@@ -419,7 +434,7 @@ namespace SynonyMe.Model.Manager
 
             if (ExecuteNonQuery(sql) == false)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "CreateSynonymWordsTable", $"Create SynonymWords failed. sql:[{sql}]");
                 return false;
             }
 
@@ -535,7 +550,7 @@ namespace SynonyMe.Model.Manager
         {
             if (result < CommonLibrary.Define.EXECUTE_NONQUERY_SUCCESSED)
             {
-                //todo:log
+                Logger.Warn(CLASS_NAME, "IsSuccessed", $"Query failed. value:[{result}]");
                 return false;
             }
             else

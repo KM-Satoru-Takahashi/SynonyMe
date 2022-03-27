@@ -259,6 +259,7 @@
             </Grid>
 
             <!--類語領域-->
+            <!--todo:GridSpllitter-->
             <Grid Grid.Row="0" Grid.Column="4">
                 <Grid.RowDefinitions>
                     <!--上部余白は中央の文字数・行数カウントと同じ高さにする-->

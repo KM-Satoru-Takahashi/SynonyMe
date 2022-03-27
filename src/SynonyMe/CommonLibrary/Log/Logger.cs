@@ -31,7 +31,6 @@ namespace SynonyMe.CommonLibrary.Log
         }
 
         /// <summary>標準ログ[info]を出力します</summary>
-        /// <param name="message"></param>
         internal static void Info(string className, string methodName, string message)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(methodName))
@@ -42,8 +41,21 @@ namespace SynonyMe.CommonLibrary.Log
             Log.Info($"ClassName:[{className}], MethodName:[{methodName}], {message}");
         }
 
+        /// <summary>警告ログ[Warn]を出力します</summary>
+        /// <param name="className"></param>
+        /// <param name="methodName"></param>
+        /// <param name="message"></param>
+        internal static void Warn(string className, string methodName, string message)
+        {
+            if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(methodName))
+            {
+                WriteArgsErrorLog();
+            }
+
+            Log.Warn($"ClassName:[{className}], MethodName:[{methodName}], {message}");
+        }
+
         /// <summary>エラーログ[Error]を出力します</summary>
-        /// <param name="log"></param>
         internal static void Error(string className, string methodName, string message)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(methodName))
@@ -55,7 +67,6 @@ namespace SynonyMe.CommonLibrary.Log
         }
 
         /// <summary>致命ログ[Fatal]を出力します</summary>
-        /// <param name="log"></param>
         internal static void Fatal(string className, string methodName, string message)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(methodName))
@@ -67,7 +78,6 @@ namespace SynonyMe.CommonLibrary.Log
         }
 
         /// <summary>デバッグログ[debug]を出力します</summary>
-        /// <param name="log"></param>
         internal static void Debug(string className, string methodName, string message)
         {
             if (string.IsNullOrEmpty(message) || string.IsNullOrEmpty(className) || string.IsNullOrEmpty(methodName))

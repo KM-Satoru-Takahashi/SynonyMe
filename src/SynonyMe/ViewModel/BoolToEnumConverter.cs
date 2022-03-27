@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SynonyMe.CommonLibrary.Log;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace SynonyMe.ViewModel
     /// <summary>bool値とenumを相互に変換します</summary>
     public class BoolToEnumConverter : IValueConverter
     {
+        private const string CLASS_NAME = "BoolToEnumConverter";
+
         /// <summary>enum値をラジオボタンのbool値に変換します</summary>
         /// <param name="value">ラジオボタンに設定されたenum値</param>
         /// <param name="targetType"></param>
@@ -22,7 +25,7 @@ namespace SynonyMe.ViewModel
         {
             if (parameter == null)
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "Convert", "parameter is null!");
                 return DependencyProperty.UnsetValue;
             }
 
@@ -30,14 +33,14 @@ namespace SynonyMe.ViewModel
             string parameterString = parameter.ToString(); // stringにasキャストするとnullになってしまう
             if (string.IsNullOrEmpty(parameterString))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "Convert", "parameterString is null!");
                 return DependencyProperty.UnsetValue;
             }
 
             // enum定義されていなければ未定義値とする
             if (!Enum.IsDefined(value.GetType(), value))
             {
-                //todo:log
+                Logger.Error(CLASS_NAME, "Convert", $"value is invalid. value:[{value}]");
                 return DependencyProperty.UnsetValue;
             }
 
@@ -47,9 +50,9 @@ namespace SynonyMe.ViewModel
             {
                 parameterValue = Enum.Parse(value.GetType(), parameterString);
             }
-            catch
+            catch(Exception e)
             {
-                //error log
+                Logger.Fatal(CLASS_NAME, "Convert", e.ToString());
                 return DependencyProperty.UnsetValue;
             }
 
@@ -67,13 +70,14 @@ namespace SynonyMe.ViewModel
         {
             if (parameter == null)
             {
-                //todo:error
+                Logger.Error(CLASS_NAME, "ConvertBack", "parameter is null");
                 return DependencyProperty.UnsetValue;
             }
 
             string parameterString = parameter.ToString();
             if (string.IsNullOrEmpty(parameterString))
             {
+                Logger.Error(CLASS_NAME, "ConvertBack", "parameterString is null!");
                 return DependencyProperty.UnsetValue;
             }
 
@@ -83,9 +87,9 @@ namespace SynonyMe.ViewModel
                 {
                     return Enum.Parse(targetType, parameterString);
                 }
-                catch
+                catch (Exception e)
                 {
-                    //todo:log
+                    Logger.Fatal(CLASS_NAME, "ConvertBack", e.ToString());
                     return DependencyProperty.UnsetValue;
                 }
             }

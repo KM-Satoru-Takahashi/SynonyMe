@@ -86,13 +86,13 @@ namespace SynonyMe.Model
         {
             if (string.IsNullOrEmpty(fileName))
             {
-                // todo log
+                Logger.Error(CLASS_NAME, "SaveSettingFile", "fileName is null or empty!");
                 return false;
             }
 
             if (target == null)
             {
-                // todo log
+                Logger.Error(CLASS_NAME, "SaveSettingFile", $"target is null! fileName:[{fileName}]");
                 return false;
             }
 
@@ -115,7 +115,7 @@ namespace SynonyMe.Model
                 }
                 catch
                 {
-                    //todo:error log
+                    Logger.Fatal(CLASS_NAME, "SaveSettingFile", $"Serialize failed. targetType:[{targetType}], fileName:[{fileName}]");
                     return false;
                 }
             }
@@ -123,16 +123,21 @@ namespace SynonyMe.Model
             return true;
         }
 
+        /// <summary対象の設定ファイルを読み込みます</summary>
+        /// <typeparam name="T">読み込みたい設定ファイルの型</typeparam>
+        /// <param name="targetFileName"設定ファイル名(パスではなくファイル名)></param>
+        /// <returns>true:成功, false:失敗</returns>
         internal T LoadSettingFile<T>(string targetFileName)
             where T : class
         {
             string targetFilePath = GetSettingFilePath(targetFileName);
+            const string methodName = "LoadSettingFile";
             // 読込対象ファイルパスを必ず出力しておく(最下流のここでしかファイルパスを取得していないため)
-            Logger.Info(CLASS_NAME, "LoadSettingFile", $"TargetFilePath:[{targetFilePath}]");
+            Logger.Info(CLASS_NAME, methodName, $"TargetFilePath:[{targetFilePath}]");
 
             if (string.IsNullOrEmpty(targetFilePath))
             {
-                //todo error log 
+                Logger.Error(CLASS_NAME, methodName, "targetFilePath is null or empty!");
                 return null;
             }
 
