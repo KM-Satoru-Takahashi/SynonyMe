@@ -12,6 +12,7 @@ using SynonyMe.Model;
 using SynonyMe.CommonLibrary.Log;
 using System.Windows.Forms;
 using System.Collections.ObjectModel;
+using static SynonyMe.CommonLibrary.SystemUtility;
 
 namespace SynonyMe.ViewModel
 {
@@ -225,7 +226,11 @@ namespace SynonyMe.ViewModel
             }
         }
 
-        public List<FontInfo> FontList { get; private set; }
+        private FontInfo[] _fontList = FontInfos;
+        public FontInfo[] FontList
+        {
+            get { return _fontList; }
+        }
 
         private FontInfo _mainFont = null;
         public FontInfo MainFont
@@ -256,7 +261,7 @@ namespace SynonyMe.ViewModel
                 if (_subFont != value)
                 {
                     _subFont = value;
-                    OnPropertyChanged("Subfont");
+                    OnPropertyChanged("SubFont");
                 }
             }
         }
@@ -913,26 +918,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            // Model側で値は必ずセットされているはずなので、nullチェックだけして異常ならreturnしてしまう
-            // この時点でexe動作の正常性を担保できていない(内部処理でnewしているのにnullっているため)
-            GeneralSetting generalSetting = _model.GetGeneralSetting();
-            if (generalSetting == null)
-            {
-                Logger.Fatal(CLASS_NAME, "ApplyGeneralSetting", "generalSetting is null!");
-                return;
-            }
-
-            WrappingText = generalSetting.WrappingText;
-            ShowingLineCount = generalSetting.ShowingLineCount;
-            ShowingLineNumber = generalSetting.ShowingNumberOfLines;
-            ShowingWordCount = generalSetting.ShowingWordCount;
-            ShowingNewLine = generalSetting.ShowingNewLine;
-            ShowingTab = generalSetting.ShowingTab;
-            ShowingSpace = generalSetting.ShowingSpace;
-            FontColor = ConvertStringToColor(generalSetting.FontColor);
-            MainFont = GetFontInfoFromFontName(generalSetting.MainFontName);
-            SubFont = GetFontInfoFromFontName(generalSetting.SubFontName);
-            FontSize = generalSetting.FontSize.ToString();
+            _model.ApplyGeneralSetting();
         }
 
         /// <summary>フォント名称からFontInfoを取得します</summary>
@@ -1386,44 +1372,6 @@ namespace SynonyMe.ViewModel
                     FatalVisible = Visibility.Visible;
                     break;
             }
-        }
-
-        /// <summary>選択可能な全フォント一覧を取得します</summary>
-        private void GetSystemFontName()
-        {
-            //todo:起動時に一度呼ぶだけで良いので、設定ファイルの読み込み箇所とかに移動させるべき
-            // 日本語フォントを日本語で表示したいので、現在動いている環境の言語を取得する
-            //todo:WinwowのLanguageに、このlanguageを指定する必要がある
-            System.Windows.Markup.XmlLanguage language = System.Windows.Markup.XmlLanguage.GetLanguage
-                (System.Threading.Thread.CurrentThread.CurrentCulture.Name);
-
-            // 使える全言語を取得
-            var fonts = Fonts.SystemFontFamilies.Select
-                 (i => new FontInfo() { FontFamily = i, FontName = i.Source });
-
-            // IEnumerableのままだと要素の更新ができないので、一旦ローカルで受け取る
-            FontInfo[] fontsArr = fonts.ToArray();
-
-            // このままだと日本語で表示してくれないので、日本語のものはこちらで取得して入れ込み、表示してやる
-            foreach (var fontInfo in fontsArr)
-            {
-                foreach (var familyName in fontInfo.FontFamily.FamilyNames)
-                {
-                    if (familyName.Key == language && familyName.Value != null)
-                    {
-                        fontInfo.FontName = familyName.Value;
-                        break;
-                    }
-                }
-            }
-
-            FontList = fontsArr.ToList();//todo:ToArrayしているので型を配列にする
-        }
-
-        public class FontInfo
-        {
-            public FontFamily FontFamily { get; set; }
-            public string FontName { get; set; }
         }
 
         #endregion

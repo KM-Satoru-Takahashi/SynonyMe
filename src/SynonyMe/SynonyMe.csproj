@@ -101,6 +101,7 @@
     <Compile Include="CommonLibrary\Log\Logger.cs" />
     <Compile Include="CommonLibrary\MessageLibrary.cs" />
     <Compile Include="CommonLibrary\SystemUtility.cs" />
+    <Compile Include="Model\GeneralSettingModel.cs" />
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\Manager\DialogManager.cs" />
     <Compile Include="Model\FileAccessor.cs" />

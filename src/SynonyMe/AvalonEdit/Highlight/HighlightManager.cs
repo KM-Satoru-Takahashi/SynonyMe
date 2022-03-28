@@ -175,7 +175,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     _synonymSearchFontColor = Colors.White;
                     break;
                 case CommonLibrary.FontColorKind.UserSetting:
-                    _synonymSearchFontColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchFontColor);
+                    _synonymSearchFontColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchFontColor);
                     break;
                 default:
                     Logger.Error(CLASS_NAME, "ApplySetting", $"synonymSearchFontColorKind is incorrect! value:[{synonymSearchFontColorKind}]");
@@ -185,16 +185,16 @@ namespace SynonyMe.AvalonEdit.Highlight
 
             _synonymSearchBackGroundColors = new Color[]
             {
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor1),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor2),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor3),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor4),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor5),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor6),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor7),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor8),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor9),
-                CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SynonymSearchResultColor10)
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor1),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor2),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor3),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor4),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor5),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor6),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor7),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor8),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor9),
+                CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchResultColor10)
             };
 
             searchResultFontColorKind = setting.SearchResultFontColorKind;
@@ -214,7 +214,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     break;
 
                 case CommonLibrary.FontColorKind.UserSetting:
-                    _searchResultFontColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SearchResultFontColor);
+                    _searchResultFontColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SearchResultFontColor);
                     break;
 
                 default:
@@ -223,7 +223,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     break;
             }
 
-            _searchBackGroundColor = CommonLibrary.ConversionUtility.ConversitonColorCodeToColor(setting.SearchResultBackGroundColor);
+            _searchBackGroundColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SearchResultBackGroundColor);
 
         }
 

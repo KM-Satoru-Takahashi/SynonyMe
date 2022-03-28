@@ -15,37 +15,25 @@ namespace SynonyMe.Model
     {
         private const string CLASS_NAME = "SettingWindowModel";
 
-        private ViewModel.SettingWindowVM _viewModel = null;
+        internal ViewModel.SettingWindowVM ViewModel {get;private set;}
+
+        private GeneralSettingModel _generalSettingModel = null;
 
         internal SettingWindowModel(ViewModel.SettingWindowVM vm)
         {
-            _viewModel = vm;
+            ViewModel = vm;
+
+            Initialize();
         }
 
-        internal GeneralSetting GetGeneralSetting()
+        private void Initialize()
         {
-            object setting = SettingManager.GetSettingManager.GetSetting(typeof(GeneralSetting));
-            if (setting == null)
-            {
-                Logger.Warn(CLASS_NAME, "GetGeneralSetting", "setting is null!");
-                //todo:デフォルト値の定数化
-                setting = new GeneralSetting()
-                {
-                    FontColor = "#FF000000", // 黒
-                    FontSize = 12.0,
-                    MainFontName = "Meiryo",
-                    SubFontName = "Consolas",
-                    WrappingText = false,
-                    ShowingLineCount = true,
-                    ShowingNumberOfLines = true,
-                    ShowingNewLine = false,
-                    ShowingSpace = false,
-                    ShowingTab = false,
-                    ShowingWordCount = true
-                };
-            }
+            _generalSettingModel = new GeneralSettingModel(this);
+        }
 
-            return setting as GeneralSetting;
+        internal void ApplyGeneralSetting()
+        {
+            _generalSettingModel.ApplyGeneralSetting();
         }
 
         internal AdvancedSetting GetAdvancedSetting()
