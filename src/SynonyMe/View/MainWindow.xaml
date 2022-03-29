@@ -347,8 +347,8 @@
                             <GridView.Columns>
                                 <GridViewColumn Header="{Binding SynonymWordHeader}" DisplayMemberBinding="{Binding SynonymWord}"/>
                                 <GridViewColumn Header="{Binding SynonymWordSectionHeader}" DisplayMemberBinding="{Binding UsingSection}"/>
-                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
-                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding UsingCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordUsingCountHeader}" DisplayMemberBinding="{Binding UsingCount}"/>
+                                <GridViewColumn Header="{Binding SynonymWordRepeatingCountHeader}" DisplayMemberBinding="{Binding RepeatCount}"/>
                             </GridView.Columns>
                         </GridView>
                     </ListView.View>

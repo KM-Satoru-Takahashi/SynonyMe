@@ -13,7 +13,7 @@ namespace SynonyMe.Model
     {
         private const string CLASS_NAME = "Searcher";
 
-        private static Searcher _searcher = new Searcher();
+        private static readonly Searcher _searcher = new Searcher();
 
         /// <summary>検索処理実現クラス</summary>
         internal static Searcher GetSearcher
@@ -245,11 +245,10 @@ namespace SynonyMe.Model
                 }
                 else if (allIndexinText.Any() == false)
                 {
-                    //todo:log
+                    Logger.Info(CLASS_NAME, "GetAllSynonymSearchResult", $"No synonym search result. Target:[{target.SynonymWord}]");
                     continue;
                 }
 
-                // todo:marginはハードコーディングになっているので、設定ファイルに外だしなどする
                 string[] allResultinText = GetAllSearchResultWords(allIndexinText, target.SynonymWord, targetText, margin);
                 if (allResultinText == null || allResultinText.Any() == false)
                 {
@@ -308,6 +307,12 @@ namespace SynonyMe.Model
             List<MainWindowVM.DisplaySynonymSearchResult> unsortedSynonymSearchResults
                 = GetAllSynonymSearchResult(targetSynonyms, targetText, margin, maxResultcount);
 
+            if (unsortedSynonymSearchResults == null)
+            {
+                Logger.Error(CLASS_NAME, "SynonymSearch", "unsortedSynonymSearchResult is null!");
+                return null;
+            }
+
             // Index順にSortして配列化する。昇順であることを保証したいが、動作が不安定になる場合は
             // 将来的にSortedDictionaryとOrderdDictionaryの使用を考える
             MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResultArray
@@ -324,24 +329,38 @@ namespace SynonyMe.Model
         /// <remarks>引数の連続した2要素を参照するため、ソート済みでないと結果がおかしくなる</remarks>
         private void AdjustRepeatCountAndUsingCount(MainWindowVM.DisplaySynonymSearchResult[] sortedSynonymSearchResult)
         {
+            if (sortedSynonymSearchResult == null)
+            {
+                Logger.Error(CLASS_NAME, "AdjustRepeatCountAndUsingCount", "sortedSynonymSearchResult is null!");
+                return;
+            }
+            else if (sortedSynonymSearchResult.Any() == false)
+            {
+                Logger.Info(CLASS_NAME, "AdjustRepeatCountAndUsingCount", "sortedSynonymSearchResult is empty");
+                return;
+            }
+
             // 初回はRepeatCountもUsingCountも0確定のため、繰り返しのindexは1から開始する
-            for (int index = 1; index < sortedSynonymSearchResult.Count(); ++index)
+            for (int index = 0; index < sortedSynonymSearchResult.Count(); ++index)
             {
                 // アクセス負荷軽減のため、一旦ローカルに取り出す
                 MainWindowVM.DisplaySynonymSearchResult indexEntity = sortedSynonymSearchResult[index];
 
-                // 直前に存在しているか否か（RepeatCount）
-                MainWindowVM.DisplaySynonymSearchResult preIndexEntity = sortedSynonymSearchResult[index - 1];
-                if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
+                // 最初の要素でなければ、直前に存在しているか否かチェックする（RepeatCount）
+                if (index != 0)
                 {
-                    // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
-                    indexEntity.RepeatCount = preIndexEntity.RepeatCount;
-                    ++indexEntity.RepeatCount;
-                }
-                else
-                {
-                    // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を0とする
-                    indexEntity.RepeatCount = 0;
+                    MainWindowVM.DisplaySynonymSearchResult preIndexEntity = sortedSynonymSearchResult[index - 1];
+                    if (indexEntity.SynonymWord == preIndexEntity.SynonymWord)
+                    {
+                        // 直前にヒットしていた結果の類語が、現在の類語と同じであれば、繰り返し回数を+1する
+                        indexEntity.RepeatCount = preIndexEntity.RepeatCount;
+                        ++indexEntity.RepeatCount;
+                    }
+                    else
+                    {
+                        // 直前にヒットしていた結果の類語が、現在の類語と異なるなら、繰り返し回数を0とする
+                        indexEntity.RepeatCount = 0;
+                    }
                 }
 
                 // これまでに何回ヒットしているか（UsingCount）
@@ -351,7 +370,9 @@ namespace SynonyMe.Model
                               entity.Index < indexEntity.Index &&           // 現在の要素以前
                               entity.SynonymWord == indexEntity.SynonymWord // 現在の類語と同じである
                     );
-                indexEntity.UsingCount = usingCount;
+
+                // 初回の分がカウントされていないので、インクリメントする
+                indexEntity.UsingCount = ++usingCount;
             }
 
             return;

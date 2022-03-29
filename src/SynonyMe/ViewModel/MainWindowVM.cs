@@ -660,6 +660,16 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
+            // 削除された類語グループがあれば、表示からも削除する
+            SynonymGroupEntity[] displayEntities = DisplaySynonymGroups.ToArray(); // ObservableCollectionからローカルで受け取る
+            foreach (SynonymGroupEntity entity in displayEntities)
+            {
+                if (entities.Any(synonymGroup => synonymGroup.GroupID == entity.GroupID) == false)
+                {
+                    DisplaySynonymGroups.Remove(entity);
+                }
+            }
+
             foreach (SynonymGroupEntity entity in entities)
             {
                 // GroupIDはuniqueなので、重複していなければ追加する
