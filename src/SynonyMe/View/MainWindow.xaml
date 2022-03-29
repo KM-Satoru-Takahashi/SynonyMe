@@ -243,7 +243,7 @@
                 <!--todo:SyntaxHighlightのBinding-->
                 <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
                     dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
-                    dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"            
+                    dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}"   
                     Document="{Binding Path=TextDocument}" FontFamily="{Binding FontFamily}"
                     Background="{Binding AvalonEditBackGround}" FontSize="{Binding FontSize}"
                     Focusable="True" ShowLineNumbers="{Binding CanShowNumberOfLines}" Margin="0,4,0,-4" >

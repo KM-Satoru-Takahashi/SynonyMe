@@ -14,7 +14,7 @@ namespace SynonyMe.CommonLibrary
         SynonymSearch
     }
 
-    /// <summary>AvalonEditで表示する背景色定義</summary>
+    /// <summary>AvalonEditの背景色定義</summary>
     /// <remarks>BackGroundとするとHighlightManagerで紛らわしい
     /// 将来は詳細に定義することも想定するが、現状は白黒の区別のみつける</remarks>
     internal enum WallPaperColor

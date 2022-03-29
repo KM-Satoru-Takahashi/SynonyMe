@@ -30,5 +30,7 @@ namespace SynonyMe.Settings
         public string MainFontName { get; set; }
 
         public string SubFontName { get; set; }
+
+        public string WallPaperColor { get; set; }
     }
 }

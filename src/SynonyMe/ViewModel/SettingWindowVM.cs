@@ -226,6 +226,23 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        private Color _wallPaper = new Color();
+        public Color WallPaperColor
+        {
+            get
+            {
+                return _wallPaper;
+            }
+            set
+            {
+                if(_wallPaper!=value)
+                {
+                    _wallPaper = value;
+                    OnPropertyChanged("WallPaper");
+                }
+            }
+        }
+
         private FontInfo[] _fontList = FontInfos;
         public FontInfo[] FontList
         {
@@ -1082,6 +1099,7 @@ namespace SynonyMe.ViewModel
                 ShowingSpace = this.ShowingSpace,
                 FontSize = convFontSize,
                 FontColor = this.FontColor.ToString(),
+                WallPaperColor = this.WallPaperColor.ToString(),
                 MainFontName = MainFont != null ? MainFont.FontName : string.Empty,//todo:デフォルト値
                 SubFontName = SubFont != null ? SubFont.FontName : string.Empty//todo:デフォルト値
             };

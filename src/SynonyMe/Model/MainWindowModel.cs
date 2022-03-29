@@ -13,14 +13,20 @@ using SynonyMe.CommonLibrary.Log;
 using SynonyMe.Model.Manager;
 using System.Windows.Forms;
 using ICSharpCode.AvalonEdit.Document;
+using System.Windows.Media;
 
 namespace SynonyMe.Model
 {
-    internal class MainWindowModel
+    /// <summary>
+    /// todo:シングルトン化してViewModelでのModelのnullチェックをなくす
+    /// </summary>
+    internal sealed class MainWindowModel
     {
         #region field
 
         private const string CLASS_NAME = "MainWindowModel";
+
+        private static readonly MainWindowModel _model = new MainWindowModel();
 
         /// <summary>ViewModel</summary>
         private MainWindowVM _viewModel = null;
@@ -66,6 +72,14 @@ namespace SynonyMe.Model
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
         /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
         /// Options.ShowEndOfLine, ShowSpaces, ShowTabs, ShowBoxForControlCharacters
+
+        internal static MainWindowModel Model
+        {
+            get
+            {
+                return _model;
+            }
+        }
 
         /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
@@ -139,25 +153,18 @@ namespace SynonyMe.Model
 
         /// <summary>コンストラクタ</summary>
         /// <param name="viewModel">メンバに保持するVM</param>
-        internal MainWindowModel(ViewModel.MainWindowVM viewModel)
+        private MainWindowModel()
         {
-            if (viewModel == null)
-            {
-                Logger.Fatal(CLASS_NAME, "MainWindowModel", "viewModel is null");
-                return;
-            }
-
-            _viewModel = viewModel;
-
-            Initialize();
         }
 
-        private void Initialize()
+        internal void Initialize(MainWindowVM viewModel)
         {
-            // ★必ず最初に取得すること->singleton生成に伴う設定読込のため
-            _settingManager = Manager.SettingManager.GetSettingManager;
+            _viewModel = viewModel;
 
-            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);
+            // ★必ず最初に取得すること->singleton生成に伴う設定読込のため
+            _settingManager = SettingManager.GetSettingManager;
+
+            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);//★
         }
 
 
@@ -234,6 +241,9 @@ namespace SynonyMe.Model
 
             FontSize = setting.FontSize;
             _viewModel.NotifyPropertyChanged("FontSize");
+
+            _viewModel.AvalonEditBackGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.WallPaperColor));
+            _viewModel.NotifyPropertyChanged("AvalonEditBackGround");
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)

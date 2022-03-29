@@ -78,6 +78,7 @@ namespace SynonyMe.Model
             _parent.ViewModel.ShowingTab = generalSetting.ShowingTab;
             _parent.ViewModel.ShowingSpace = generalSetting.ShowingSpace;
             _parent.ViewModel.FontColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(generalSetting.FontColor);
+            _parent.ViewModel.WallPaperColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(generalSetting.WallPaperColor);
             _parent.ViewModel.MainFont = CommonLibrary.ConversionUtility.GetFontInfoFromFontName(generalSetting.MainFontName);
             _parent.ViewModel.SubFont = CommonLibrary.ConversionUtility.GetFontInfoFromFontName(generalSetting.SubFontName);
             _parent.ViewModel.FontSize = generalSetting.FontSize.ToString();

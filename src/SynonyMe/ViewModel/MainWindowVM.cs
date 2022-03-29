@@ -54,11 +54,12 @@ namespace SynonyMe.ViewModel
         /// <summary>現在表示中の類語グループID</summary>
         private int _selectedSynonymGroupId = -1;
 
-
+        /// <summary>ログ出力用クラス名</summary>
         private const string CLASS_NAME = "MainWindowVM";
 
         #endregion
 
+        // todo:画面表示文言の切り分け
         #region property
 
         /// <summary>ウィンドウタイトル</summary>
@@ -117,6 +118,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>[編集済み]文言表示有無判断</summary>
         public bool IsModified
         {
             get
@@ -125,16 +127,19 @@ namespace SynonyMe.ViewModel
             }
             set
             {
-                _model.IsModified = value;
-                if (_model.IsModified)
+                if (_model != null && value != _model.IsModified)
                 {
-                    EditedTextVisible = Visibility.Visible;
+                    _model.IsModified = value;
+                    if (_model.IsModified)
+                    {
+                        EditedTextVisible = Visibility.Visible;
+                    }
+                    else
+                    {
+                        EditedTextVisible = Visibility.Hidden;
+                    }
+                    OnPropertyChanged("IsModified");
                 }
-                else
-                {
-                    EditedTextVisible = Visibility.Hidden;
-                }
-                OnPropertyChanged("IsModified");
             }
         }
 
@@ -440,9 +445,10 @@ namespace SynonyMe.ViewModel
         {
             Logger.Info(CLASS_NAME, "Initialize", "start");
 
-            // 必ず最初にMainWindowModelをnewすること
+            // 必ず最初にMainWindowModelを取得すること
             // これにより、下流でSettingManagerのインスタンスが生成され、全設定情報が読み込まれるため
-            _model = new Model.MainWindowModel(this);
+            _model = Model.MainWindowModel.Model;
+            _model.Initialize(this); 
 
             //todo:並列処理可能では？
             // コマンド初期化処理
@@ -653,6 +659,23 @@ namespace SynonyMe.ViewModel
         /// <summary>類語グループ一覧の表示を更新する</summary>
         private void UpdateDisplaySynonymGroups()
         {
+            if (_model == null)
+            {
+                Logger.Fatal(CLASS_NAME, "UpdateDisplaySynonymGroups", "model is null!");
+                return;
+            }
+
+            if (DisplaySynonymGroups == null)
+            {
+                Logger.Error(CLASS_NAME, "UpdateDisplaySynonymGroups", "DisplaySynonymGroups is null!");
+                return;
+            }
+            else if (DisplaySynonymGroups.Any() == false)
+            {
+                Logger.Info(CLASS_NAME, "UpdateDisplaySynonymGroups", "No DisplaySynonymGroups");
+                return;
+            }
+
             SynonymGroupEntity[] entities = _model.GetAllSynonymGroups();
             if (entities == null || entities.Any() == false)
             {
@@ -661,7 +684,8 @@ namespace SynonyMe.ViewModel
             }
 
             // 削除された類語グループがあれば、表示からも削除する
-            SynonymGroupEntity[] displayEntities = DisplaySynonymGroups.ToArray(); // ObservableCollectionからローカルで受け取る
+            // ObservableCollectionからローカルで受け取らないとInvalidOperation発生
+            SynonymGroupEntity[] displayEntities = DisplaySynonymGroups.ToArray();
             foreach (SynonymGroupEntity entity in displayEntities)
             {
                 if (entities.Any(synonymGroup => synonymGroup.GroupID == entity.GroupID) == false)
@@ -691,14 +715,20 @@ namespace SynonyMe.ViewModel
 
             if (_model == null)
             {
+                Logger.Fatal(CLASS_NAME, "UpdateDisplaySynonymWords", "model is null!");
                 return;
             }
 
             SynonymWordEntity[] entities = _model.GetSynonymWordEntities(groupId);
-            if (entities == null || entities.Any() == false)
+            if (entities == null)
             {
-                // todo:ログ
                 Logger.Error(CLASS_NAME, "UpdateDisplaySynonymWords", "search synonym entites are null!");
+                return;
+            }
+            else if (entities.Any() == false)
+            {
+                Logger.Info(CLASS_NAME, "UpdateDisplaySynonymWords", "No synonymWords");
+                return;
             }
 
             // 表示用のEntityに入れ直して反映させる

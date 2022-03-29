@@ -153,7 +153,6 @@
                         </bh:Interaction.Behaviors>
                     </TextBox>
 
-
                     <TextBlock Grid.Row="3" Grid.Column="4" Text="フォントカラー" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                     <xctk:ColorPicker Grid.Row="3" Grid.Column="5" SelectedColor="{Binding FontColor}"
                                       AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
@@ -176,6 +175,11 @@
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
+
+                    <TextBlock Grid.Row="9" Grid.Column="4" Text="テキスト表示領域背景色" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <xctk:ColorPicker Grid.Row="9" Grid.Column="5" SelectedColor="{Binding WallPaperColor}"
+                                      AvailableColorsHeader="使用可能な色" AvailableColorsSortingMode="HueSaturationBrightness"
+                                      AdvancedTabHeader="ユーザー設定" StandardColorsHeader="標準色" StandardTabHeader="標準"/>
 
                     <!--todo:ボタンサイズを他タブと合わせて適切に-->
                     <Button Grid.Row="17" Width="70" Height="30" Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"
