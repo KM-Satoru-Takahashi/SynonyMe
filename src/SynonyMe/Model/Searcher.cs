@@ -238,10 +238,15 @@ namespace SynonyMe.Model
                 }
 
                 int[] allIndexinText = Searcher.GetSearcher.GetAllSearchResultIndex(target.SynonymWord, targetText, maxResultCount);
-                if (allIndexinText == null || allIndexinText.Any() == false)
+                if (allIndexinText == null)
                 {
                     Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "allIndexInText is null or empty!");
                     return null;
+                }
+                else if (allIndexinText.Any() == false)
+                {
+                    //todo:log
+                    continue;
                 }
 
                 // todo:marginはハードコーディングになっているので、設定ファイルに外だしなどする
