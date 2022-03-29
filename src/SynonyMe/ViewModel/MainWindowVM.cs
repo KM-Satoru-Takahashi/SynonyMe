@@ -369,6 +369,8 @@ namespace SynonyMe.ViewModel
         /// <summary>テキスト表示領域の背景色</summary>
         public Brush AvalonEditBackGround { get; set; } = Brushes.White;
 
+        public Brush AvalonEditForeGround { get; set; } = Brushes.Black;
+
         /// <summary>検索結果がない場合に表示する文言</summary>
         /// <remarks>todo:CommonLibのDefineに移動させるべきでは？</remarks>
         public string NoSearchResultWord { get; } = "対象語句がありません";
@@ -447,8 +449,7 @@ namespace SynonyMe.ViewModel
 
             // 必ず最初にMainWindowModelを取得すること
             // これにより、下流でSettingManagerのインスタンスが生成され、全設定情報が読み込まれるため
-            _model = Model.MainWindowModel.Model;
-            _model.Initialize(this); 
+            _model = new Model.MainWindowModel(this);
 
             //todo:並列処理可能では？
             // コマンド初期化処理
@@ -668,11 +669,6 @@ namespace SynonyMe.ViewModel
             if (DisplaySynonymGroups == null)
             {
                 Logger.Error(CLASS_NAME, "UpdateDisplaySynonymGroups", "DisplaySynonymGroups is null!");
-                return;
-            }
-            else if (DisplaySynonymGroups.Any() == false)
-            {
-                Logger.Info(CLASS_NAME, "UpdateDisplaySynonymGroups", "No DisplaySynonymGroups");
                 return;
             }
 

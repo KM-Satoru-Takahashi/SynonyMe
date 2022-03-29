@@ -20,13 +20,11 @@ namespace SynonyMe.Model
     /// <summary>
     /// todo:シングルトン化してViewModelでのModelのnullチェックをなくす
     /// </summary>
-    internal sealed class MainWindowModel
+    internal class MainWindowModel
     {
         #region field
 
         private const string CLASS_NAME = "MainWindowModel";
-
-        private static readonly MainWindowModel _model = new MainWindowModel();
 
         /// <summary>ViewModel</summary>
         private MainWindowVM _viewModel = null;
@@ -72,14 +70,6 @@ namespace SynonyMe.Model
         /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
         /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
         /// Options.ShowEndOfLine, ShowSpaces, ShowTabs, ShowBoxForControlCharacters
-
-        internal static MainWindowModel Model
-        {
-            get
-            {
-                return _model;
-            }
-        }
 
         /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
@@ -153,14 +143,14 @@ namespace SynonyMe.Model
 
         /// <summary>コンストラクタ</summary>
         /// <param name="viewModel">メンバに保持するVM</param>
-        private MainWindowModel()
-        {
-        }
-
-        internal void Initialize(MainWindowVM viewModel)
+        internal MainWindowModel(MainWindowVM viewModel)
         {
             _viewModel = viewModel;
+            Initialize();
+        }
 
+        private void Initialize()
+        {
             // ★必ず最初に取得すること->singleton生成に伴う設定読込のため
             _settingManager = SettingManager.GetSettingManager;
 
@@ -244,6 +234,9 @@ namespace SynonyMe.Model
 
             _viewModel.AvalonEditBackGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.WallPaperColor));
             _viewModel.NotifyPropertyChanged("AvalonEditBackGround");
+
+            _viewModel.AvalonEditForeGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.FontColor));
+            _viewModel.NotifyPropertyChanged("AvalonEditForeGround");
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)

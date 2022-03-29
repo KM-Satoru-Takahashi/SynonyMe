@@ -207,6 +207,7 @@ namespace SynonyMe.Model.Manager
                 generalSetting = new GeneralSetting()
                 {
                     FontColor = "#FF000000", // 黒
+                    WallPaperColor = "#FFFFFFFF", // 白
                     FontSize = 12.0,
                     MainFontName = "Meiryo",
                     SubFontName = "Consolas",

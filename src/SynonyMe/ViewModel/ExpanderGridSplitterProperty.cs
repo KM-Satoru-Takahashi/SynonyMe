@@ -253,6 +253,10 @@ namespace SynonyMe.ViewModel
                 // GridSplitterの移動をそのままにするのにGridSplitterがnullはあり得ない
                 throw new ArgumentException("Mode [explicit] requires [TargetGridSplitter]");
             }
+            else if (gridSplitter == null)
+            {
+                return;
+            }
 
             // Binding実行
             gridSplitter.SetBinding(UIElement.VisibilityProperty, new Binding(nameof(Expander.IsExpanded))
@@ -386,6 +390,10 @@ namespace SynonyMe.ViewModel
             if (mode == GridSnapMode.Explicit && gridSplitter == null)
             {
                 throw new ArgumentException("[Explicit] requires [TargetGridSplitter]");
+            }
+            else if(gridSplitter == null)
+            {
+                return;
             }
 
             gridSplitter.SetBinding(UIElement.VisibilityProperty, new Binding(nameof(Expander.IsExpanded))
