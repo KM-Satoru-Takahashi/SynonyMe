@@ -31,15 +31,15 @@ namespace SynonyMe.Model.Manager
 
         /// <summary>指定されたサブウィンドウの生成を行う</summary>
         /// <param name="subWindowName">対象のウィンドウ名</param>
-        internal static void OpenSubWindow(Define.SubWindowName subWindowName)
+        internal static void OpenSubWindow(SubWindowName subWindowName)
         {
             switch (subWindowName)
             {
-                case Define.SubWindowName.SynonymWindow:
+                case SubWindowName.SynonymWindow:
                     CreateSynonymWindow();
                     break;
 
-                case Define.SubWindowName.SettingWindow:
+                case SubWindowName.SettingWindow:
                     CreateSettingWindow();
                     break;
 
@@ -52,14 +52,15 @@ namespace SynonyMe.Model.Manager
 
         private static void CreateSettingWindow()
         {
-            if (_displaySubWindowList.Any(w => w.SubWindowName == Define.SubWindowName.SettingWindow))
+            if (_displaySubWindowList.Any(w => w.SubWindowName == SubWindowName.SettingWindow))
             {
                 // 既に開かれているなら何もせず戻る
+                Logger.Warn(CLASS_NAME, "CreateSettingWindow", "SettingWindow already opened.");
                 return;
             }
 
             SettingWindow settingWindow = new SettingWindow();
-            _displaySubWindowList.Add(new SubWindowData(settingWindow, Define.SubWindowName.SettingWindow));
+            _displaySubWindowList.Add(new SubWindowData(settingWindow, SubWindowName.SettingWindow));
 
             settingWindow.ShowDialog();
         }
@@ -67,21 +68,21 @@ namespace SynonyMe.Model.Manager
         /// <summary>類語登録ウィンドウを開く</summary>
         private static void CreateSynonymWindow()
         {
-            if (_displaySubWindowList.Any(w => w.SubWindowName == Define.SubWindowName.SynonymWindow))
+            if (_displaySubWindowList.Any(w => w.SubWindowName == SubWindowName.SynonymWindow))
             {
                 // 既に開かれているなら何もせず戻る
                 return;
             }
 
             SynonymWindow synonymWindow = new SynonymWindow();
-            _displaySubWindowList.Add(new SubWindowData(synonymWindow, Define.SubWindowName.SynonymWindow));
+            _displaySubWindowList.Add(new SubWindowData(synonymWindow, SubWindowName.SynonymWindow));
 
             synonymWindow.ShowDialog();
         }
 
         /// <summary>対象のウィンドウを閉じる</summary>
         /// <param name="targetWindow"></param>
-        internal static void CloseSubWindow(Define.SubWindowName targetWindow)
+        internal static void CloseSubWindow(SubWindowName targetWindow)
         {
             if (_displaySubWindowList.Any(w => w.SubWindowName == targetWindow) == false)
             {
@@ -100,7 +101,7 @@ namespace SynonyMe.Model.Manager
         /// <summary>表示中のサブWindowを取得する</summary>
         /// <param name="windowName"></param>
         /// <returns></returns>
-        internal static Window GetSubWindow(Define.SubWindowName windowName)
+        internal static Window GetSubWindow(SubWindowName windowName)
         {
             if (_displaySubWindowList == null || _displaySubWindowList.Any() == false)
             {
@@ -144,7 +145,7 @@ namespace SynonyMe.Model.Manager
         /// <summary>サブウィンドウを管理する構造体</summary>
         private struct SubWindowData
         {
-            internal SubWindowData(Window window, Define.SubWindowName subWindowName)
+            internal SubWindowData(Window window, SubWindowName subWindowName)
             {
                 Window = window;
                 SubWindowName = subWindowName;
@@ -154,7 +155,7 @@ namespace SynonyMe.Model.Manager
             internal Window Window { get; private set; }
 
             /// <summary>サブウィンドウ名</summary>
-            internal Define.SubWindowName SubWindowName { get; private set; }
+            internal SubWindowName SubWindowName { get; private set; }
         }
 
         #endregion

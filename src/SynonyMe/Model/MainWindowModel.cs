@@ -17,9 +17,8 @@ using System.Windows.Media;
 
 namespace SynonyMe.Model
 {
-    /// <summary>
-    /// todo:シングルトン化してViewModelでのModelのnullチェックをなくす
-    /// </summary>
+    /// <summary>メイン画面Model</summary>
+    /// <remarks>将来タブで複数文書を管理するようになる場合、対象文書:MainWindowVM:本クラスが1:1:1で結びつくようにすること</remarks>
     internal class MainWindowModel
     {
         #region field
@@ -473,7 +472,7 @@ namespace SynonyMe.Model
         /// <summary>類語ウィンドウを開く</summary>
         internal void OpenSynonymWindow()
         {
-            Manager.WindowManager.OpenSubWindow(CommonLibrary.Define.SubWindowName.SynonymWindow);
+            WindowManager.OpenSubWindow(CommonLibrary.SubWindowName.SynonymWindow);
         }
 
         /// <summary>TextEditorを使用して与えられたファイルパスから読み込んだ文字列を返す</summary>
@@ -617,7 +616,7 @@ namespace SynonyMe.Model
         /// <summary>設定ウィンドウを開く</summary>
         internal void OpenSettingsWindow()
         {
-            Manager.WindowManager.OpenSubWindow(CommonLibrary.Define.SubWindowName.SettingWindow);
+            WindowManager.OpenSubWindow(CommonLibrary.SubWindowName.SettingWindow);
         }
 
         /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>

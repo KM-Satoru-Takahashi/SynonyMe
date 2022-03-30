@@ -63,7 +63,7 @@ namespace SynonyMe.ViewModel
         #region property
 
         /// <summary>ウィンドウタイトル</summary>
-        public string MainWindowTitle { get; } = MessageLibrary.MainWindowTitle;
+        public string MainWindowTitle { get; } = TextDefine.MainWindowTitle;
 
         /// <summary>ツールバー部分の高さ(固定値)</summary>
         public int ToolbarHeight { get; } = 40;
@@ -71,29 +71,31 @@ namespace SynonyMe.ViewModel
         /// <summary>フッター部分の高さ(固定値)</summary>
         public int FooterHeight { get; } = 30;
 
+        public string SearchExpanderHeader { get; } = TextDefine.SearchExpanderHeader;
+
         /// <summary>検索ボタン表示文字列</summary>
-        public string SearchButtonText { get; } = MessageLibrary.SearchButtonText;
+        public string SearchButtonText { get; } = TextDefine.SearchButtonText;
 
         /// <summary>類語検索ボタン表示文字列</summary>
-        public string SearchSynonymText { get; } = MessageLibrary.SearchSynonymButtonText;
+        public string SearchSynonymText { get; } = TextDefine.SearchSynonymButtonText;
 
         /// <summary類語グループリストの類語名ヘッダ</summary>
-        public string SynonymGroupNameHeader { get; } = MessageLibrary.MainWindowSynonymGroupName;
+        public string SynonymGroupNameHeader { get; } = TextDefine.MainWindowSynonymGroupName;
 
         /// <summary>類語グループリストの最終更新日ヘッダ</summary>
-        public string SynonymGroupLastUpdateHeader { get; } = MessageLibrary.MainWindowSynonymGroupLastUpdate;
+        public string SynonymGroupLastUpdateHeader { get; } = TextDefine.MainWindowSynonymGroupLastUpdate;
 
         /// <summary>類語リストの類語名ヘッダ</summary>
-        public string SynonymWordHeader { get; } = MessageLibrary.MainWindowSynonymWordHeader;
+        public string SynonymWordHeader { get; } = TextDefine.MainWindowSynonymWordHeader;
 
         /// <summary>類語リストの連続使用(繰り返し)回数ヘッダ</summary>
-        public string SynonymWordRepeatingCountHeader { get; } = MessageLibrary.MainWindowSynonymWordRepeatCountHeader;
+        public string SynonymWordRepeatingCountHeader { get; } = TextDefine.MainWindowSynonymWordRepeatCountHeader;
 
         /// <summary>類語リストの合計使用回数ヘッダ</summary>
-        public string SynonymWordUsingCountHeader { get; } = MessageLibrary.MainWindowSynonymWordUsingCountHeader;
+        public string SynonymWordUsingCountHeader { get; } = TextDefine.MainWindowSynonymWordUsingCountHeader;
 
         /// <summary>類語リストの使用箇所ヘッダ</summary>
-        public string SynonymWordSectionHeader { get; } = MessageLibrary.MainWindowSynonymWordSectionHeader;
+        public string SynonymWordSectionHeader { get; } = TextDefine.MainWindowSynonymWordSectionHeader;
 
         /// <summary>ドラッグアンドドロップで文章を表示する領域</summary>
         public TextDocument TextDocument
@@ -179,6 +181,7 @@ namespace SynonyMe.ViewModel
             // MainWindowから変更されることはあり得ないので、ここにsetterはなくてよい
         }
 
+        /// <summary>メイン領域フォントサイズ</summary>
         public double FontSize
         {
             get
@@ -226,7 +229,7 @@ namespace SynonyMe.ViewModel
         public ObservableCollection<DisplaySynonymSearchResult> DisplaySynonymSearchResults { get; set; } = new ObservableCollection<DisplaySynonymSearchResult>();
 
         /// <summary>文字数表示の固定値「文字数」</summary>
-        public string WordCountText { get; } = MessageLibrary.WordCountText;
+        public string WordCountText { get; } = TextDefine.WordCountText;
 
         /// <summary>文字数表示箇所</summary>
         public string WordCount
@@ -247,6 +250,7 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>文字数表示状態</summary>
         public Visibility WordCountVisible
         {
             get
@@ -264,7 +268,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>行数表示の固定値「行数」</summary>
-        public string LineCountText { get; } = "行数：";
+        public string LineCountText { get; } = TextDefine.LineCountText;
 
         /// <summary>行数表示箇所</summary>
         public string LineCount
@@ -285,6 +289,8 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>行数表示状態</summary>
+        /// <remarks>テキスト編集領域上部</remarks>
         public Visibility LineCountVisible
         {
             get
@@ -301,6 +307,8 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>行番号表示有無</summary>
+        /// <remarks>テキスト編集領域左側</remarks>
         public bool CanShowNumberOfLines
         {
             get
@@ -326,7 +334,7 @@ namespace SynonyMe.ViewModel
         }
 
         /// <summary>編集済みテキスト（固定値）</summary>
-        public string EditedText { get; } = "編集済み";
+        public string EditedText { get; } = TextDefine.Modified;
 
         /// <summary>編集済みテキスト表示状態</summary>
         public Visibility EditedTextVisible
@@ -373,7 +381,7 @@ namespace SynonyMe.ViewModel
 
         /// <summary>検索結果がない場合に表示する文言</summary>
         /// <remarks>todo:CommonLibのDefineに移動させるべきでは？</remarks>
-        public string NoSearchResultWord { get; } = "対象語句がありません";
+        public string NoSearchResultWord { get; } = TextDefine.NoSearchResult;
 
         #region command
 
@@ -1197,29 +1205,9 @@ namespace SynonyMe.ViewModel
             return true;
         }
 
-        /// <summary>編集済み判定処理</summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        //private void OnIsModifiedChanged(object sender, EventArgs e)
-        //{
-        //    TextEditor textEditor = sender as TextEditor;
-        //    if (textEditor == null)
-        //    {
-        //        Logger.Fatal(CLASS_NAME, "OnIsModifiedChanged", "textEditor is null!");
-        //        return;
-        //    }
 
-
-        //    if (textEditor.IsModified)
-        //    {
-        //        EditedTextVisible = Visibility.Visible;
-        //    }
-        //    else
-        //    {
-        //        EditedTextVisible = Visibility.Hidden;
-        //    }
-        //}
-
+        /// <summary>バインディングした値の変更を通知します</summary>
+        /// <param name="propertyName"></param>
         internal void NotifyPropertyChanged(string propertyName)
         {
             if (string.IsNullOrEmpty(propertyName))

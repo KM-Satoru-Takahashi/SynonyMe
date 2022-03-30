@@ -101,7 +101,9 @@
     <Compile Include="CommonLibrary\Log\Logger.cs" />
     <Compile Include="CommonLibrary\MessageLibrary.cs" />
     <Compile Include="CommonLibrary\SystemUtility.cs" />
-    <Compile Include="Model\GeneralSettingModel.cs" />
+    <Compile Include="CommonLibrary\TextDefine.cs" />
+    <Compile Include="Model\Setting\AdvancedSettingModel.cs" />
+    <Compile Include="Model\Setting\GeneralSettingModel.cs" />
     <Compile Include="Model\Manager\DBManager.cs" />
     <Compile Include="Model\Manager\DialogManager.cs" />
     <Compile Include="Model\FileAccessor.cs" />
@@ -109,7 +111,8 @@
     <Compile Include="Model\Manager\SettingManager.cs" />
     <Compile Include="Model\Manager\SynonymManager.cs" />
     <Compile Include="Model\Searcher.cs" />
-    <Compile Include="Model\SettingWindowModel.cs" />
+    <Compile Include="Model\Setting\SearchAndSynonymSettingModel.cs" />
+    <Compile Include="Model\Setting\SettingWindowModel.cs" />
     <Compile Include="Model\SynonymWindowModel.cs" />
     <Compile Include="Model\Manager\WindowManager.cs" />
     <Compile Include="Settings\AdvancedSetting.cs" />

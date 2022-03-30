@@ -128,7 +128,7 @@
 
             <!--検索領域-->
             <Border BorderBrush="LightGray" BorderThickness="0,0,3,0" Grid.Column="0" Grid.Row="0"/>
-            <Expander Grid.Row="0" Grid.Column="0" ExpandDirection="Left" Padding="0,5,5,0" Header="検索"
+            <Expander Grid.Row="0" Grid.Column="0" ExpandDirection="Left" Padding="0,5,5,0" Header="{Binding SearchExpanderHeader}"
                       vm:ExpanderGridSplitterProperty.GridSnap="Auto"
                       vm:ExpanderGridSplitterProperty.TargetGridSplitter="{Binding ElementName=ExpanderGridSplitter}">
                 <Grid Grid.Row="0" Grid.Column="0">

@@ -39,7 +39,7 @@ namespace SynonyMe.Model
         internal void CloseSynonymWindow()
         {
             Logger.Info(CLASS_NAME, "CloseSyonnymWindow", "start");
-            Manager.WindowManager.CloseSubWindow(CommonLibrary.Define.SubWindowName.SynonymWindow);
+            Manager.WindowManager.CloseSubWindow(CommonLibrary.SubWindowName.SynonymWindow);
         }
 
         /// <summary>選択した類語グループリストに紐付く類語一覧を取得する</summary>

@@ -7,22 +7,18 @@ using System.Windows.Media;
 
 namespace SynonyMe.CommonLibrary
 {
-    /// <summary>/summary>
+    /// <summary>検索結果へのハイライト適用種別/summary>
     internal enum ApplyHighlightKind
     {
+        /// <summary>[検索]ボタン</summary>
         Search,
+
+        /// <summary>[類語検索]ボタン</summary>
         SynonymSearch
     }
 
-    /// <summary>AvalonEditの背景色定義</summary>
-    /// <remarks>BackGroundとするとHighlightManagerで紛らわしい
-    /// 将来は詳細に定義することも想定するが、現状は白黒の区別のみつける</remarks>
-    internal enum WallPaperColor
-    {
-        Black = 0,
-        White = 1
-    }
-
+    /// <summary>ログ出力レベル</summary>
+    /// <remarks>todo:log4net.xmlへの適用</remarks>
     public enum LogLevel
     {
         DEBUG = 1,
@@ -32,20 +28,48 @@ namespace SynonyMe.CommonLibrary
         FATAL = 5
     }
 
+    /// <summary>設定種別</summary>
+    /// <remarks>リセットや適用にも用いる</remarks>
     public enum SettingKind
     {
+        /// <summary>一般設定</summary>
         GeneralSetting,
+
+        /// <summary>検索・類語検索設定</summary>
         SearchAndSynonymSetting,
+
+        /// <summary>高度な設定</summary>
         AdvancedSetting,
+
+        /// <summary>全設定</summary>
+        /// <remarks>全設定リセット、設定画面のOKボタンなど</remarks>
         All
     }
 
+    /// <summary>検索結果・類語検索結果表示時の文字色ハイライト種別</summary>
     public enum FontColorKind
     {
+        /// <summary>文字が白っぽければ黒, そうでなければ黒を計算して判断する</summary>
         Auto,
+
+        /// <summary>常に黒</summary>
         Black,
+
+        /// <summary>常に白</summary>
         White,
+
+        /// <summary>ユーザ設定色</summary>
         UserSetting
+    }
+
+    /// <summary>各種サブウィンドウ名</summary>
+    internal enum SubWindowName
+    {
+        /// <summary>類語登録・編集・削除ウィンドウ</summary>
+        SynonymWindow,
+
+        /// <summary>設定ウィンドウ</summary>
+        SettingWindow
     }
 
     /// <summary>固定値やenum設定クラス</summary>
@@ -75,14 +99,14 @@ namespace SynonyMe.CommonLibrary
         /// <summary>テキストハイライト用の設定ファイル名</summary>
         internal const string XSHD_FILENAME = "work.xshd";
 
-
+        /// <summary>高度な設定[AdvancedSetting]で管理する設定ファイル名</summary>
         internal const string SETTING_FILENAME_ADVANCED = "AdvancedSetting.xml";
 
+        /// <summary>一般設定[GeneralSetting]で管理する設定ファイル名</summary>
         internal const string SETTING_FILENAME_GENERAL = "GeneralSetting.xml";
 
+        /// <summary>検索・類語検索設定[SearchAndSynonymSetting]で管理する設定ファイル名</summary>
         internal const string SETTING_FILENAME_SEARCH = "SearchAndSynonymSetting.xml";
-
-        internal const string FONTCOLOR_AUTO = "Auto";
 
         /// <summary>このexe名</summary>
         internal const string SYNONYME_EXENAME = "SynonyMe.exe";
@@ -91,16 +115,6 @@ namespace SynonyMe.CommonLibrary
         /// <remarks>OK：123, 9, 0098 NG:１２, 1a, 3.5, -92</remarks>
         internal const string REGEX_NUMBER_ONLY = @"^[0-9]+$";
 
-        /// <summary>各種サブウィンドウ名</summary>
-        internal enum SubWindowName
-        {
-            /// <summary>類語登録・編集・削除ウィンドウ</summary>
-            SynonymWindow,
-
-            /// <summary>設定ウィンドウ</summary>
-            SettingWindow
-        }
-
         /// <summary>GetWindowLongで使用するAppのインスタンスのハンドル値</summary>
         internal const int GWL_STYLE = -16;
 
@@ -108,6 +122,7 @@ namespace SynonyMe.CommonLibrary
         internal const int WS_SYSMENU = 0x80000;
 
         /// <summary>背景色候補となる色定義のデフォルト値</summary>
+        /// <remarks>todo:SettingManagerへ移管させる？</remarks>
         internal static readonly Color[] BACKGROUND_COLORS_DEFAULT = new Color[]
         {
             Colors.HotPink,
