@@ -15,6 +15,7 @@ namespace SynonyMe.Model.SettingWindow
         /// <summary>呼び出し元</summary>
         private SettingWindowModel _parent = null;
 
+        /// <summary>ログ出力用クラス名</summary>
         private const string CLASS_NAME = "GeneralSettingModel";
 
         /// <summary>コンストラクタ</summary>
@@ -23,7 +24,7 @@ namespace SynonyMe.Model.SettingWindow
         {
             if (model == null)
             {
-                //todo:error log
+                Logger.Fatal(CLASS_NAME, "Constructor", "model is null!");
                 return;
             }
 
@@ -58,6 +59,7 @@ namespace SynonyMe.Model.SettingWindow
             return setting as GeneralSetting;
         }
 
+        /// <summary>一般設定を適用します</summary>
         internal void ApplyGeneralSetting()
         {
 

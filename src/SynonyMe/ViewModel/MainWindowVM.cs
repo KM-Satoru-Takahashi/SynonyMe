@@ -32,9 +32,11 @@ namespace SynonyMe.ViewModel
         /// <summary>開いているファイル情報</summary>
         /// <remarks>将来、タブで同時に複数ファイルを開くことを考えてDictionaryで管理する</remarks>
         private Dictionary<int, string> _openingFiles = new Dictionary<int/*タブID*/, string/*ファイルパス*/>();
+        internal Dictionary<int, string> OpeningFiles { get { return _openingFiles; } }
 
         /// <summary>タブの並び替えとかもあるだろうが、とりあえずこうやって管理しておくことにする</summary>
         private int _tabId = 0;
+        internal int TabId { get { return _tabId; } }
 
         /// <summary>検索結果リストの表示状態</summary>
         private Visibility _searchResultVisibility = Visibility.Hidden;
@@ -43,10 +45,10 @@ namespace SynonyMe.ViewModel
         private Visibility _noSearchResultVisibility = Visibility.Hidden;
 
         /// <summary>文字数表示</summary>
-        private string _wordCount = null;
+        private string _wordCount = "0"; //todo:表示文章を終了→起動でも保持する場合の初期値
 
         /// <summary>行数表示</summary>
-        private string _lineCount = null;
+        private string _lineCount = "0";
 
         /// <summary>「編集済み」文字のVisibility</summary>
         private Visibility _editedTextVisible = Visibility.Hidden;
@@ -120,19 +122,21 @@ namespace SynonyMe.ViewModel
             }
         }
 
+        /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
+        private bool _isModified = false;
         /// <summary>[編集済み]文言表示有無判断</summary>
         public bool IsModified
         {
             get
             {
-                return _model.IsModified;
+                return _isModified;
             }
             set
             {
-                if (_model != null && value != _model.IsModified)
+                if (value != _isModified)
                 {
-                    _model.IsModified = value;
-                    if (_model.IsModified)
+                    _isModified = value;
+                    if (_isModified)
                     {
                         EditedTextVisible = Visibility.Visible;
                     }
@@ -472,23 +476,6 @@ namespace SynonyMe.ViewModel
             // 設定値を画面に適用する
             //todo:Model側をメインに
             ApplySettings();
-            // IsModifiedは通知タイミングがTextChangedより遅れるので、DependencyPropertyに登録しないと一歩遅れた処理になってしまう
-            // 具体的には、最初の1回目のキーダウン（文字入力）を取得できない
-            // DependencyPropertyDescriptorは強参照のため、参照を解除できず、繰り返し行うとメモリリークにつながる
-            // 現状、Initializeは起動時にしか呼ばれず、動的にメインの文章表示領域が削除・再表示されることは現状ないので、一旦この実装で機能を満たす
-            //var descripter = DependencyPropertyDescriptor.FromProperty(TextEditor.IsModifiedProperty, typeof(TextEditor));
-            //if (descripter != null)
-            //{
-            //    if (_model != null && _model.TextDocument != null)
-            //    {
-            //        descripter.RemoveValueChanged(_model.TextDocument, OnIsModifiedChanged);
-            //        descripter.AddValueChanged(_model.TextDocument, OnIsModifiedChanged);
-            //    }
-            //    else
-            //    {
-            //        Logger.Fatal(CLASS_NAME, "Initialize", "_model or TextEditor is null!");
-            //    }
-            //}
         }
 
         /// <summary>各種コマンドを初期化します</summary>
@@ -699,6 +686,7 @@ namespace SynonyMe.ViewModel
                 }
             }
 
+            // 追加された類語グループがあれば、表示に追加する
             foreach (SynonymGroupEntity entity in entities)
             {
                 // GroupIDはuniqueなので、重複していなければ追加する
@@ -785,20 +773,11 @@ namespace SynonyMe.ViewModel
         {
             if (_model == null)
             {
-                // ドラッグオーバー時に異常があった場合、握りつぶしてログ出しすると負荷がかかる
-                // この後、他の処理が正常に進むことはあり得ないので、落とすことを想定してthrow+ログ出しする
                 Logger.Fatal(CLASS_NAME, "DragOver", "_model is null!");
-                throw new Exception();
+                return;
             }
 
-            if (_model.CanDrop(dropInfo))
-            {
-                dropInfo.Effects = DragDropEffects.Copy;
-            }
-            else
-            {
-                dropInfo.Effects = DragDropEffects.None;
-            }
+            _model.ChangeDragOverMouseEffect(dropInfo);
         }
 
         /// <summary>ドロップされたテキストファイルを画面に表示する</summary>
@@ -812,27 +791,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            if (_model.CanDrop(dropInfo) == false)
-            {
-                Logger.Fatal(CLASS_NAME, "Drop", "CanDrop return false");
-                return;
-            }
-
-            // todo:現在は強制的に破棄している
-            _openingFiles.Clear();
-
-            // 将来的にはタブを分離させる必要があるので、そのための仮処置
-            List<string> displayTargetFilePaths = _model.GetDisplayTextFilePath(dropInfo);
-            foreach (string filePath in displayTargetFilePaths)
-            {
-                _openingFiles.Add(_tabId, filePath);
-                //++_tabId;
-            }
-
-            // 現状、表示可能テキストは1つだけなので、0番目を使用する
-            // 対象の全ファイルを開き、内部で保持する(現状、1つのファイルしか開けないが引数は複数に対応させるだけさせておく)
-            _model.SetTextDocuments(_openingFiles);
-
+            _model.Drop(dropInfo);
         }
 
         #endregion

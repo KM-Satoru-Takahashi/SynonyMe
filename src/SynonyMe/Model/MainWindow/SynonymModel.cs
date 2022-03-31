@@ -8,5 +8,12 @@ namespace SynonyMe.Model.MainWindow
 {
     internal class SynonymModel
     {
+        private MainWindowModel _parent;
+
+        public SynonymModel(MainWindowModel parent)
+        {
+            _parent = parent;
+        }
+
     }
 }

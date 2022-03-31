@@ -14,6 +14,7 @@ using SynonyMe.Model.Manager;
 using System.Windows.Forms;
 using ICSharpCode.AvalonEdit.Document;
 using System.Windows.Media;
+using SynonyMe.Model.MainWindow;
 
 namespace SynonyMe.Model
 {
@@ -27,13 +28,28 @@ namespace SynonyMe.Model
 
         /// <summary>ViewModel</summary>
         private MainWindowVM _viewModel = null;
+        internal MainWindowVM ViewModel { get { return _viewModel; } }
 
         /// <summary>上書き保存を強制的に名前をつけて保存にするフラグ</summary>
         private bool _forceSaveAs = true;
+        internal bool ForceSaveAs { get { return _forceSaveAs; } set { _forceSaveAs = value; } }
+
+        //todo:複数タブに対応する場合、検索やツールバーまわりのModelクラスはシングルトン化して不要なインスタンスの生成を防ぐ
+        /// <summary>AvalonEdit領域を司るModel</summary>
+        private AvalonEditModel _avalonEditModel = null;
+
+        /// <summary>画面左側の検索ペインを管理するModel</summary>
+        private SearchModel _searchModel = null;
+
+        /// <summary>画面右側の類語ペインを管理するModel</summary>
+        private SynonymModel _synonymModel = null;
+
+        /// <summary>画面上部のツールバーを管理するModel</summary>
+        private ToolbarModel _toolbarModel = null;
 
         /// <summary>本プロセスで処理対象となるファイル拡張子一覧</summary>
         /// <remarks>ここに含まれない拡張子のファイルは読み込み時に弾かれる</remarks>
-        private static readonly string[] PROCESS_TARGET_FILE_EXTENSIONS = new string[]
+        internal readonly string[] PROCESS_TARGET_FILE_EXTENSIONS = new string[]
         {
             ".txt"
         };
@@ -45,9 +61,6 @@ namespace SynonyMe.Model
         #endregion
 
         #region property
-
-        /// <summary>true:表示中のテキストが編集済み, false:未編集または保存済み</summary>
-        internal bool IsModified { get; set; } = false;
 
         internal bool ShowLineCount { get; private set; }
 
@@ -64,11 +77,6 @@ namespace SynonyMe.Model
         internal string FontFamily { get; private set; }
 
         internal double FontSize { get; private set; }
-
-        /// <summary>文章1つにつき1つ割り当てられるAvalonEditインスタンス※Textはここからではなく、DisplayTextDocumentから取ること※</summary>
-        /// <remarks>複数文章を表示する改修を行う場合、Dictionaryで文章とTextEditorを紐付けて管理する必要あり</remarks>
-        /// todo:改行や編集記号等の表示もMainWindow側のTextEditorで行える、以下のプロパティ
-        /// Options.ShowEndOfLine, ShowSpaces, ShowTabs, ShowBoxForControlCharacters
 
         /// <summary>表示中のテキスト文書 </summary>
         /// <remarks>基本的にnullはありえない想定なので、nullだったら都度ログ出しして良いと思う</remarks>
@@ -146,6 +154,7 @@ namespace SynonyMe.Model
         {
             _viewModel = viewModel;
             Initialize();
+            InitializeInternalModel();
         }
 
         private void Initialize()
@@ -156,7 +165,16 @@ namespace SynonyMe.Model
             _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);//★
         }
 
+        /// <summary>MainWindowModelの機能をさらに細分化して管理しているModelクラスを初期化します</summary>
+        private void InitializeInternalModel()
+        {
+            _avalonEditModel = new AvalonEditModel(this);
+            _searchModel = new SearchModel(this);
+            _synonymModel = new SynonymModel(this);
+            _toolbarModel = new ToolbarModel(this);
+        }
 
+        /// <summary>SynonyMeで管理している全設定情報を適用します</summary>
         internal void ApplySettings()
         {
             ApplyGeneralSetting();
@@ -164,7 +182,7 @@ namespace SynonyMe.Model
             ApplyAdvancedSetting();
         }
 
-
+        /// <summary>一般設定情報を適用します</summary>
         private void ApplyGeneralSetting()
         {
             if (_settingManager == null)
@@ -176,6 +194,7 @@ namespace SynonyMe.Model
             UpdateGeneralSetting(_settingManager.GetSetting(typeof(Settings.GeneralSetting)) as Settings.GeneralSetting);
         }
 
+        /// <summary>検索・類語検索設定を適用します</summary>
         private void ApplySearchAndSynonymSetting()
         {
             if (_settingManager == null)
@@ -187,6 +206,7 @@ namespace SynonyMe.Model
             UpdateSearchAndSynonymSetting(_settingManager.GetSetting(typeof(Settings.SearchAndSynonymSetting)) as Settings.SearchAndSynonymSetting);
         }
 
+        /// <summary>高度な設定を適用します</summary>
         private void ApplyAdvancedSetting()
         {
             if (_settingManager == null)
@@ -198,6 +218,8 @@ namespace SynonyMe.Model
             UpdateAdvancedSetting(_settingManager.GetSetting(typeof(Settings.AdvancedSetting)) as Settings.AdvancedSetting);
         }
 
+        /// <summary>一般設定を要求された設定情報で更新します</summary>
+        /// <param name="setting"></param>
         internal void UpdateGeneralSetting(Settings.GeneralSetting setting)
         {
             if (setting == null)
@@ -303,79 +325,16 @@ namespace SynonyMe.Model
 
         /// <summary>ドラッグオーバー中のファイルがドロップ可能かを調べる</summary>
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
-        internal bool CanDrop(IDropInfo dropInfo)
+        internal void ChangeDragOverMouseEffect(IDropInfo dropInfo)
         {
-            List<string> dragOverFilePathList = new List<string>();
-
-            if (ConvertDropInfoToPathList(dropInfo, out dragOverFilePathList) == false)
-            {
-                Logger.Error(CLASS_NAME, "CanDrop", "ConvertDropInfoToPathList return false!");
-                return false;
-            }
-
-            if (dragOverFilePathList == null || dragOverFilePathList.Any() == false)
-            {
-                Logger.Fatal(CLASS_NAME, "CanDrop", "dragOverFilePathList is invalid!");
-                return false;
-            }
-
-            foreach (string filePath in dragOverFilePathList)
-            {
-                // 1つでも対象外のファイルがあれば弾く
-                if (IsTargetFile(filePath) == false)
-                {
-                    Logger.Error(CLASS_NAME, "CanDrop", $"there is not target file. file name is {filePath}");
-                    return false;
-                }
-            }
-
-            return true;
+            _avalonEditModel.ChangeDragOverMouseEffect(dropInfo);
         }
 
-        /// <summary>画面表示テキストを取得する</summary>
-        /// <param name="dropInfo">ドロップされたファイル</param>
-        /// <returns>画面表示テキスト情報</returns>
-        internal List<string> GetDisplayText(IDropInfo dropInfo)
+        /// <summary>ドロップされたファイルの保持と展開処理を行います</summary>
+        /// <param name="dropInfo"></param>
+        internal void Drop(IDropInfo dropInfo)
         {
-            if (dropInfo == null)
-            {
-                Logger.Fatal(CLASS_NAME, "GetDisplayText", "dropInfo is null!");
-                return null;
-            }
-
-            List<string> filePathList = new List<string>();
-            if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
-            {
-                Logger.Fatal(CLASS_NAME, "GetDisplayText", "ConvertDropInfoToPathList return false!");
-                return null;
-            }
-
-            // 現状、表示できるファイルは1つだけなので先頭のものを使用
-            // filePathListのnull/AnyチェックはConbertDropInfoToPathList内で行っている
-            return GetTextFromFilePath(filePathList);
-        }
-
-        /// <summary>表示対象ファイルのパス(絶対パス)を取得する</summary>
-        /// <param name="dropInfo">ドロップされたファイル情報</param>
-        /// <returns>対象ファイルの絶対パス</returns>
-        internal List<string> GetDisplayTextFilePath(IDropInfo dropInfo)
-        {
-            if (dropInfo == null)
-            {
-                Logger.Fatal(CLASS_NAME, "GetDisplayTextFilePath", "dropInfo is null!");
-                return null;
-            }
-
-            List<string> filePathList = new List<string>();
-            if (ConvertDropInfoToPathList(dropInfo, out filePathList) == false)
-            {
-                Logger.Fatal(CLASS_NAME, "GetDisplayTextInfo", "ConvertDropInfoToPathList return false!");
-                return null;
-            }
-
-            // 現状、表示できるファイルは1つだけなので先頭のものを使用
-            // filePathListのnull/AnyチェックはConbertDropInfoToPathList内で行っている
-            return filePathList;
+            _avalonEditModel.Drop(dropInfo);
         }
 
         /// <summary>渡されたファイル情報に基づいて保存処理を実行する</summary>
@@ -421,7 +380,7 @@ namespace SynonyMe.Model
             }
 
             // AvalonEditの編集済みフラグをOffにする
-            IsModified = false;
+            _viewModel.IsModified = false;
 
             return true;
         }
@@ -462,7 +421,7 @@ namespace SynonyMe.Model
             DisplayTextFilePath = saveFilePath;
 
             // AvalonEditの編集済みフラグをOffにする
-            IsModified = false;
+            _viewModel.IsModified = false;
 
             // 名前をつけて保存フラグをOffにする
             _forceSaveAs = false;
@@ -473,40 +432,6 @@ namespace SynonyMe.Model
         internal void OpenSynonymWindow()
         {
             WindowManager.OpenSubWindow(CommonLibrary.SubWindowName.SynonymWindow);
-        }
-
-        /// <summary>TextEditorを使用して与えられたファイルパスから読み込んだ文字列を返す</summary>
-        /// <param name="filePath">読み込み対象のファイルパス</param>
-        /// <returns>読み込んだファイルの全テキスト</returns>
-        private List<string> GetTextFromFilePath(List<string> filePathList)
-        {
-            if (filePathList == null || filePathList.Any() == false)
-            {
-                Logger.Fatal(CLASS_NAME, "GetTextFromFilePath", "filePathList is null or empty!");
-                return null;
-            }
-
-            List<string> textList = new List<string>();
-            foreach (string filePath in filePathList)
-            {
-                if (string.IsNullOrEmpty(filePath))
-                {
-                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", "filePath is null or empty!");
-                    continue;
-                }
-
-                string text = null;
-                if (Load(filePath, out text))
-                {
-                    textList.Add(text);
-                }
-                else
-                {
-                    Logger.Error(CLASS_NAME, "GetTextFromFilePath", $"Load failed! filePath is {filePath}");
-                }
-            }
-
-            return textList;
         }
 
         /// <summary>渡されたファイルパスからテキストファイルを読み込む</summary>
@@ -540,70 +465,6 @@ namespace SynonyMe.Model
             return true;
         }
 
-        /// <summary>DropInfoをファイルパスのリストに変換する</summary>
-        /// <param name="dropInfo">変換元ファイル</param>
-        /// <param name="filePathList">変換後のファイルパス(絶対パス)リスト</param>
-        /// <returns>true:成功, false:失敗/異常</returns>
-        private bool ConvertDropInfoToPathList(IDropInfo dropInfo, out List<string> filePathList)
-        {
-            filePathList = new List<string>();
-
-            if (dropInfo == null)
-            {
-                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dropInfo is null!");
-                return false;
-            }
-
-            System.Windows.DataObject dragOverFiles = (System.Windows.DataObject)dropInfo.Data;
-            if (dragOverFiles == null)
-            {
-                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFiles are null!");
-                return false;
-            }
-
-            System.Collections.Specialized.StringCollection dragOverFileList = dragOverFiles.GetFileDropList();
-            if (dragOverFileList == null || dragOverFileList.Count < 1)
-            {
-                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "dragOverFileList is invalid!");
-                return false;
-            }
-
-            filePathList = dragOverFileList.Cast<string>().ToList();
-            if (filePathList == null || filePathList.Any() == false)
-            {
-                Logger.Fatal(CLASS_NAME, "ConvertDropInfoToPathList", "filePathList is invalid!");
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>渡されたファイルパスが処理対象のファイルかどうかを判定する</summary>
-        /// <param name="filePath">チェック対象ファイルパス</param>
-        /// <returns>true:処理対象のファイル, false:それ以外のファイル</returns>
-        /// <remarks>ファイルパスは拡張子をチェックするので、絶対・相対いずれも可</remarks>
-        private bool IsTargetFile(string filePath)
-        {
-            // CanDropで高頻度呼ばれるため、基本的にログを出さない
-
-            if (string.IsNullOrEmpty(filePath))
-            {
-                Logger.Fatal(CLASS_NAME, "IsTargetFile", "filePath is null or empty!");
-                return false;
-            }
-
-            string extension = Path.GetExtension(filePath);
-
-            if (PROCESS_TARGET_FILE_EXTENSIONS.Contains(extension))
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
         /// <summary>検索処理を実施する</summary>
         /// <param name="searchWord">検索語句</param>
         /// <param name="targetText">検索対象の文章</param>
@@ -623,7 +484,7 @@ namespace SynonyMe.Model
         internal void OpenFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
-            if (IsModified)
+            if (_viewModel.IsModified)
             {
                 // 保存されていなければ、Ok/Cancelダイアログを出して確認する
                 DialogResult dialogResult = DialogResult.Cancel;
@@ -678,7 +539,7 @@ namespace SynonyMe.Model
             TextDocument.Text = loadText;
 
             // 編集済みフラグを下げる
-            IsModified = false;
+            _viewModel.IsModified = false;
             _forceSaveAs = false;
         }
 
@@ -687,7 +548,7 @@ namespace SynonyMe.Model
         internal bool CreateNewFile()
         {
             // 現在表示中のテキストが編集済みか否かを判定する
-            if (IsModified)
+            if (_viewModel.IsModified)
             {
                 // 保存されていなければ、Yes/Noダイアログを出して確認する
                 DialogResult dialogResult = DialogResult.Cancel;
@@ -730,7 +591,7 @@ namespace SynonyMe.Model
             DisplayTextFilePath = saveFilePath;
 
             // 編集済みフラグを下げる
-            IsModified = false;
+            _viewModel.IsModified = false;
 
             return true;
         }
@@ -763,21 +624,6 @@ namespace SynonyMe.Model
             }
 
             return Searcher.GetSearcher.SynonymSearch(targetSynonyms, targetText, SearchResultMargin, SearchResultCount);
-        }
-
-        /// <summary>渡された全類語を対象の文章内から検索する</summary>
-        /// <param name="targetSynonymWords">検索対象の全類語</param>
-        /// <param name="targetText">検索先の文章</param>
-        /// <returns>正常時：検索結果、異常時：null</returns>
-        private List<MainWindowVM.DisplaySynonymSearchResult> GetAllSynonymSearchResult(MainWindowVM.DisplaySynonymWord[] targetSynonymWords, string targetText)
-        {
-            if (_viewModel == null)
-            {
-                Logger.Fatal(CLASS_NAME, "GetAllSynonymSearchResult", "_viewModel is null!");
-                return null;
-            }
-
-            return Searcher.GetSearcher.GetAllSynonymSearchResult(targetSynonymWords, targetText, SearchResultMargin, SearchResultCount);
         }
 
         /// <summary>表示中のテキストと、ハイライト表示情報を破棄します</summary>
@@ -833,27 +679,6 @@ namespace SynonyMe.Model
             return true;
         }
 
-        /// <summary>依頼された全ファイルをTextEditorで管理させる</summary>
-        /// <param name="openingFiles"></param>
-        internal void SetTextDocuments(Dictionary<int, string> openingFiles)
-        {
-            if (openingFiles == null)
-            {
-                Logger.Error(CLASS_NAME, "SetTextDocuments", "openingFiles are null or empty!");
-                return;
-            }
-
-            DisplayTextFilePath = openingFiles[0];
-            string text;
-            Load(DisplayTextFilePath, out text);
-            TextDocument.Text = text;
-
-            // ドロップ直後に「編集済み」が出るのを抑制する
-            _viewModel.IsModified = false;//todo:check null
-
-            // Ctrl + Sで名前をつけて保存にしなくて良くする
-            _forceSaveAs = false;
-        }
 
         #endregion
     }

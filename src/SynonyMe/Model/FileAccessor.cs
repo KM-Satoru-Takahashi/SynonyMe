@@ -77,6 +77,35 @@ namespace SynonyMe.Model
             return true;
         }
 
+        /// <summary>対象のテキストファイルを読み込みます</summary>
+        /// <param name="targetFilePath"></param>
+        /// <returns></returns>
+        internal string LoadTextFile(string targetFilePath)
+        {
+            // todo:StreamReader.ReadToEndを使用した場合とどちらが早い・安定するかを確認
+            // 現状、エンコーディングを自動で判別してくれるのでAvalonEditを用いる
+            if (string.IsNullOrEmpty(targetFilePath))
+            {
+                Logger.Error(CLASS_NAME, "LoadTextFile", "filePath is null or empty!");
+                return string.Empty;
+            }
+
+            try
+            {
+                //todo:FileStreamで素直に読み込む？
+                //textEditorが残って悪さしていないことを確認すること
+                ICSharpCode.AvalonEdit.TextEditor textEditor = new ICSharpCode.AvalonEdit.TextEditor();
+                textEditor.Load(targetFilePath);
+                return textEditor.Text;
+            }
+            catch (Exception e)
+            {
+                Logger.Fatal(CLASS_NAME, "LoadTextFile", e.ToString());
+                return string.Empty;
+            }
+        }
+
+
         /// <summary>対象の設定ファイルを保存します</summary>
         /// <param name="fileName">保存対象ファイル名（パスではない）</param>
         /// <param name="target">対象オブジェクト</param>
