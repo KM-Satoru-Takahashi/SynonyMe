@@ -22,7 +22,7 @@ namespace SynonyMe.ViewModel
 
         private const string CLASS_NAME = "SettingWindowVM";
 
-        private Model.Setting.SettingWindowModel _model = null;
+        private Model.SettingWindowModel _model = null;
 
         #endregion
 
@@ -841,7 +841,7 @@ namespace SynonyMe.ViewModel
         /// <summary>初期化処理</summary>
         private void Initialize()
         {
-            _model = new Model.Setting.SettingWindowModel(this);
+            _model = new Model.SettingWindowModel(this);
 
             InitializeCommands();
             GetSystemFontName(); // ApplySettingの前に置くとFont一覧がnullで正常に反映されないので気をつけること

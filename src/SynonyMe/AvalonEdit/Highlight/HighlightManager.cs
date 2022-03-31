@@ -532,7 +532,7 @@ namespace SynonyMe.AvalonEdit.Highlight
         {
             Logger.Info(CLASS_NAME, "SetXshdFile", "start");
 
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+            View.MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
 
             ICSharpCode.AvalonEdit.TextEditor target = mw.TextEditor;
             if (target == null)

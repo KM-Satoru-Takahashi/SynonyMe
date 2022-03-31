@@ -809,7 +809,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            MainWindow mw = WindowManager.GetMainWindow();
+            View.MainWindow mw = WindowManager.GetMainWindow();
             if (mw == null)
             {
                 Logger.Fatal(CLASS_NAME, "UpdateCaretOffset", "mw is null!");

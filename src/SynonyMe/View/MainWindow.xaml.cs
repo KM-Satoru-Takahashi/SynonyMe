@@ -18,7 +18,7 @@ using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Highlighting.Xshd;
 
-namespace SynonyMe
+namespace SynonyMe.View
 {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック

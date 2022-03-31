@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using SynonyMe.Model.Manager;
 using SynonyMe.CommonLibrary.Log;
 using SynonyMe.CommonLibrary;
+using SynonyMe.Model.SettingWindow;
 
-namespace SynonyMe.Model.Setting
+namespace SynonyMe.Model
 {
     /// <summary>設定ウィンドウの内部処理を担います</summary>
     internal class SettingWindowModel

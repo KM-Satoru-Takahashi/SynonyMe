@@ -531,6 +531,7 @@ namespace SynonyMe.ViewModel
             _model.UpdateSynonymEvent += UpdateSynonymSearchAreaEvent;
         }
 
+        /// <summary>設定更新時のイベント登録を行います</summary>
         private void InitializeUpdateSettingEvents()
         {
             // todo

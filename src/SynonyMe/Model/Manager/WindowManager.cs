@@ -59,7 +59,7 @@ namespace SynonyMe.Model.Manager
                 return;
             }
 
-            SettingWindow settingWindow = new SettingWindow();
+            View.SettingWindow settingWindow = new View.SettingWindow();
             _displaySubWindowList.Add(new SubWindowData(settingWindow, SubWindowName.SettingWindow));
 
             settingWindow.ShowDialog();
@@ -115,10 +115,10 @@ namespace SynonyMe.Model.Manager
         /// MainWindowを取得する
         /// </summary>
         /// <returns>可能ならGetSubWindowと統合させるべき……</returns>
-        internal static MainWindow GetMainWindow()
+        internal static View.MainWindow GetMainWindow()
         {
-            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is MainWindow);
-            MainWindow mw = view as MainWindow;
+            Window view = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w is View.MainWindow);
+           View.MainWindow mw = view as View.MainWindow;
             if (mw == null)
             {
                 Logger.Fatal(CLASS_NAME, "GetMainWindow", "MainWindow is null");

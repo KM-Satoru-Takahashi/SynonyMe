@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SynonyMe.Model.Setting
+namespace SynonyMe.Model.SettingWindow
 {
     /// <summary>一般設定[GeneralSetting]に関する情報と操作を有します</summary>
     internal class GeneralSettingModel

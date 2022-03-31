@@ -185,7 +185,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
+            View.MainWindow mw = Model.Manager.WindowManager.GetMainWindow();
             if (mw == null)
             {
                 return;
