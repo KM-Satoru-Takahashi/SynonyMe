@@ -394,32 +394,32 @@ namespace SynonyMe.ViewModel
         /// <summary>新規作成ボタン</summary>
         public ICommand Command_CreateNewFile { get; private set; } = null;
 
-        public string ToolTip_CreateNewFile { get; } = "新規作成\nCtrl+N";
+        public string ToolTip_CreateNewFile { get; } = TextDefine.ToolTip_CreateNewFile;
 
         /// <summary>ファイル開くボタン</summary>
         public ICommand Command_OpenFile { get; private set; } = null;
 
-        public string ToolTip_OpenFile { get; } = "開く\nCtrl+O";
+        public string ToolTip_OpenFile { get; } = TextDefine.ToolTip_OpenFile;
 
         /// <summary>保存ボタン</summary>
         public ICommand Command_Save { get; private set; } = null;
 
-        public string ToolTip_Save { get; } = "上書き保存\nCtrl+S";
+        public string ToolTip_Save { get; } = TextDefine.ToolTip_Save;
 
         /// <summary>名前をつけて保存ボタン</summary>
         public ICommand Command_SaveAs { get; private set; } = null;
 
-        public string ToolTip_SaveAs { get; } = "名前をつけて保存\nShift+Ctrl+S";
+        public string ToolTip_SaveAs { get; } = TextDefine.ToolTip_SaveAs;
 
         /// <summary>類語コマンド</summary>
         public ICommand Command_OpenSynonymWindow { get; private set; } = null;
 
-        public string ToolTip_OpenSynonymWindow { get; } = "類語設定\nAlt+S";
+        public string ToolTip_OpenSynonymWindow { get; } = TextDefine.ToolTip_OpenSynonymWindow;
 
         /// <summary>設定画面コマンド</summary>
         public ICommand Command_OpenSettingsWindow { get; private set; } = null;
 
-        public string ToolTip_OpenSettingsWindow { get; } = "設定\nAlt+O";
+        public string ToolTip_OpenSettingsWindow { get; } = TextDefine.ToolTip_OpenSettingsWindow;
 
         #endregion
 
@@ -872,7 +872,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            _model.Save(TextDocument.Text);
+            _model.Save();
         }
 
         /// <summary>類語ウィンドウを開く</summary>

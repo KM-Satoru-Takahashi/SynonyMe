@@ -26,6 +26,28 @@ namespace SynonyMe.CommonLibrary
 
         #endregion
 
+        #region ToolTip
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_CreateNewFile = "新規作成\nCtrl+N";
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_OpenFile = "開く\nCtrl+O";
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_Save = "上書き保存\nCtrl+S";
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_SaveAs = "名前をつけて保存\nShift+Ctrl+S";
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_OpenSynonymWindow = "類語設定\nAlt+S";
+
+        /// <summary>ツールバー「新規作成」ボタンのマウスオーバー文章 </summary>
+        internal const string ToolTip_OpenSettingsWindow = "設定\nAlt+O";
+
+        #endregion
+
         #region list header
 
         #region MainWindow

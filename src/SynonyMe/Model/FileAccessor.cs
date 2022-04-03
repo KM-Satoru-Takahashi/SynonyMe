@@ -14,7 +14,7 @@ namespace SynonyMe.Model
     /// <remarks>シングルトン</remarks>
     internal class FileAccessor
     {
-        private const string CLASS_NAME = "FileAccess";
+        private const string CLASS_NAME = "FileAccessor";
 
         /// <summary></summary>
         /// <remarks>マルチスレッドアクセスに対応させるため、Lazyで初期化する</remarks>
@@ -53,7 +53,7 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (File.Exists(targetText))
+            if (File.Exists(targetFilePath))
             {
                 // このままでは保存できないので一旦呼び出し元に処理を戻す
                 // todo
@@ -93,7 +93,7 @@ namespace SynonyMe.Model
             try
             {
                 //todo:FileStreamで素直に読み込む？
-                //textEditorが残って悪さしていないことを確認すること
+                //textEditorが残って悪さしていないことを確認すること(IDisposableは継承されていないため)
                 ICSharpCode.AvalonEdit.TextEditor textEditor = new ICSharpCode.AvalonEdit.TextEditor();
                 textEditor.Load(targetFilePath);
                 return textEditor.Text;
@@ -104,7 +104,6 @@ namespace SynonyMe.Model
                 return string.Empty;
             }
         }
-
 
         /// <summary>対象の設定ファイルを保存します</summary>
         /// <param name="fileName">保存対象ファイル名（パスではない）</param>
@@ -142,9 +141,9 @@ namespace SynonyMe.Model
                 {
                     serializer.Serialize(writer, target);
                 }
-                catch
+                catch (Exception e)
                 {
-                    Logger.Fatal(CLASS_NAME, "SaveSettingFile", $"Serialize failed. targetType:[{targetType}], fileName:[{fileName}]");
+                    Logger.Fatal(CLASS_NAME, "SaveSettingFile", $"Serialize failed. targetType:[{targetType}], fileName:[{fileName}], exception:[{e.ToString()}]");
                     return false;
                 }
             }

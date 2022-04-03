@@ -176,8 +176,6 @@ namespace SynonyMe.Model.MainWindow
         }
 
 
-
-
         /// <summary>DropInfoをファイルパスのリストに変換する</summary>
         /// <param name="dropInfo">変換元ファイル</param>
         /// <param name="filePathList">変換後のファイルパス(絶対パス)リスト</param>

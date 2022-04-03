@@ -342,128 +342,49 @@ namespace SynonyMe.Model
         /// <param name="filePath">保存対象ファイルパス</param>
         /// <param name="displayText">保存したいテキスト情報</param>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool Save(string displayText)
+        internal void Save()
         {
-            Logger.Info(CLASS_NAME, "Save", $"start. filePath:[{(string.IsNullOrEmpty(DisplayTextFilePath) ? "CreateNewFile!" : DisplayTextFilePath)}]");
-
-            // 名前をつけて保存を実行する
-            if (_forceSaveAs)
+            if (_toolbarModel == null)
             {
-                return SaveAs(displayText);
+                Logger.Fatal(CLASS_NAME, "Save", "_toolbarModel is null!");
+                return;
             }
 
-            if (string.IsNullOrEmpty(DisplayTextFilePath) ||
-               displayText == null) // displayTextは空文字の場合emptyはあり得る
+            if (_toolbarModel.Save())
             {
-                Logger.Fatal(CLASS_NAME, "Save", "filePath or displayText is null or empty!");
-                return false;
+                Logger.Info(CLASS_NAME, "Save", "Save successed!");
+            }
+            else
+            {
+                Logger.Error(CLASS_NAME, "Save", "Save failed!");
             }
 
-            if (TextDocument == null)
-            {
-                Logger.Fatal(CLASS_NAME, "Save", "DisplayTextDocument is null!");
-                return false;
-            }
-
-            try
-            {
-                TextDocument.Text = displayText;
-                TextEditor textEditor = new TextEditor
-                {
-                    Document = TextDocument
-                };
-                textEditor.Save(DisplayTextFilePath);
-            }
-            catch (Exception e)
-            {
-                Logger.Fatal(CLASS_NAME, "Save", e.ToString());
-                return false;
-            }
-
-            // AvalonEditの編集済みフラグをOffにする
-            _viewModel.IsModified = false;
-
-            return true;
         }
 
         /// <summary>名前をつけて保存</summary>
         /// <returns>true:成功, false:失敗</returns>
-        internal bool SaveAs()
+        internal void SaveAs()
         {
-            return SaveAs(TextDocument.Text);
-        }
-
-        /// <summary>名前をつけて保存</summary>
-        /// <param name="displayTest">保存対象テキスト</param>
-        /// <returns></returns>
-        private bool SaveAs(string displayTest)
-        {
-            Logger.Info(CLASS_NAME, "SaveAs", "start");
-
-            string saveFilePath = string.Empty;
-            bool result = DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath);
-
-            // 失敗時はログとエラーダイアログを出す
-            if (result == false)
+            if (_toolbarModel == null)
             {
-                Logger.Error(CLASS_NAME, "SaveAs", "SaveAs Failed!");
-
-                // todo error dialog
-                return false;
+                Logger.Fatal(CLASS_NAME, "SaveAs", "_toolbarModel is null!");
+                return;
             }
 
-            if (FileAccessor.GetFileAccessor.SaveFile(TextDocument.Text, saveFilePath) == false)
+            if (_toolbarModel.SaveAs())
             {
-                Logger.Error(CLASS_NAME, "SaveAs", $"SaveFile Failed. saveFilePath:[{saveFilePath}]");
-                return false;
+                Logger.Info(CLASS_NAME, "SaveAs", "SaveAs successed!");
             }
-
-            // 保持している、現在開いているファイル情報を更新する
-            DisplayTextFilePath = saveFilePath;
-
-            // AvalonEditの編集済みフラグをOffにする
-            _viewModel.IsModified = false;
-
-            // 名前をつけて保存フラグをOffにする
-            _forceSaveAs = false;
-            return true;
+            else
+            {
+                Logger.Error(CLASS_NAME, "SaveAs", "SaveAs failed!");
+            }
         }
 
         /// <summary>類語ウィンドウを開く</summary>
         internal void OpenSynonymWindow()
         {
             WindowManager.OpenSubWindow(CommonLibrary.SubWindowName.SynonymWindow);
-        }
-
-        /// <summary>渡されたファイルパスからテキストファイルを読み込む</summary>
-        /// <param name="filePath">読み込み対象のファイルパス</param>
-        /// <param name="text">読み込んだファイルの全テキスト</param>
-        /// <returns>true:成功, false:失敗</returns>
-        private bool Load(string filePath, out string text)
-        {
-            text = null;
-            if (string.IsNullOrEmpty(filePath))
-            {
-                Logger.Error(CLASS_NAME, "Load", "filePath is null or empty!");
-                return false;
-            }
-
-            try
-            {
-                //todo:FileStreamで素直に読み込む？
-                //textEditorが残って悪さしていないことを確認すること
-                TextEditor textEditor = new TextEditor();
-                textEditor.Load(filePath);
-                TextDocument.Text = textEditor.Text;
-            }
-            catch (Exception e)
-            {
-                Logger.Fatal(CLASS_NAME, "Load", e.ToString());
-                return false;
-            }
-
-            text = TextDocument.Text;
-            return true;
         }
 
         /// <summary>検索処理を実施する</summary>
@@ -484,64 +405,20 @@ namespace SynonyMe.Model
         /// <summary>ファイルを開くダイアログを表示し、既存のファイルを読み込みます</summary>
         internal void OpenFile()
         {
-            // 現在表示中のテキストが編集済みか否かを判定する
-            if (_viewModel.IsModified)
+            if (_toolbarModel == null)
             {
-                // 保存されていなければ、Ok/Cancelダイアログを出して確認する
-                DialogResult dialogResult = DialogResult.Cancel;
-                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在表示中の文章は保存されていません。\n編集を破棄し、新規にファイルを開いて良いですか？\n(※未保存のテキストは破棄されます！)", out dialogResult);
-                if (result == false)
-                {
-                    Logger.Fatal(CLASS_NAME, "OpenFile", $"Dialog error! dialogResult:[{dialogResult}]");
-                    return;
-                }
-
-                if (dialogResult == DialogResult.Cancel)
-                {
-                    Logger.Info(CLASS_NAME, "OpenFile", "Canceled discard text and open new file");
-                    return;
-                }
-            }
-
-            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
-            DisposeTextAndXshd();
-
-            // ファイルを開く
-            string openFilePath;
-            if (DialogManager.GetDialogManager.OpenFileOpenDialog(out openFilePath) == false)
-            {
-                Logger.Error(CLASS_NAME, "OpenFile", "OpenFileOpenDialog failed.");
+                Logger.Fatal(CLASS_NAME, "OpenFile", "_toolbarModel is null!");
                 return;
             }
 
-            if (string.IsNullOrEmpty(openFilePath))
+            if (_toolbarModel.OpenFile())
             {
-                Logger.Fatal(CLASS_NAME, "OpenFile", "Filename is null or empty!");
-                return;
+                Logger.Info(CLASS_NAME, "OpenFile", "OpenFile successed!");
             }
-
-            // MainWindowのAvalonEditに適用する
-            // 保存したファイルパスを保持する
-            DisplayTextFilePath = openFilePath;
-
-            string loadText;
-            if (Load(openFilePath, out loadText) == false)
+            else
             {
-                Logger.Error(CLASS_NAME, "OpenFile", $"Load error. File path:[{openFilePath}]");
-                return;
+                Logger.Error(CLASS_NAME, "OpenFile", "OpenFile failed!");
             }
-
-            if (TextDocument == null)
-            {
-                Logger.Error(CLASS_NAME, "OpenFile", "DisplayTextDocument is null!");
-                return;
-            }
-
-            TextDocument.Text = loadText;
-
-            // 編集済みフラグを下げる
-            _viewModel.IsModified = false;
-            _forceSaveAs = false;
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
@@ -593,21 +470,6 @@ namespace SynonyMe.Model
             }
 
             return Searcher.GetSearcher.SynonymSearch(targetSynonyms, targetText, SearchResultMargin, SearchResultCount);
-        }
-
-        /// <summary>表示中のテキストと、ハイライト表示情報を破棄します</summary>
-        /// <remarks>本当にAvalonEditのDisposeがこれだけで十分かは要検討</remarks>
-        private void DisposeTextAndXshd()
-        {
-            if (TextDocument != null)
-            {
-                TextDocument.Text = string.Empty;
-            }
-
-            if (_highlightManager != null)
-            {
-                _highlightManager.ResetHighlightInfo();
-            }
         }
 
         /// <summary>
