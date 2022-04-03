@@ -825,11 +825,7 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            if (_model.CreateNewFile() == false)
-            {
-                Logger.Error(CLASS_NAME, "ExecuteCreateNewFile", "Create new file failed!");
-                return;
-            }
+            _model.CreateNewFile();
 
             Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "end");
         }

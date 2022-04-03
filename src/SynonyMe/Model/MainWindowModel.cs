@@ -55,6 +55,7 @@ namespace SynonyMe.Model
         };
 
         private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
+        internal AvalonEdit.Highlight.HighlightManager HighlightManager { get { return _highlightManager; } }
 
         private Manager.SettingManager _settingManager = null;
 
@@ -544,56 +545,24 @@ namespace SynonyMe.Model
         }
 
         /// <summary>テキストファイルを新規作成します</summary>
-        /// <remarks>true:正常, false:異常</remarks>
-        internal bool CreateNewFile()
+        internal void CreateNewFile()
         {
-            // 現在表示中のテキストが編集済みか否かを判定する
-            if (_viewModel.IsModified)
+            if (_toolbarModel == null)
             {
-                // 保存されていなければ、Yes/Noダイアログを出して確認する
-                DialogResult dialogResult = DialogResult.Cancel;
-                bool result = DialogManager.GetDialogManager.OpenOkCancelDialog("現在編集中の文章を破棄しますか？", out dialogResult);
-                if (result == false)
-                {
-                    Logger.Fatal(CLASS_NAME, "CreateNewFile", $"Dialog error! dialogResult:[{dialogResult}]");
-                    return false;
-                }
-
-                if (dialogResult == DialogResult.Cancel)
-                {
-                    Logger.Info(CLASS_NAME, "CreateNewFile", "Canceled discard text and create new file");
-                    return true;
-                }
+                Logger.Fatal(CLASS_NAME, "CreateNewFile", "_toolbarModel is null!");
+                return;
             }
 
-            // 破棄OKか、保存済みであれば現在表示中のテキストとXshdをクリアする
-            TextDocument.Text = string.Empty;
-            _highlightManager.ResetHighlightInfo();
-
-            // ファイル保存ダイアログを表示する
-            string saveFilePath = null;
-            if (DialogManager.GetDialogManager.OpenSaveAsDialog(out saveFilePath) == false)
+            if (_toolbarModel.CreateNewFile())
             {
-                Logger.Info(CLASS_NAME, "CreateNewFile", "create new file failed.");
-                return false;
+                Logger.Info(CLASS_NAME, "CreateNewFile", $"CreateNewFile successed! Displaying text:[{DisplayTextFilePath}]");
+                return;
             }
-
-            if (string.IsNullOrEmpty(saveFilePath))
+            else
             {
-                Logger.Fatal(CLASS_NAME, "CreateNewFile", "Filename is null or empty!");
-                return false;
+                Logger.Error(CLASS_NAME, "CreateNewFile", $"CreateNewFile failed. Displaying text:[{DisplayTextFilePath}]");
+                return;
             }
-
-            // ファイルを保存する
-            FileAccessor.GetFileAccessor.SaveNewFile(saveFilePath);
-
-            // 保存したファイルパスを保持する
-            DisplayTextFilePath = saveFilePath;
-
-            // 編集済みフラグを下げる
-            _viewModel.IsModified = false;
-
-            return true;
         }
 
         /// <summary>DBに登録されている全類語グループを取得する</summary>

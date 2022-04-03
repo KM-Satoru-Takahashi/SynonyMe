@@ -241,7 +241,7 @@
                 <!--AvalonEditの実装-->
                 <!--Drag and Dropの実装-->
                 <!--todo:SyntaxHighlightのBinding-->
-                <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=OneWayToSource}"
+                <ae:TextEditor Grid.Row="1" x:Name="TextEditor" IsModified="{Binding IsModified, Mode=TwoWay}"
                     dd:DragDrop.IsDropTarget="True" Options="{Binding TextEditorOptions, FallbackValue={StaticResource StaticTextEditorOptions}}"
                     dd:DragDrop.DropHandler="{Binding}" WordWrap="{Binding WordWrap}" Foreground="{Binding AvalonEditForeGround}"
                     Document="{Binding Path=TextDocument}" FontFamily="{Binding FontFamily}"
