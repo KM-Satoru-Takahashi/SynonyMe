@@ -188,7 +188,7 @@ namespace SynonyMe.AvalonEdit.Highlight
             switch (searchResultFontColorKind)
             {
                 case CommonLibrary.FontColorKind.Auto:
-                    _searchResultFontColor = GetAutoFontColor();
+                    _searchResultFontColor = GetSearchResultAutoFontColor();
                     break;
 
                 case CommonLibrary.FontColorKind.Black:
@@ -205,7 +205,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
                 default:
                     Logger.Error(CLASS_NAME, "ApplySetting", $"searchResultFontColorKind is invalid! value:[{searchResultFontColorKind}]");
-                    _searchResultFontColor = GetAutoFontColor();
+                    _searchResultFontColor = GetSearchResultAutoFontColor();
                     break;
             }
 
@@ -216,14 +216,14 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         /// <summary>類語検索実施時、該当する類語に文字色と背景色を適用それぞれします</summary>
         /// <param name="targetWords"></param>
-        /// <returns></returns>
+        /// <returns>true:成功, false:失敗</returns>
         private bool CreateSynonymSearchHighlightInfos(string[] targetWords)
         {
-            Logger.Info(CLASS_NAME, "CreateHighlightInfos", "start");
+            Logger.Info(CLASS_NAME, "CreateSynonymSearchHighlightInfos", "start");
 
             if (targetWords == null || targetWords.Any() == false)
             {
-                Logger.Fatal(CLASS_NAME, "CreateHighlightInfos", "targetWords are null or empty.");
+                Logger.Fatal(CLASS_NAME, "CreateSynonymSearchHighlightInfos", "targetWords are null or empty.");
                 return false;
             }
 
@@ -233,7 +233,7 @@ namespace SynonyMe.AvalonEdit.Highlight
 
                 if (string.IsNullOrEmpty(target))
                 {
-                    Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround}]");
+                    Logger.Error(CLASS_NAME, "CreateSynonymSearchHighlightInfos", $"target is null! backGroundColor is [{backGround}]");
                     continue;
                 }
                 _infos.Add(new TextHighlightInfo(GetSynonymSearchFontColor(backGround), backGround, target));//todo:検索と類語検索で_fontColorとbackGroundを分ける
@@ -259,7 +259,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                     return _synonymSearchFontUserColor;
                 default:
                     Logger.Error(CLASS_NAME, "GetSynonymSearchFontColor", $"_synonymSearchFontUserColor is incorrect! value:[{_synonymSearchFontColorKind}]");
-                    return GetAutoFontColor();
+                    return GetSearchResultAutoFontColor();
             }
         }
 
@@ -280,14 +280,18 @@ namespace SynonyMe.AvalonEdit.Highlight
             return true;
         }
 
-        //todo:オーバーロード、Utilityクラスでの返還
+        /// <summary>背景色を示すRGB値から、文字色を自動で判別して取得します</summary>
+        /// <param name="R"></param>
+        /// <param name="G"></param>
+        /// <param name="B"></param>
+        /// <returns>文字色（ForeGround）</returns>
         private Color GetAutoFontColor(byte R, byte G, byte B)
         {
             // RGBをグレースケール化する。255は白、0は黒なので、127を境界にする
             double gray = R * 0.3 + G * 0.59 + B * 0.11;
             byte byteGray = (byte)Math.Round(gray);
-            Logger.Info(CLASS_NAME, "GetAutoFontColor", $"byteGray:[{byteGray}]");
-            if (byteGray < 127)
+            Logger.Info(CLASS_NAME, "GetAutoFontColor", $"byteGray:[{byteGray}], R:[{R}], G:[{G}], B:[{B}]");
+            if (byteGray < 128)
             {
                 // 127以下→背景色は黒に近いので、文字色は白
                 return Colors.White;
@@ -298,10 +302,17 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
         }
 
+        /// <summary>背景色を示すColor構造体から、文字色を取得します</summary>
+        /// <param name="backGround"></param>
+        /// <returns>文字色（ForeGround）</returns>
+        private Color GetAutoFontColor(Color backGround)
+        {
+            return GetAutoFontColor(backGround.R, backGround.G, backGround.B);
+        }
+
         /// <summary>AvalonEditの背景色から、文字色を取得します</summary>
         /// <returns>背景色が白寄りの場合は黒、背景色が黒寄りの場合は白</returns>
-        /// <remarks>todo:設定ファイル値を参照させる、この中でカラーコード変換しない。カラーコードの変換はSettingWindowへ移譲するため</remarks>
-        private Color GetAutoFontColor()
+        private Color GetSearchResultAutoFontColor()
         {
             if (_avalonEditBackground == null)
             {
@@ -311,33 +322,9 @@ namespace SynonyMe.AvalonEdit.Highlight
             }
 
             // 今の背景色を[#AARRGGBB]文字列形式で取得する
-            string backGroundColorCode = _avalonEditBackground.ToString();//todo:ConversionUtility
-            if (string.IsNullOrEmpty(backGroundColorCode) ||
-               backGroundColorCode.Length != "#AARRGGBB".Length)
-            {
-                string back = string.IsNullOrEmpty(backGroundColorCode) ? "" : backGroundColorCode;
-                Logger.Error(CLASS_NAME, "GetForeGroundColor", $"backGroundColorCode is incorrect! value[{back}]");
-                return Colors.Black;
-            }
+            string backGroundColorCode = _avalonEditBackground.ToString();
 
-            string stringRValue = backGroundColorCode.Substring(3, 2);
-            string stringGValue = backGroundColorCode.Substring(5, 2);
-            string stringBValue = backGroundColorCode.Substring(7, 2);
-
-            byte byteRValue, byteGValue, byteBValue;
-            try //todo:CommonLibのUtilityで変換
-            {
-                byteRValue = Convert.ToByte(stringRValue, 16);
-                byteGValue = Convert.ToByte(stringGValue, 16);
-                byteBValue = Convert.ToByte(stringBValue, 16);
-            }
-            catch (Exception e)
-            {
-                Logger.Fatal(CLASS_NAME, "GetForeGroundColor", $"ErrorMessage:[{e.ToString()}], R:[{stringRValue}], G:[{stringGValue}], B:[{stringBValue}]");
-                return Colors.Black;
-            }
-
-            return GetAutoFontColor(byteRValue, byteGValue, byteBValue);
+            return GetAutoFontColor(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(backGroundColorCode));
         }
 
         /// <summary>
@@ -466,7 +453,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 string colorName = "keyword";
 
                 // 文字毎に異なる背景色を設定したいため、ここでColorおよびColorRefのNameを紐付ける必要がある
-                // 大量にあることを想定し、StringBuilderで結合する
+                // 現状は上限10個だが、将来大量に設定可とすることを想定し、StringBuilderで結合する
                 StringBuilder sb = new StringBuilder(colorName);
                 sb.Append(i.ToString());
 
@@ -531,7 +518,10 @@ namespace SynonyMe.AvalonEdit.Highlight
                 }
                 finally
                 {
-                    writer.Close();
+                    if (writer != null)
+                    {
+                        writer.Close();
+                    }
                 }
             }
 
