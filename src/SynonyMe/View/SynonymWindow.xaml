@@ -71,7 +71,8 @@
         </Grid.RowDefinitions>
 
         <!--類語グループリスト-->
-        <ListView Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" ItemsSource="{Binding DisplaySynonymGroups}" x:Name="SynonymGroupList">
+        <ListView Grid.Column="1" Grid.ColumnSpan="5" Grid.Row="1" SelectionMode="Single" 
+                  ItemsSource="{Binding DisplaySynonymGroups}" x:Name="SynonymGroupList">
             <!--クリック時にテキストボックスを表示するResource設定-->
             <ListView.Resources>
                 <Style x:Key="{x:Type TextBox}" TargetType="TextBox">

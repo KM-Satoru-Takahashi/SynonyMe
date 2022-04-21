@@ -15,5 +15,11 @@ namespace SynonyMe.Model.MainWindow
             _parent = parent;
         }
 
+        internal bool Search(string searchWord, string text)
+        {
+
+            return false;
+        }
+
     }
 }

@@ -94,6 +94,7 @@ namespace SynonyMe.CommonLibrary
         internal const int MIN_WORDID = 1;
 
         /// <summary>データ登録・更新・削除実行時の成功閾値</summary>
+        /// <remarks>SQLiteではExecuteQueryした際に「対象となったカラム数」が返ってくるので、1未満は対象カラムがない→異常と判断する</remarks>
         internal const int EXECUTE_NONQUERY_SUCCESSED = 1;
 
         /// <summary>テキストハイライト用の設定ファイル名</summary>

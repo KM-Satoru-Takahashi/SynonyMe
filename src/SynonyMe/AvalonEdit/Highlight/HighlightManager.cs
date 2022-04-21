@@ -58,9 +58,9 @@ namespace SynonyMe.AvalonEdit.Highlight
 
         private Color[] _synonymSearchBackGroundColors = CommonLibrary.Define.BACKGROUND_COLORS_DEFAULT;
 
-        private Color _synonymSearchFontColor = new Color();
+        private Color _synonymSearchFontUserColor = new Color();
 
-        private CommonLibrary.FontColorKind synonymSearchFontColorKind = CommonLibrary.FontColorKind.Auto;
+        private CommonLibrary.FontColorKind _synonymSearchFontColorKind = CommonLibrary.FontColorKind.Auto;
 
         private Color _searchBackGroundColor = CommonLibrary.Define.BACKGROUND_COLORS_DEFAULT[0];
 
@@ -162,25 +162,11 @@ namespace SynonyMe.AvalonEdit.Highlight
                 return;
             }
 
-            synonymSearchFontColorKind = setting.SynonymSearchFontColorKind;
-            switch (synonymSearchFontColorKind)
+            _synonymSearchFontColorKind = setting.SynonymSearchFontColorKind;
+            if (_synonymSearchFontColorKind == CommonLibrary.FontColorKind.UserSetting)
             {
-                case CommonLibrary.FontColorKind.Auto:
-                    _synonymSearchFontColor = GetAutoFontColor();
-                    break;
-                case CommonLibrary.FontColorKind.Black:
-                    _synonymSearchFontColor = Colors.Black;
-                    break;
-                case CommonLibrary.FontColorKind.White:
-                    _synonymSearchFontColor = Colors.White;
-                    break;
-                case CommonLibrary.FontColorKind.UserSetting:
-                    _synonymSearchFontColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchFontColor);
-                    break;
-                default:
-                    Logger.Error(CLASS_NAME, "ApplySetting", $"synonymSearchFontColorKind is incorrect! value:[{synonymSearchFontColorKind}]");
-                    _synonymSearchFontColor = GetAutoFontColor();
-                    break;
+                //todo:log
+                _synonymSearchFontUserColor = CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.SynonymSearchFontColor);
             }
 
             _synonymSearchBackGroundColors = new Color[]
@@ -250,11 +236,33 @@ namespace SynonyMe.AvalonEdit.Highlight
                     Logger.Error(CLASS_NAME, "CreateHighlightInfos", $"target is null! backGroundColor is [{backGround}]");
                     continue;
                 }
-                _infos.Add(new TextHighlightInfo(_synonymSearchFontColor, backGround, target));//todo:検索と類語検索で_fontColorとbackGroundを分ける
+                _infos.Add(new TextHighlightInfo(GetSynonymSearchFontColor(backGround), backGround, target));//todo:検索と類語検索で_fontColorとbackGroundを分ける
             }
 
             return true;
         }
+
+        /// <summary>類語検索結果の文字色を取得します</summary>
+        /// <param name="backGround">対象類語の背景色</param>
+        /// <returns>当該類語における文字色</returns>
+        private Color GetSynonymSearchFontColor(Color backGround)
+        {
+            switch (_synonymSearchFontColorKind)
+            {
+                case CommonLibrary.FontColorKind.Auto:
+                    return GetAutoFontColor(backGround.R, backGround.G, backGround.B);
+                case CommonLibrary.FontColorKind.Black:
+                    return Colors.Black;
+                case CommonLibrary.FontColorKind.White:
+                    return Colors.White;
+                case CommonLibrary.FontColorKind.UserSetting:
+                    return _synonymSearchFontUserColor;
+                default:
+                    Logger.Error(CLASS_NAME, "GetSynonymSearchFontColor", $"_synonymSearchFontUserColor is incorrect! value:[{_synonymSearchFontColorKind}]");
+                    return GetAutoFontColor();
+            }
+        }
+
 
         /// <summary>検索実施時、該当する検索結果に文字色と背景色を適用します</summary>
         /// <param name="targetWord"></param>
@@ -270,6 +278,24 @@ namespace SynonyMe.AvalonEdit.Highlight
             _infos.Add(new TextHighlightInfo(_searchResultFontColor, _searchBackGroundColor, targetWord));
 
             return true;
+        }
+
+        //todo:オーバーロード、Utilityクラスでの返還
+        private Color GetAutoFontColor(byte R, byte G, byte B)
+        {
+            // RGBをグレースケール化する。255は白、0は黒なので、127を境界にする
+            double gray = R * 0.3 + G * 0.59 + B * 0.11;
+            byte byteGray = (byte)Math.Round(gray);
+            Logger.Info(CLASS_NAME, "GetAutoFontColor", $"byteGray:[{byteGray}]");
+            if (byteGray < 127)
+            {
+                // 127以下→背景色は黒に近いので、文字色は白
+                return Colors.White;
+            }
+            else
+            {
+                return Colors.Black;
+            }
         }
 
         /// <summary>AvalonEditの背景色から、文字色を取得します</summary>
@@ -311,19 +337,7 @@ namespace SynonyMe.AvalonEdit.Highlight
                 return Colors.Black;
             }
 
-            // RGBをグレースケール化する。255は白、0は黒なので、127を境界にする
-            double gray = byteRValue * 0.3 + byteGValue * 0.59 + byteBValue * 0.11;
-            byte byteGray = (byte)Math.Round(gray);
-            Logger.Info(CLASS_NAME, "GetForeGroundColor", $"byteGray:[{byteGray}]");
-            if (byteGray < 127)
-            {
-                // 127以下→背景色は黒に近いので、文字色は白
-                return Colors.White;
-            }
-            else
-            {
-                return Colors.Black;
-            }
+            return GetAutoFontColor(byteRValue, byteGValue, byteBValue);
         }
 
         /// <summary>

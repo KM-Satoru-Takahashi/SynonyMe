@@ -384,7 +384,6 @@ namespace SynonyMe.ViewModel
         public Brush AvalonEditForeGround { get; set; } = Brushes.Black;
 
         /// <summary>検索結果がない場合に表示する文言</summary>
-        /// <remarks>todo:CommonLibのDefineに移動させるべきでは？</remarks>
         public string NoSearchResultWord { get; } = TextDefine.NoSearchResult;
 
         #region command
@@ -629,8 +628,6 @@ namespace SynonyMe.ViewModel
             _model.ApplySettings();
         }
 
-
-
         /// <summary>類語グループ一覧、類語一覧、類語検索結果を最新の状態に更新する</summary>
         private void UpdateSynonymArea(bool isInitialize = false)
         {
@@ -802,14 +799,13 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteOpenSettingsWindow(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteOpenSettingsWindow", "start");
-
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteOpenSettingsWindow", "_model is null");
                 return;
             }
 
+            Logger.Info(CLASS_NAME, "ExecuteOpenSettingsWindow", "start");
             _model.OpenSettingsWindow();
         }
 
@@ -817,31 +813,26 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteCreateNewFile(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "start");
-
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteCreateNewFile", "_model is null");
                 return;
             }
-
+            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "start");
             _model.CreateNewFile();
-
-            Logger.Info(CLASS_NAME, "ExecuteCreateNewFile", "end");
         }
 
         /// <summary>ツールバーの「開く」ボタン押下時処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteOpenFile(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteOpenFile", "start");
-
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteOpenFile", "_model is null");
                 return;
             }
 
+            Logger.Info(CLASS_NAME, "ExecuteOpenFile", "start");
             _model.OpenFile();
         }
 
@@ -849,14 +840,13 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSaveAs(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteSaveAs", "start");
-
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteSaveAs", "_model is null");
                 return;
             }
 
+            Logger.Info(CLASS_NAME, "ExecuteSaveAs", "start");
             _model.SaveAs();
         }
 
@@ -864,13 +854,13 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteSave(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteSave", "start");
 
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteSave", "_model is null");
                 return;
             }
+            Logger.Info(CLASS_NAME, "ExecuteSave", "start");
 
             _model.Save();
         }
@@ -879,63 +869,29 @@ namespace SynonyMe.ViewModel
         /// <param name="parameter"></param>
         private void ExecuteOpenSynonymWindow(object parameter)
         {
-            Logger.Info(CLASS_NAME, "ExecuteOpenSynonymWindow", "start");
-
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteOpenSynonymWindow", "_model is null");
                 return;
             }
 
+            Logger.Info(CLASS_NAME, "ExecuteOpenSynonymWindow", "start");
             _model.OpenSynonymWindow();
         }
 
         /// <summary>検索処理</summary>
         /// <param name="parameter"></param>
         private void ExecuteSearch(object parameter)
-        {
-            Logger.Info(CLASS_NAME, "ExecuteSearch", $"start. SearchWord:[{SearchWord}]");
-
+        {  
             if (_model == null)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteSearch", "_model is null");
                 return;
             }
 
-            if (string.IsNullOrEmpty(SearchWord))
-            {
-                Logger.Error(CLASS_NAME, "ExecuteSearch", "SearchWord is null or empty!");
-                return;
-            }
+            Logger.Info(CLASS_NAME, "ExecuteSearch", $"start. SearchWord:[{SearchWord}]");
 
-            // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
-            Dictionary<int, string> indexWordPairs = _model.SearchAllWordsInText(SearchWord, TextDocument.Text);
-            if (UpdateSearchResultVisiblity(indexWordPairs) == false)
-            {
-                Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
-                return;
-            }
-
-            // 旧検索結果をクリアする
-            SearchResult.Clear();
-
-            // 念のため昇順にソートしておく
-            indexWordPairs.OrderBy(pair => pair.Key);
-
-            SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
-            foreach (KeyValuePair<int, string> kvp in indexWordPairs)
-            {
-                SearchResult.Add(
-                    new SearchResultEntity()
-                    {
-                        Index = kvp.Key,
-                        DisplayWord = kvp.Value
-                    }
-                    );
-            }
-
-            // 検索結果にハイライトをかける
-            _model.ApplyHighlightToSearchResult(SearchWord);
+            _model.Search(SearchWord, TextDocument.Text);
         }
 
         /// <summary>検索結果へのジャンプ処理</summary>

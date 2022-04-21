@@ -61,12 +61,15 @@ namespace SynonyMe.Model.Manager.Events
             return true;
         }
 
+        /// <summary>依頼された型の設定を取得します</summary>
+        /// <param name="targetType"></param>
+        /// <returns></returns>
         internal object GetTargetSetting(Type targetType)
         {
             object target = null;
             if (_changedSettings.TryGetValue(targetType, out target) == false)
             {
-                //error log
+                Logger.Error(CLASS_NAME, "GetTargetSetting", $"TryGetValue failed. targetType:[{targetType}]");
                 return null;
             }
 

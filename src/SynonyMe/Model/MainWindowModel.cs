@@ -15,6 +15,8 @@ using System.Windows.Forms;
 using ICSharpCode.AvalonEdit.Document;
 using System.Windows.Media;
 using SynonyMe.Model.MainWindow;
+using System.Windows;
+using SynonyMe.CommonLibrary.Entity;
 
 namespace SynonyMe.Model
 {
@@ -27,12 +29,10 @@ namespace SynonyMe.Model
         private const string CLASS_NAME = "MainWindowModel";
 
         /// <summary>ViewModel</summary>
-        private MainWindowVM _viewModel = null;
-        internal MainWindowVM ViewModel { get { return _viewModel; } }
+        internal MainWindowVM ViewModel { get; private set; }
 
         /// <summary>上書き保存を強制的に名前をつけて保存にするフラグ</summary>
-        private bool _forceSaveAs = true;
-        internal bool ForceSaveAs { get { return _forceSaveAs; } set { _forceSaveAs = value; } }
+        internal bool ForceSaveAs { get; set; } = true;
 
         //todo:複数タブに対応する場合、検索やツールバーまわりのModelクラスはシングルトン化して不要なインスタンスの生成を防ぐ
         /// <summary>AvalonEdit領域を司るModel</summary>
@@ -54,8 +54,8 @@ namespace SynonyMe.Model
             ".txt"
         };
 
-        private AvalonEdit.Highlight.HighlightManager _highlightManager = null;
-        internal AvalonEdit.Highlight.HighlightManager HighlightManager { get { return _highlightManager; } }
+
+        internal AvalonEdit.Highlight.HighlightManager HighlightManager { get; private set; }
 
         private Manager.SettingManager _settingManager = null;
 
@@ -153,7 +153,7 @@ namespace SynonyMe.Model
         /// <param name="viewModel">メンバに保持するVM</param>
         internal MainWindowModel(MainWindowVM viewModel)
         {
-            _viewModel = viewModel;
+            ViewModel = viewModel;
             Initialize();
             InitializeInternalModel();
         }
@@ -163,7 +163,7 @@ namespace SynonyMe.Model
             // ★必ず最初に取得すること->singleton生成に伴う設定読込のため
             _settingManager = SettingManager.GetSettingManager;
 
-            _highlightManager = new AvalonEdit.Highlight.HighlightManager(_viewModel.AvalonEditBackGround);//★
+            HighlightManager = new AvalonEdit.Highlight.HighlightManager(ViewModel.AvalonEditBackGround);//★
         }
 
         /// <summary>MainWindowModelの機能をさらに細分化して管理しているModelクラスを初期化します</summary>
@@ -232,33 +232,33 @@ namespace SynonyMe.Model
 
             //todo:VMのプロパティに直に代入すれば良いのでは？
             ShowLineCount = setting.ShowingLineCount;
-            _viewModel.NotifyPropertyChanged("LineCountVisible");
+            ViewModel.NotifyPropertyChanged("LineCountVisible");
 
             ShowNumberOfLines = setting.ShowingNumberOfLines;
-            _viewModel.NotifyPropertyChanged("CanShowNumberOfLines");
+            ViewModel.NotifyPropertyChanged("CanShowNumberOfLines");
 
             ShowWordCount = setting.ShowingWordCount;
-            _viewModel.NotifyPropertyChanged("WordCountVisible");
+            ViewModel.NotifyPropertyChanged("WordCountVisible");
 
             TextEditorOptions.ShowEndOfLine = setting.ShowingNewLine;
             TextEditorOptions.ShowSpaces = setting.ShowingSpace;
             TextEditorOptions.ShowTabs = setting.ShowingTab;
-            _viewModel.NotifyPropertyChanged("TextEditorOptions");
+            ViewModel.NotifyPropertyChanged("TextEditorOptions");
 
             WordWrap = setting.WrappingText;
-            _viewModel.NotifyPropertyChanged("WordWrap");
+            ViewModel.NotifyPropertyChanged("WordWrap");
 
             FontFamily = setting.MainFontName + ", " + setting.SubFontName;
-            _viewModel.NotifyPropertyChanged("FontFamily");
+            ViewModel.NotifyPropertyChanged("FontFamily");
 
             FontSize = setting.FontSize;
-            _viewModel.NotifyPropertyChanged("FontSize");
+            ViewModel.NotifyPropertyChanged("FontSize");
 
-            _viewModel.AvalonEditBackGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.WallPaperColor));
-            _viewModel.NotifyPropertyChanged("AvalonEditBackGround");
+            ViewModel.AvalonEditBackGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.WallPaperColor));
+            ViewModel.NotifyPropertyChanged("AvalonEditBackGround");
 
-            _viewModel.AvalonEditForeGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.FontColor));
-            _viewModel.NotifyPropertyChanged("AvalonEditForeGround");
+            ViewModel.AvalonEditForeGround = new SolidColorBrush(CommonLibrary.ConversionUtility.ConversionColorCodeToColor(setting.FontColor));
+            ViewModel.NotifyPropertyChanged("AvalonEditForeGround");
         }
 
         internal void UpdateSearchAndSynonymSetting(Settings.SearchAndSynonymSetting setting)
@@ -296,13 +296,13 @@ namespace SynonyMe.Model
                 return false;
             }
 
-            if (_highlightManager == null)
+            if (HighlightManager == null)
             {
-                Logger.Fatal(CLASS_NAME, "ApplyHighlightToTargets", "_highlightManager is null!");
+                Logger.Fatal(CLASS_NAME, "ApplyHighlightToTargets", "HighlightManager is null!");
                 return false;
             }
 
-            return _highlightManager.UpdateXshdFile(targets, kind);
+            return HighlightManager.UpdateXshdFile(targets, kind);
         }
 
         /// <summary>指定された語句にハイライトを適用します</summary>
@@ -328,6 +328,12 @@ namespace SynonyMe.Model
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
         internal void ChangeDragOverMouseEffect(IDropInfo dropInfo)
         {
+            if(_avalonEditModel==null)
+            {
+                Logger.Fatal(CLASS_NAME, "ChangeDragOverMouseEffect", "_avalonEditModel is null!");
+                return;
+            }
+
             _avalonEditModel.ChangeDragOverMouseEffect(dropInfo);
         }
 
@@ -335,8 +341,16 @@ namespace SynonyMe.Model
         /// <param name="dropInfo"></param>
         internal void Drop(IDropInfo dropInfo)
         {
+            if (_avalonEditModel == null)
+            {
+                Logger.Fatal(CLASS_NAME, "Drop", "_avalonEditModel is null!");
+                return;
+            }
+
             _avalonEditModel.Drop(dropInfo);
         }
+
+        #region Toolbar
 
         /// <summary>渡されたファイル情報に基づいて保存処理を実行する</summary>
         /// <param name="filePath">保存対象ファイルパス</param>
@@ -442,6 +456,8 @@ namespace SynonyMe.Model
             }
         }
 
+        #endregion
+
         /// <summary>DBに登録されている全類語グループを取得する</summary>
         /// <returns>正常時：DBに登録されている全類語グループ、異常時:false</returns>
         internal CommonLibrary.Entity.SynonymGroupEntity[] GetAllSynonymGroups()
@@ -463,9 +479,9 @@ namespace SynonyMe.Model
         /// <returns>結果配列</returns>
         internal MainWindowVM.DisplaySynonymSearchResult[] SynonymSearch(MainWindowVM.DisplaySynonymWord[] targetSynonyms, string targetText)
         {
-            if (_viewModel == null)
+            if (ViewModel == null)
             {
-                Logger.Fatal(CLASS_NAME, "SynonymSearch", "_viewModel is null");
+                Logger.Fatal(CLASS_NAME, "SynonymSearch", "ViewModel is null");
                 return null;
             }
 
@@ -509,6 +525,75 @@ namespace SynonyMe.Model
 
             return true;
         }
+
+        internal void Search(string searchWord, string text)
+        {
+
+
+            if (string.IsNullOrEmpty(searchWord))
+            {
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "SearchWord is null or empty!");
+                return;
+            }
+
+            // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
+            Dictionary<int, string> indexWordPairs = SearchAllWordsInText(searchWord, text);
+            if (UpdateSearchResultVisiblity(indexWordPairs) == false)
+            {
+                Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
+                return;
+            }
+
+            // 旧検索結果をクリアする
+            ViewModel.SearchResult.Clear();
+
+            // 念のため昇順にソートしておく
+            indexWordPairs.OrderBy(pair => pair.Key);
+
+            SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
+            foreach (KeyValuePair<int, string> kvp in indexWordPairs)
+            {
+                ViewModel.SearchResult.Add(
+                    new SearchResultEntity()
+                    {
+                        Index = kvp.Key,
+                        DisplayWord = kvp.Value
+                    }
+                    );
+            }
+
+            // 検索結果にハイライトをかける
+            ApplyHighlightToSearchResult(searchWord);
+
+        }
+
+        /// <summary>検索結果表示領域のVisibilityを更新します</summary>
+        /// <returns>true:検索結果あり、false;検索結果なし</returns>
+        private bool UpdateSearchResultVisiblity(Dictionary<int, string> searchResult)
+        {
+            if (searchResult == null)
+            {
+                // nullなら表示を隠す
+                ViewModel.SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else if (searchResult.Count < 1)
+            {
+                // 検索結果がなければ、その旨を表示する
+               ViewModel.NoSearchResultVisibility = Visibility.Visible;
+                ViewModel.SearchResultVisibility = Visibility.Hidden;
+                return false;
+            }
+            else
+            {
+                // 検索結果ありの場合、結果を表示できるようにする
+                ViewModel.NoSearchResultVisibility = Visibility.Hidden;
+                ViewModel.SearchResultVisibility = Visibility.Visible;
+            }
+
+            return true;
+        }
+
 
 
         #endregion
