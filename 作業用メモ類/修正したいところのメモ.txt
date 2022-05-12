@@ -1,6 +1,14 @@
-・検索領域を起動後に開くと、幅の関係からか、検索語句入力窓が小さくなっている
-　グリッド幅をドラッグすると戻る
-　検索ウィンドウの最小値的なものを決めたい
+
+###Bug
+
+・検索/類語検索結果で同じモノを2回以上クリックすると、2回目以降はキャレット遷移してくれなくなる
+　（1回目でキャレット遷移しているが、それも比活性になり消えてしまう）
+　⇒SelectionChangedでEventTriggerを設定しているため
+　　選択する結果は常にSingleなので、選択結果自体をBindingさせておき、
+　　それに紐付いてJump処理を飛ばすようにすれば良いと思う
+　　（CommandParameterをXAMLから渡すのではなく、選択値をBindingしておき、PreviewMouseDownで選択値に対してフォーカス遷移をすればOK？）
+
+###BugEnd
 
 ・MainWindowVMは直したが、ObservableCollectionにAdd/RemoveするだけなのにnewしたりOnPropertyChangedしたりしているところがある
 　また、Collectionの中の要素自体の値を変更した際に、Listごとnewしている箇所がないか心配なのでチェックしたい
@@ -56,4 +64,5 @@
 
 ・Synonyme, 類語登録
 　1グループの登録数上限を30に
+
 

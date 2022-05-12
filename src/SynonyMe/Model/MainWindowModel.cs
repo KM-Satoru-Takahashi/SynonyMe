@@ -229,7 +229,6 @@ namespace SynonyMe.Model
                 return;
             }
 
-
             //todo:VMのプロパティに直に代入すれば良いのでは？
             ShowLineCount = setting.ShowingLineCount;
             ViewModel.NotifyPropertyChanged("LineCountVisible");
@@ -328,7 +327,7 @@ namespace SynonyMe.Model
         /// <returns>true:ドロップ可能、false:ドロップ不可能(何か1つでも不可能な場合)</returns>
         internal void ChangeDragOverMouseEffect(IDropInfo dropInfo)
         {
-            if(_avalonEditModel==null)
+            if (_avalonEditModel == null)
             {
                 Logger.Fatal(CLASS_NAME, "ChangeDragOverMouseEffect", "_avalonEditModel is null!");
                 return;
@@ -399,15 +398,6 @@ namespace SynonyMe.Model
         internal void OpenSynonymWindow()
         {
             WindowManager.OpenSubWindow(CommonLibrary.SubWindowName.SynonymWindow);
-        }
-
-        /// <summary>検索処理を実施する</summary>
-        /// <param name="searchWord">検索語句</param>
-        /// <param name="targetText">検索対象の文章</param>
-        /// <returns>文章内の検索対象index, margin含めた検索結果のdictionary</returns>
-        internal Dictionary<int, string> SearchAllWordsInText(string searchWord, string targetText)
-        {
-            return Searcher.GetSearcher.SearchAllWordsInText(searchWord, targetText, SearchResultMargin, SearchResultCount);
         }
 
         /// <summary>設定ウィンドウを開く</summary>
@@ -526,74 +516,13 @@ namespace SynonyMe.Model
             return true;
         }
 
+        /// <summary>検索処理を行います</summary>
+        /// <param name="searchWord"></param>
+        /// <param name="text"></param>
         internal void Search(string searchWord, string text)
         {
-
-
-            if (string.IsNullOrEmpty(searchWord))
-            {
-                Logger.Error(CLASS_NAME, "ExecuteSearch", "SearchWord is null or empty!");
-                return;
-            }
-
-            // dicのintはindex部分なので本文キャレット移動、stringは結果表示リストに使用する
-            Dictionary<int, string> indexWordPairs = SearchAllWordsInText(searchWord, text);
-            if (UpdateSearchResultVisiblity(indexWordPairs) == false)
-            {
-                Logger.Error(CLASS_NAME, "ExecuteSearch", "UpdateSearchResultVisibility return false!");
-                return;
-            }
-
-            // 旧検索結果をクリアする
-            ViewModel.SearchResult.Clear();
-
-            // 念のため昇順にソートしておく
-            indexWordPairs.OrderBy(pair => pair.Key);
-
-            SearchResultEntity[] searchResults = new SearchResultEntity[indexWordPairs.Count];
-            foreach (KeyValuePair<int, string> kvp in indexWordPairs)
-            {
-                ViewModel.SearchResult.Add(
-                    new SearchResultEntity()
-                    {
-                        Index = kvp.Key,
-                        DisplayWord = kvp.Value
-                    }
-                    );
-            }
-
-            // 検索結果にハイライトをかける
-            ApplyHighlightToSearchResult(searchWord);
-
+            _searchModel.Search(searchWord, text);
         }
-
-        /// <summary>検索結果表示領域のVisibilityを更新します</summary>
-        /// <returns>true:検索結果あり、false;検索結果なし</returns>
-        private bool UpdateSearchResultVisiblity(Dictionary<int, string> searchResult)
-        {
-            if (searchResult == null)
-            {
-                // nullなら表示を隠す
-                ViewModel.SearchResultVisibility = Visibility.Hidden;
-                return false;
-            }
-            else if (searchResult.Count < 1)
-            {
-                // 検索結果がなければ、その旨を表示する
-               ViewModel.NoSearchResultVisibility = Visibility.Visible;
-                ViewModel.SearchResultVisibility = Visibility.Hidden;
-                return false;
-            }
-            else
-            {
-                // 検索結果ありの場合、結果を表示できるようにする
-                ViewModel.NoSearchResultVisibility = Visibility.Hidden;
-                ViewModel.SearchResultVisibility = Visibility.Visible;
-            }
-
-            return true;
-        }
-
 
 
         #endregion

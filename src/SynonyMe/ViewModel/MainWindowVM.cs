@@ -907,12 +907,12 @@ namespace SynonyMe.ViewModel
                 return;
             }
 
-            if (args.AddedItems == null || args.AddedItems.Count < 0)
+            if (args.AddedItems == null || args.AddedItems.Count < 1)
             {
                 Logger.Fatal(CLASS_NAME, "ExecuteJumpToSearchResult", "AddedItems is null or empty!");
                 return;
             }
-
+         
             SearchResultEntity searchResultEntity = args.AddedItems[0] as SearchResultEntity;
             if (searchResultEntity == null)
             {
